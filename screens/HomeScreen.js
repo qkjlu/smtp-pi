@@ -1,21 +1,27 @@
 import * as WebBrowser from 'expo-web-browser';
 import * as React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import {Platform, StyleSheet, Text, View, ScrollView, TextInput, Button, Alert  } from 'react-native';
 import Search from "../components/Search";
-import WorkSite from "../components/WorkSite";
+
+import AddWorkSiteForm from "../components/Worksite/AddWorkSiteForm";
+import ListWorkSite from "../components/Worksite/ListWorkSite";
+import style from "../Style";
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-          <Text style={styles.getStartedText}>Liste des chantier:</Text>
-          <Search/>
-          <WorkSite/>
-          <WorkSite/>
-          <WorkSite/>
-          <WorkSite/>
-          <WorkSite/>
-          <WorkSite/>
+      <ScrollView>
+          <View>
+              { /*ajouter un chantier*/}
+              <AddWorkSiteForm />
+              { /*ajouter une entreprise*/}
 
-    </View>
+              { /*ajouter un compte utilisateur */}
+
+              { /* liste de chantier */}
+              <Text style={styles.getStartedText}>Liste des chantier:</Text>
+              <Search/>
+              <ListWorkSite/>
+          </View>
+      </ScrollView>
   );
 }
 

@@ -18,6 +18,16 @@ export default {
         flexDirection : 'row',
         justifyContent : 'space-between',
     },
+    previewPlace : {
+        backgroundColor : '#FFFFFF',
+        borderWidth: 1,
+        borderBottomColor : '#202340',
+        marginTop : 30,
+        height : 37,
+        flex : 1,
+        flexDirection : 'row',
+        justifyContent : 'space-between',
+    },
     rightWorksite : {
         color : '#FFF',
         fontweight : 'bold',
@@ -33,6 +43,15 @@ export default {
         justifyContent: 'space-between',
         marginHorizontal : 60,
         backgroundColor : 'rgba(252,164,0,0.22)'
+    },
+    title : {
+        fontWeight : '100'
+    },
+    formInput : {
+        height : 40 ,
+        padding : 10,
+        borderColor: 'gray',
+        borderWidth:1
     }
 
 }
