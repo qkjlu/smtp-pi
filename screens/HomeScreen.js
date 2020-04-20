@@ -2,7 +2,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as React from 'react';
 import {Platform, StyleSheet, Text, View, ScrollView, TextInput, Button, Alert  } from 'react-native';
 import Search from "../components/Search";
-
+import ButtonGroupAdmin from "../components/ButtonGroupAdmin";
 import AddWorkSiteForm from "../components/Worksite/AddWorkSiteForm";
 import ListWorkSite from "../components/Worksite/ListWorkSite";
 import style from "../Style";
@@ -10,12 +10,7 @@ export default function HomeScreen() {
   return (
       <ScrollView>
           <View>
-              { /*ajouter un chantier*/}
-              <AddWorkSiteForm />
-              { /*ajouter une entreprise*/}
-
-              { /*ajouter un compte utilisateur */}
-
+              <ButtonGroupAdmin/>
               { /* liste de chantier */}
               <Text style={styles.getStartedText}>Liste des chantier:</Text>
               <Search/>
