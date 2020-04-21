@@ -12,7 +12,6 @@ export default class AddWorkSiteForm extends React.Component {
             name: '',
             idPlace1: '',
             idPlace2: '',
-            showForm : false,
         }
     }
     formSubmit(){
@@ -41,7 +40,6 @@ export default class AddWorkSiteForm extends React.Component {
     }
 
     render() {
-        if (this.state.showForm) {
             return (
                 <View style={styles.addForm}>
                     <Text style={styles.header}> Ajout d'un chantier</Text>
@@ -60,11 +58,6 @@ export default class AddWorkSiteForm extends React.Component {
                     </TouchableOpacity>
                 </View>
             );
-        }else{
-            return(
-                <Button title="Ajouter un chantier" onPress={() => this.setState({showForm : true})} />
-            );
-        }
     }
 }
 
