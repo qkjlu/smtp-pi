@@ -1,24 +1,29 @@
 import React from 'react'
-import {StyleSheet, TextInput, View, Text, TouchableOpacity } from 'react-native'
+import {View} from 'react-native'
 import {ButtonGroup} from "react-native-elements";
 import ButtonAdminSelected from "./ButtonAdminSelected";
 
 export default class ButtonGroupAdmin extends React.Component {
-    constructor () {
-        super()
+    constructor(props) {
+        super(props);
         this.state = {
             selectedIndex: null
-        }
+        };
         this.updateIndex = this.updateIndex.bind(this)
     }
 
     updateIndex (selectedIndex) {
-        this.setState({selectedIndex})
+        if(selectedIndex == this.state.selectedIndex){
+            this.setState({selectedIndex : null})
+        }else{
+            this.setState({selectedIndex})
+        }
     }
 
+
     render () {
-        const buttons = ['Ajouter Chantier', 'Ajouter Utilisateur', 'Ajouter Entreprise']
-        const { selectedIndex } = this.state
+        const buttons = ['Ajouter Chantier', 'Ajouter Utilisateur', 'Ajouter Entreprise'];
+        const { selectedIndex } = this.state;
 
         return (
             <View>
