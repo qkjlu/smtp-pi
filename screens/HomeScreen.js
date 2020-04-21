@@ -5,23 +5,22 @@ import Search from "../components/Search";
 
 import AddWorkSiteForm from "../components/Worksite/AddWorkSiteForm";
 import ListWorkSite from "../components/Worksite/ListWorkSite";
+import AddUser from "../components/User/AddUser";
+import Login from "../components/Login";
+import UserList from "../components/User/UserList";
+import UpdateUser from "../components/User/UpdateUser";
+
 import style from "../Style";
 export default function HomeScreen() {
   return (
-      <ScrollView>
           <View>
               { /*ajouter un chantier*/}
-              <AddWorkSiteForm />
               { /*ajouter une entreprise*/}
 
               { /*ajouter un compte utilisateur */}
 
               { /* liste de chantier */}
-              <Text style={styles.getStartedText}>Liste des chantier:</Text>
-              <Search/>
-              <ListWorkSite/>
           </View>
-      </ScrollView>
   );
 }
 
