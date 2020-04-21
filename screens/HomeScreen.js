@@ -4,18 +4,15 @@ import {StyleSheet, Text, View, ScrollView} from 'react-native';
 import Search from "../components/Search";
 import ButtonGroupAdmin from "../components/ButtonGroupAdmin";
 import ListWorkSite from "../components/Worksite/ListWorkSite";
+
+
 import style from "../Style";
 export default function HomeScreen() {
   return (
-      <ScrollView>
           <View>
               <ButtonGroupAdmin/>
               { /* liste de chantier */}
-              <Text style={styles.getStartedText}>Liste des chantier:</Text>
-              <Search/>
-              <ListWorkSite/>
           </View>
-      </ScrollView>
   );
 }
 
