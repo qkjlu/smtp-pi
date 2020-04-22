@@ -15,7 +15,8 @@ export default class ListWorkSite extends React.Component {
         axios({
             method : 'get',
             url :'https://smtp-pi.herokuapp.com/chantiers',
-            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}            })
+            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
+            })
             .then( response => {
                 if(response.status != 200){
                 console.log(response.status);
@@ -41,7 +42,7 @@ export default class ListWorkSite extends React.Component {
                             data={this.state.report}
                             renderItem={({item}) =>
                                 <View>
-                                    <WorkSite name={`${item.nom}`}/>
+                                    <WorkSite worksite={item} navigation={this.props.navigation}/>
                                 </View>
                             }
                         />

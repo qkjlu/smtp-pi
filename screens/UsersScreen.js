@@ -9,11 +9,7 @@ import style from "../Style";
 
 export default function UsersScreen() {
     return (
-        <ScrollView>
-            <View>
-                <UpdateUser />
-            </View>
-        </ScrollView>
+        <UpdateUser />
     );
 }
 
