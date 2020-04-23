@@ -27,31 +27,26 @@ export default class UpdateUser extends React.Component {
     this.getCompany = this.getCompany.bind(this);
     this.createCompany = this.createCompany.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
+    this.arrayDifference = this.arrayDifference.bind(this);
+    this.onPressPicker = this.onPressPicker.bind(this);
+    this.onPressAddCompany = this.onPressAddCompany.bind(this);
+
     this.state = {
-      pickerSelected: null,
+      id : null,
+      pickerSelected: "",
       companies : null,
-      name: "Rakotonindrina",
-      surname : "Cycy",
+      name: null,
+      surname : null,
       type: null,
       printCompany : false,
-      company: "5daa13b5-3d6d-45fd-8e54-fededa825fe5"
+      company : "",
+      myCompanies: null
     };
   }
 
-  componentDidMount(){
+  async componentDidMount(){
     this.getCompany();
-
-  }
-
-  setCompany(){
-    var find = false;
-    var i = 0;
-    while(!find && i<this.state.companies.length){
-      if(this.state.company == this.state.companies[i].nom){
-        this.setState({company : this.state.companies[i].id})
-        find = true;
-      }
-    }
+    this.getUserById()
   }
 
   handlePickerChange(value){
@@ -74,11 +69,26 @@ export default class UpdateUser extends React.Component {
     this.formSubmit();
   }
 
+  arrayDifference(a,b){
+    var res = a;
+    for(let i =0; i< a.length; i++){
+      for(let j =0; j< b.length; j++){
+        if(a[i].nom == b[j].nom){
+          res.slice(i,1)
+        }
+      }
+    }
+    console.log("entreprise:" + res);
+    this.setState({companies : res});
+  }
 
+
+  // url to change in fonction of type of user
   getUserById(){
+    var id = "179bc274-e5bc-4ce7-a5ba-a897c4da74de"
     axios({
       method: 'get',
-      url: 'https://smtp-pi.herokuapp.com/camionneurs',
+      url: "https://smtp-pi.herokuapp.com/grutiers/" + id,
       headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
     })
       .then( response => {
@@ -88,7 +98,12 @@ export default class UpdateUser extends React.Component {
           return response.status;
         }
         console.log(response.status)
-        this.setState({camionneurs: response.data});
+        this.setState({
+          name: response.data.nom,
+          surname : response.data.prenom,
+          myCompanies  :response.data.Entreprises,
+          id : id
+        });
         return response.status;
       })
       .catch(function (error) {
@@ -96,8 +111,9 @@ export default class UpdateUser extends React.Component {
         console.log(error);
       })
   }
+
   // API call for get and initialise list of company
-  getCompany(){
+  async getCompany(){
     axios.get('https://smtp-pi.herokuapp.com/entreprises')
       .then( response => {
         if(response.status != 200){
@@ -105,8 +121,9 @@ export default class UpdateUser extends React.Component {
           alert(response.status);
           return response.status;
         }
-        this.setState({companies: response.data});
-        return response.status;
+        this.setState({companies : response.data})
+        console.log(response.status);
+        return response.data;
       })
       .catch(function (error) {
         alert(error)
@@ -119,6 +136,7 @@ export default class UpdateUser extends React.Component {
     await axios({
       method: 'post',
       url: 'https://smtp-pi.herokuapp.com/entreprises',
+      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
       data : { "nom" : this.state.company}
     }).then((response) => {
       if(response.status != 201){
@@ -126,8 +144,17 @@ export default class UpdateUser extends React.Component {
         alert(response.status);
         return response.status;
       }
+
+        // update PickerData
+        var copy = this.state.companies.slice();
+        copy.push(response.data);
+        this.setState({
+          pickerSelected : response.data.id,
+          companies : copy
+        });
+
         console.log(response.status);
-        this.setState({pickerSelected : response.data.id});
+        alert("Entreprise crée");
         return response.data.id;
     })
     .catch(function (error) {
@@ -136,23 +163,17 @@ export default class UpdateUser extends React.Component {
   }
 
   async formSubmit(){
-    if (this.state.name == "" || this.state.surname == "") {
+    if (this.state.name == "" || this.state.surname == "" ) {
       alert('Entrez un nom ou un prenom');
     }else{
-      var url = this.state.type == 0 ? "camionneurs" : "grutiers";
-
-      if(this.state.printCompany){
-          await this.createCompany();
-      }
 
       const data = {
         "nom": this.state.name,
         "prenom": this.state.surname,
-        "entreprise" : this.state.pickerSelected
       };
 
       await axios({
-        method: 'post',
+        method: 'put',
         url: 'https://smtp-pi.herokuapp.com/' + url,
         data : data
       })
@@ -166,32 +187,93 @@ export default class UpdateUser extends React.Component {
     }
   }
 
+
+  //add type of user
+  //add an company to the user
+  onPressPicker(){
+
+    //data to post
+    var data = {
+      "entreprise" : this.state.pickerSelected
+    }
+
+    axios({
+      method: 'post',
+      url: "https://smtp-pi.herokuapp.com/grutiers/" + this.state.id + "/entreprise/",
+      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
+      data: data
+    })
+    .then( response => {
+      if(response.status != 201){
+        console.log(response.status);
+        return response.status;
+      }
+
+      // update List of companies of the user
+      var element = this.state.companies.find(e => e.id == this.state.pickerSelected);
+      console.log()
+      var copy = this.state.myCompanies.slice();
+      copy.push(element);
+      this.setState({
+        myCompanies : copy
+      });
+
+      console.log(response.status)
+      alert("Entreprise ajouté à la liste !")
+      return response.status;
+    })
+    .catch(function (error) {
+      alert(error)
+      console.log(error);
+    })
+  }
+
+  onPressAddCompany(){
+    this.createCompany()
+  }
+
   render() {
 
-    if (this.state.name === null || this.state.surname === null || this.state.companies == null || this.state.company == null){
+    if (this.state.name === null || this.state.surname === null || this.state.companies == null || this.state.myCompanies == null){
       return (<ActivityIndicator color="red" size="large"/>);
-
     }else{
 
+      // set Data for picker
       var pickerData = this.state.companies.map(item => item.nom);
+      // set selectedValue for picker
+      var resIndex = this.state.companies.findIndex(s => s.id == this.state.pickerSelected);
+      var selectedIndex = resIndex == -1 ? 0 : resIndex
+      var selected = this.state.companies[selectedIndex].nom;
+
       return (
         <View style={styles.container}>
           <Text style={styles.titleText} >Modifier un utilisateur</Text>
           <InputText placeholder={this.state.name} value={this.state.name} onChangeText={this.handleChangeName}/>
           <InputText placeholder={this.state.surname} value={this.state.surname} onChangeText={this.handleChangeSurname}/>
-          <CustomPicker isVisible={this.state.printCompany} data={pickerData} titleContent="Entreprise:" selectedValue= {this.state.pickerSelected} onValueChange= {this.handlePickerChange}/>
+
+          <View style={styles.adder}>
+            <CustomPicker data={pickerData} titleContent="Ajouter une entreprise:" selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
+            <TouchableOpacity style={styles.bouton} onPress={this.onPressPicker}>
+              <Text style={{color: "white"}}>Ajouter</Text>
+            </TouchableOpacity>
+          </View>
+
+
+          <AddCompanyInput isVisible={!this.state.printCompany} value={this.state.company} onChangeText={this.handleChangeCompany} onPress ={this.onPressAddCompany}/>
+
           <View style={styles.addFirm}>
             <Text>Entreprise non présente dans la liste ? Creer une entreprise:</Text>
             <TouchableOpacity style={styles.bouton} onPress={() => this.setState({printCompany : true})}>
-              <Text style={{color: "white"}}>ajouter</Text>
+              <Text style={{color: "white"}}>Créer</Text>
             </TouchableOpacity>
           </View>
+
+          <Text>Les entreprises auxquelles j'appartiens:</Text>
           <FlatList
-            data={this.state.companies}
+            data={this.state.myCompanies}
             renderItem={({item}) => <ItemList entreprise={item.nom} onPress={this.onPressEdit}/>}
           />
-          <AddCompany isVisible={!this.state.printCompany} value={this.state.company} onChangeText={this.handleChangeCompany}/>
-          <Text>Type:</Text>
+
           <ValidateButton onPress={this.handleValidate}/>
         </View>
       );
@@ -199,11 +281,28 @@ export default class UpdateUser extends React.Component {
   }
 }
 
+
+function AddCompanyInput(props){
+  if(props.isVisible){
+    return null;
+  }
+
+  return(
+    <View style={{width: "80%",flexDirection: 'row'}} >
+      <InputText placeholder="Nom de l'entreprise" value={props.firm} onChangeText={props.onChangeText}/>
+      <TouchableOpacity style={styles.bouton} onPress={props.onPress}>
+        <Text style={{color: "white"}}>Ajouter</Text>
+      </TouchableOpacity>
+    </View>
+  )
+
+}
+
 function ItemList(props) {
   return(
     <View style={style.worksite}>
       <Text style = { style.title}> {props.entreprise} </Text>
-      <View style={styles.buttons} >
+      <View style={styles.adder} >
         <Button
           icon={
             <Icon
@@ -241,5 +340,8 @@ const styles = StyleSheet.create({
     alignItems:"center",
     justifyContent:"center",
     margin:10
+  },
+  adder:{
+    flexDirection: 'row',
   }
 });
