@@ -10,9 +10,7 @@ import style from "../Style";
 
 export default function UsersScreen() {
     return (
-      <View style={styles.view}>
         <UpdateUser />
-      </View>
     );
 }
 

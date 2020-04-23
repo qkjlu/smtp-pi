@@ -16,9 +16,12 @@ export default class AutoCompletePlaces extends React.Component {
     }
 
     componentDidMount() {
-        axios.get('https://smtp-pi.herokuapp.com/lieux')
-            .then((response) =>{
-                this.setState({places : response.data})
+        axios({
+            method: 'get',
+            url:'https://smtp-pi.herokuapp.com/lieux',
+            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}            })
+            .then( response => {
+                    this.setState({places: response.data});
             })
             .catch((error) => {
                 console.log(error);

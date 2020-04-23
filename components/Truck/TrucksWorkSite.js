@@ -1,9 +1,7 @@
 import React from 'react'
 import {View} from 'react-native'
 import {ButtonGroup} from "react-native-elements";
-import ButtonAdminSelected from "./ButtonAdminSelected";
-
-export default class ButtonGroupAdmin extends React.Component {
+export default class TrucksWorkSite extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -22,7 +20,7 @@ export default class ButtonGroupAdmin extends React.Component {
 
 
     render () {
-        const buttons = ['Ajouter Chantier', 'Ajouter Utilisateur', 'Ajouter Entreprise'];
+        const buttons = ['Chargés', 'Déchargés', 'Pause'];
         const { selectedIndex } = this.state;
 
         return (
@@ -31,9 +29,8 @@ export default class ButtonGroupAdmin extends React.Component {
                     onPress={this.updateIndex}
                     selectedIndex={selectedIndex}
                     buttons={buttons}
-                    containerStyle={{height: 100}}
+                    containerStyle={{height: 30}}
                 />
-                <ButtonAdminSelected index={this.state.selectedIndex}/>
             </View>
 
         )

@@ -16,10 +16,10 @@ export default class AddWorkSiteForm extends React.Component {
     }
     formSubmit(){
         if (this.state.name == "" || this.state.idPlace1 == "" || this.state.idPlace2 == "") {
-            console.log(this.state)
+            console.log(this.state);
             alert('Tous les champs sont requis');
         }else{
-            console.log(this.state)
+            console.log(this.state);
             const data = {
                 "nom": this.state.name,
                 "lieuChargementId": this.state.idPlace1,
@@ -45,13 +45,12 @@ export default class AddWorkSiteForm extends React.Component {
                     <Text style={styles.header}> Ajout d'un chantier</Text>
 
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
-                               value={this.state.name} placeholder={"Nom du chantier"}/>
+                               value={this.state.name} placeholder={"Nom du chantier"}
+                    />
 
-                    <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"}
-                                        style={styles.autocomplete}/>
+                    <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"}/>
 
-                    <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"}
-                                        style={styles.autocomplete}/>
+                    <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"}/>
 
                     <TouchableOpacity style={styles.button}>
                         <Text style={styles.txtbutton} onPress={() => this.formSubmit()}> Valider </Text>
@@ -65,12 +64,14 @@ const styles = StyleSheet.create({
     addForm : {
        alignSelf: 'stretch'
     },
+    pad:{
+      paddingVertical : 10
+    },
     header : {
         fontSize: 24,
         color: '#1f1f1f',
         marginBottom : 10,
         borderBottomColor : '#199187',
-
     },
     textinput : {
         alignSelf: 'stretch',

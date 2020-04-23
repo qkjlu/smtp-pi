@@ -45,7 +45,8 @@ export default {
         backgroundColor : 'rgba(252,164,0,0.22)'
     },
     title : {
-        fontWeight : '100'
+        fontWeight: 'bold',
+        fontSize: 30
     },
     formInput : {
         height : 40 ,

@@ -1,17 +1,18 @@
 import React from 'react'
 import {Text , TextInput, View, Button, Alert } from 'react-native'
 import style from '../../Style'
-export default class WorkSite extends React.Component {
+
+export default class WorkSiteRow extends React.Component {
     render() {
         return (
             <View style = {style.worksite}>
-                <Text style = { style.title}> {this.props.name} </Text>
+                <Text> {this.props.worksite.nom} </Text>
                 <View style={style.button} >
                     <Button
                         color = 'green'
-                        onPress={() => Alert.alert("woow")}
+                        onPress={() => { this.props.navigation.navigate('WorkSite', { worksite : this.props.worksite })}}
                         title="go"
-                        accessibilityLabel="Learn more about this purple button"
+                        accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>
             </View>
