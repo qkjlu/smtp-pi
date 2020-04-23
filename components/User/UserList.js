@@ -20,6 +20,9 @@ export default class UserList extends React.Component{
 
   constructor (props) {
     super(props);
+    this.onPressEditCamionneur = this.onPressEditCamionneur.bind(this);
+    this.onPressEditGrutier = this.onPressEditGrutier.bind(this);
+    this.onPressAdd = this.onPressAdd.bind(this);
     this.state = {
       camionneurs : null,
       grutiers : null
@@ -35,8 +38,16 @@ export default class UserList extends React.Component{
     this.setState({isAdmin : !this.state.isAdmin})
   }
 
-  onPressEdit(){
+  onPressEditCamionneur(user){
+    this.props.navigation.navigate("UpdateUser",{ user : user, type : true});
+  }
 
+  onPressEditGrutier(user){
+    this.props.navigation.navigate("UpdateUser",{ user : user, type : false});
+  }
+
+  onPressAdd(){
+    this.props.navigation.navigate("AddUser");
   }
 
   getCamionneurs(){
@@ -91,15 +102,19 @@ export default class UserList extends React.Component{
 
       return(
         <View>
-          <Button title="Ajouter un utilisateur" buttonStyle={{width:"80%",alignItems: 'center'}}/>
+
+          <Button title="Ajouter un utilisateur" buttonStyle={{width:"80%",alignItems: 'center'}} onPress={this.onPressAdd}/>
+
+          <Text>Liste des camionneurs:</Text>
           <FlatList
             data={this.state.camionneurs}
-            renderItem={({item}) => <ItemList nom={item.nom} prenom={item.prenom} id={item.id} onPress={this.onPressEdit}/>}
+            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur}/>}
           />
 
+          <Text>Liste des grutiers:</Text>
           <FlatList
             data={this.state.grutiers}
-            renderItem={({item}) => <ItemList nom={item.nom} prenom={item.prenom} id={item.id}  onPress={this.onPressEdit}/>}
+            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier}/>}
           />
         </View>
       );

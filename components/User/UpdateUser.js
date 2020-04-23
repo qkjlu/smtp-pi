@@ -17,8 +17,8 @@ import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-
 import style from '../../Style'
 
 export default class UpdateUser extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.handlePickerChange = this.handlePickerChange.bind(this);
     this.handleChangeName = this.handleChangeName.bind(this);
     this.handleChangeSurname = this.handleChangeSurname.bind(this);
@@ -46,7 +46,14 @@ export default class UpdateUser extends React.Component {
 
   async componentDidMount(){
     this.getCompany();
-    this.getUserById()
+    //this.getUserById();
+    this.setState({
+      id : this.props.route.params.user.id,
+      name : this.props.route.params.user.nom,
+      surname : this.props.route.params.user.prenom,
+      myCompanies : this.props.route.params.user.Entreprises,
+      type : this.props.route.params.user.type
+    })
   }
 
   handlePickerChange(value){
@@ -80,36 +87,6 @@ export default class UpdateUser extends React.Component {
     }
     console.log("entreprise:" + res);
     this.setState({companies : res});
-  }
-
-
-  // url to change in fonction of type of user
-  getUserById(){
-    var id = "179bc274-e5bc-4ce7-a5ba-a897c4da74de"
-    axios({
-      method: 'get',
-      url: "https://smtp-pi.herokuapp.com/grutiers/" + id,
-      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
-    })
-      .then( response => {
-        if(response.status != 200){
-          console.log(response.status);
-          alert(response.status);
-          return response.status;
-        }
-        console.log(response.status)
-        this.setState({
-          name: response.data.nom,
-          surname : response.data.prenom,
-          myCompanies  :response.data.Entreprises,
-          id : id
-        });
-        return response.status;
-      })
-      .catch(function (error) {
-        alert(error)
-        console.log(error);
-      })
   }
 
   // API call for get and initialise list of company
@@ -172,13 +149,15 @@ export default class UpdateUser extends React.Component {
         "prenom": this.state.surname,
       };
 
+      var typeUser = this.state.type ? "camionneurs" : "grutiers";
+
       await axios({
         method: 'put',
         url: 'https://smtp-pi.herokuapp.com/' + url,
         data : data
       })
         .then((response) => {
-          alert(url +  ' crée');
+          alert(typeUser +  'modifié');
           console.log(response.status);
         })
         .catch(function (error) {
@@ -187,8 +166,6 @@ export default class UpdateUser extends React.Component {
     }
   }
 
-
-  //add type of user
   //add an company to the user
   onPressPicker(){
 
@@ -197,9 +174,11 @@ export default class UpdateUser extends React.Component {
       "entreprise" : this.state.pickerSelected
     }
 
+    var typeUser = this.state.type ? "camionneurs" : "grutiers";
+
     axios({
       method: 'post',
-      url: "https://smtp-pi.herokuapp.com/grutiers/" + this.state.id + "/entreprise/",
+      url: "https://smtp-pi.herokuapp.com/" + typeUser +"/" + this.state.id + "/entreprise/",
       headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
       data: data
     })

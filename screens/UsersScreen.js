@@ -1,4 +1,3 @@
-import * as WebBrowser from 'expo-web-browser';
 import * as React from 'react';
 import {Text, View, ScrollView, StyleSheet } from 'react-native';
 import UserList from "../components/User/UserList";
@@ -6,12 +5,31 @@ import UpdateUser from "../components/User/UpdateUser";
 import AddUser from "../components/User/AddUser";
 import Login from "../components/Login";
 import style from "../Style";
+import { createStackNavigator} from "@react-navigation/stack";
 
+
+const UserStack = createStackNavigator();
 
 export default function UsersScreen() {
-    return (
-        <UpdateUser />
-    );
+  return (
+      <UserStack.Navigator>
+          <UserStack.Screen
+              name="Users"
+              component={UserList}
+              options={() => ({headerTitle: "Liste des utilisateurs",})}
+          />
+          <UserStack.Screen
+              name="UpdateUser"
+              component={UpdateUser}
+              options={() => ({headerTitle: "Modifier un utilisateur",})}
+          />
+          <UserStack.Screen
+              name="AddUser"
+              component={AddUser}
+              options={() => ({headerTitle: "Ajouter un utilisateur",})}
+          />
+      </UserStack.Navigator>
+  );
 }
 
 UsersScreen.navigationOptions = {

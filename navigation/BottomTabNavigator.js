@@ -11,7 +11,6 @@ import WorkSiteScreen from "../screens/WorkSiteScreen";
 const BottomTab = createBottomTabNavigator();
 const INITIAL_ROUTE_NAME = 'Home';
 const HomeStack = createStackNavigator();
-const UserStack = createStackNavigator();
 
 function WorkSiteStackScreen() {
     return (
@@ -28,18 +27,6 @@ function WorkSiteStackScreen() {
                 }) => ({headerTitle: route.params.worksite.nom})}
             />
         </HomeStack.Navigator>
-    );
-}
-
-function UserStackScreen() {
-    return (
-        <UserStack.Navigator>
-            <UserStack.Screen
-                name="Users"
-                component={UsersScreen}
-                options={() => ({headerTitle: "Gestion des utilisateurs",})}
-            />
-        </UserStack.Navigator>
     );
 }
 
@@ -73,7 +60,7 @@ export default function BottomTabNavigator({ navigation, route }) {
             />
             <BottomTab.Screen
                 name="Users"
-                component={UserStackScreen}
+                component={UsersScreen}
                 options={{
                     title: 'Utilisateurs',
                     tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-people" />,
