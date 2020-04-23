@@ -2,7 +2,7 @@ import React from 'react'
 import {Text , TextInput, View, Button, Alert } from 'react-native'
 import style from '../../Style'
 
-export default class WorkSite extends React.Component {
+export default class WorkSiteRow extends React.Component {
     render() {
         return (
             <View style = {style.worksite}>

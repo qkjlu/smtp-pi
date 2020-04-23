@@ -23,7 +23,18 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.smtp.smtp",
+      "supportsTablet": true,
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "package": "com.smtp.smtp",
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      },
+      "versionCode": 1
     },
     "description": ""
   }

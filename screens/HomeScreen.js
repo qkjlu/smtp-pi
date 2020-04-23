@@ -4,7 +4,7 @@ import {StyleSheet, Text, View, ScrollView} from 'react-native';
 import Search from "../components/Search";
 import ButtonGroupAdmin from "../components/ButtonGroupAdmin";
 import ListWorkSite from "../components/Worksite/ListWorkSite";
-
+import WorkSiteMap from "../components/Worksite/WorkSiteMap";
 export default function HomeScreen({navigation}) {
   return (
       <ScrollView>
