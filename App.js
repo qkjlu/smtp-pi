@@ -5,6 +5,7 @@ import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import Login from './components/Login';
 
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import useLinking from './navigation/useLinking';
@@ -50,8 +51,9 @@ export default function App(props) {
     return (
       <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
+        <NavigationContainer initialRouteName="Login">
           <Stack.Navigator>
+            <Stack.Screen name="Login" component={Login} options={{headerShown:false}}/>
             <Stack.Screen name="Root" component={BottomTabNavigator} options={{headerShown:false}}/>
           </Stack.Navigator>
         </NavigationContainer>

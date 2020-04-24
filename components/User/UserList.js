@@ -13,7 +13,8 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage,
 } from 'react-native';
 
 export default class UserList extends React.Component{
@@ -50,11 +51,13 @@ export default class UserList extends React.Component{
     this.props.navigation.navigate("AddUser");
   }
 
-  getCamionneurs(){
+  async getCamionneurs(){
+
+    const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
       url: 'https://smtp-pi.herokuapp.com/camionneurs',
-      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
+      headers: {'Authorization': 'Bearer ' + token},
     })
       .then( response => {
         if(response.status != 200){
@@ -72,11 +75,12 @@ export default class UserList extends React.Component{
       })
   }
 
-  getGrutiers(){
+  async getGrutiers(){
+    const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
       url: 'https://smtp-pi.herokuapp.com/grutiers',
-      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
+      headers: {'Authorization': 'Bearer ' + token},
     })
       .then( response => {
         if(response.status != 200){

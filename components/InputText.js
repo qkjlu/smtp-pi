@@ -5,6 +5,7 @@ import {
   View,
   Text,
 } from 'react-native';
+import { Input } from 'react-native-elements';
 
 export default function InputText (props){
   return(
@@ -13,7 +14,8 @@ export default function InputText (props){
         style={styles.text}
         value={props.value}
         placeholder={props.placeholder}
-        placeholderTextColor="white"
+        placeholderTextColor="black"
+        secureTextEntry={props.secureTextEntry}
         onChangeText={text => props.onChangeText(text)}/>
     </View>
   )
@@ -22,8 +24,7 @@ export default function InputText (props){
 const styles = StyleSheet.create({
   view:{
     width:"80%",
-    backgroundColor:"#465881",
-    borderRadius:25,
+    backgroundColor:"#FFFFFF",
     height:50,
     margin:10,
     justifyContent:"center",
@@ -31,6 +32,6 @@ const styles = StyleSheet.create({
   },
   text:{
     height:50,
-    color:"white"
+    color:"black"
   }
 });

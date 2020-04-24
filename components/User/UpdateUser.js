@@ -5,7 +5,8 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage,
 } from 'react-native';
 import InputText from '../InputText';
 import ValidateButton from '../ValidateButton';
@@ -110,10 +111,13 @@ export default class UpdateUser extends React.Component {
 
   // create company request and return id of company created
   async createCompany(){
+
+    const token  = await AsyncStorage.getItem('token');
     await axios({
       method: 'post',
       url: 'https://smtp-pi.herokuapp.com/entreprises',
-      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
+      headers: {'Authorization': 'Bearer ' + token},
+      //headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
       data : { "nom" : this.state.company}
     }).then((response) => {
       if(response.status != 201){
@@ -167,7 +171,9 @@ export default class UpdateUser extends React.Component {
   }
 
   //add an company to the user
-  onPressPicker(){
+  async onPressPicker(){
+
+    const token  = await AsyncStorage.getItem('token');
 
     //data to post
     var data = {
@@ -179,7 +185,7 @@ export default class UpdateUser extends React.Component {
     axios({
       method: 'post',
       url: "https://smtp-pi.herokuapp.com/" + typeUser +"/" + this.state.id + "/entreprise/",
-      headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
+      headers: {'Authorization': 'Bearer ' + token},
       data: data
     })
     .then( response => {

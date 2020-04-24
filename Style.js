@@ -1,5 +1,11 @@
 
 export default {
+    container:{
+      flex: 1,
+      backgroundColor: '#FFF8DC',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     input : {
         height : 40 ,
         padding : 10,

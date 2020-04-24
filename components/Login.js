@@ -5,9 +5,10 @@ import CustomPicker from './CustomPicker';
 import CustomSwitch from './CustomSwitch';
 import { ButtonGroup } from 'react-native-elements'
 import axios from 'axios';
+import Style from "../Style";
+
 
 import {
-  StyleSheet,
   View,
   ActivityIndicator,
   AsyncStorage
@@ -64,6 +65,8 @@ export default class Login extends React.Component{
 
   }
 
+
+  // to do : change view in fonction of User type
   async formSubmit(){
     if(this.state.firstField == "" || this.state.secondField == ""){
       alert('Veuillez saisir tous les champs')
@@ -103,13 +106,19 @@ export default class Login extends React.Component{
           console.log(response);
         }else{
           console.log(response.status);
+          // store token in Storage
           this.storeDataSession("token",response.data.token);
+
+          // change view
+          this.props.navigation.navigate("Root");
         }
       })
         .catch(function (error) {
         console.log(error);
         alert("Champ incorrect !");
       });
+
+
 
     }
   }
@@ -155,7 +164,7 @@ export default class Login extends React.Component{
       var selected = this.state.companies[selectedIndex].nom;
 
       return (
-        <View >
+        <View style={Style.container}>
           <ButtonGroup
             onPress={this.updateIndex}
             selectedIndex={this.state.selectedIndex}
@@ -163,7 +172,7 @@ export default class Login extends React.Component{
             containerStyle={{height: 50}}
           />
           <InputText placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
-          <InputText placeholder={secondPC} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
+          <InputText placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
           <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
           <ValidateButton onPress={this.handleValidate}/>
         </View>
@@ -171,12 +180,3 @@ export default class Login extends React.Component{
     }
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF8DC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-});
