@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {Text, View, ScrollView, StyleSheet } from 'react-native';
-import UserList from "../components/User/UserList";
-import UpdateUser from "../components/User/UpdateUser";
-import AddUser from "../components/User/AddUser";
-import Login from "../components/Login";
-import style from "../Style";
+import UserList from "../../components/User/UserList";
+import UpdateUser from "../../components/User/UpdateUser";
+import AddUser from "../../components/User/AddUser";
+import Login from "../../components/Login";
+import style from "../../Style";
 import { createStackNavigator} from "@react-navigation/stack";
 
 

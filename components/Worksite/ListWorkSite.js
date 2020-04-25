@@ -1,8 +1,11 @@
 import React from "react";
-import Style from "../../Style";
+import style from "../../Style";
 import axios from 'axios'
 import {Text, ActivityIndicator, View, FlatList, ListView, ScrollView} from "react-native";
 import WorkSiteRow from "./WorkSiteRow";
+import ButtonGroupAdmin from "../ButtonGroupAdmin";
+import Search from "../Search";
+
 export default class ListWorkSite extends React.Component {
     constructor(props) {
         super(props);
@@ -34,9 +37,17 @@ export default class ListWorkSite extends React.Component {
 
     render() {
         if (this.state.report === null) {
-            return (<ActivityIndicator color="red" size="large"/>)
+            return (
+                <View>
+                    <ActivityIndicator color="red" size="large"/>
+                </View>
+        )
         } else {
             return (
+                <View>
+                    <ButtonGroupAdmin/>
+                    <Text style={style.getStartedText}>Liste des chantier:</Text>
+                    <Search/>
                     <ScrollView>
                         <FlatList
                             data={this.state.report}
@@ -47,6 +58,7 @@ export default class ListWorkSite extends React.Component {
                             }
                         />
                     </ScrollView>
+                </View>
             )
         }
     }

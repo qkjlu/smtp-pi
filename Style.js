@@ -59,6 +59,13 @@ export default {
         padding : 10,
         borderColor: 'gray',
         borderWidth:1
-    }
+    },
+    getStartedText: {
+        marginVertical : 40,
+        fontSize: 17,
+        color: 'rgba(96,100,109, 1)',
+        lineHeight: 24,
+        textAlign: 'center',
+    },
 
 }
