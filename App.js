@@ -6,12 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './components/Login';
+import Chart from "./components/Chart";
 import MapTest from './components/MapTest';
-
-
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import useLinking from './navigation/useLinking';
-import WorkSiteScreen from "./screens/WorkSiteScreen";
+import WorkSiteScreen from "./screens/Admin/WorkSiteScreen";
+import TruckScreen from "./screens/Truck/TruckScreen";
+import CraneScreen from "./screens/Crane/CraneScreen";
 
 const Stack = createStackNavigator();
 
@@ -55,8 +56,11 @@ export default function App(props) {
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <NavigationContainer initialRouteName="Login">
           <Stack.Navigator>
-            <Stack.Screen name="Login" component={MapTest} options={{headerShown:false}}/>
-            <Stack.Screen name="Root" component={BottomTabNavigator} options={{headerShown:false}}/>
+            <Stack.Screen name="Login" component={Login} options={{headerShown:false}}/>
+            <Stack.Screen name="Chart" component={Chart} options={{}}/>
+            <Stack.Screen name="Truck" component={TruckScreen} options={{headerShown:false}}/>
+            <Stack.Screen name="Crane" component={CraneScreen} options={{headerShown:false}}/>
+            <Stack.Screen name="Admin" component={BottomTabNavigator} options={{headerShown:false}}/>
           </Stack.Navigator>
         </NavigationContainer>
       </View>

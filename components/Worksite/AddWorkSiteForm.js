@@ -1,5 +1,5 @@
 import React from 'react'
-import {StyleSheet, TextInput, View, Text, TouchableOpacity } from 'react-native'
+import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity } from 'react-native'
 import axios from 'axios'
 import {Button} from "react-native-elements";
 import AutoCompletePlaces from "../Place/AutoCompletePlaces";
@@ -28,20 +28,28 @@ export default class AddWorkSiteForm extends React.Component {
             axios({
                 method: 'post',
                 url: 'https://smtp-pi.herokuapp.com/chantiers',
-                data : data
+                data : data,
+                headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
             })
-                .then(function (response){
-                    alert('chantier crée');
+                .then( response => {
+                    if(response.status != 201){
+                        console.log(response.status);
+                        alert(response.status);
+                        return response.status;
+                    }
+                    console.log(response.status);
+                    this.setState({report : response.data});
+                    return response.status;
                 })
-                .catch(function (error) {
+                .catch((error) => {
                     console.log(error);
-                });
+                })
         }
     }
 
     render() {
             return (
-                <View style={styles.addForm}>
+                <ScrollView style={styles.addForm}>
                     <Text style={styles.header}> Ajout d'un chantier</Text>
 
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
@@ -55,7 +63,7 @@ export default class AddWorkSiteForm extends React.Component {
                     <TouchableOpacity style={styles.button}>
                         <Text style={styles.txtbutton} onPress={() => this.formSubmit()}> Valider </Text>
                     </TouchableOpacity>
-                </View>
+                </ScrollView>
             );
     }
 }

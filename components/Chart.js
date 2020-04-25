@@ -1,15 +1,10 @@
 import React, { useState } from "react"
 import ValidateButton from './ValidateButton';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  CheckBox
-} from 'react-native';
-export default function Chart(props){
+import {StyleSheet, View, Text, ScrollView, CheckBox} from 'react-native';
 
+export default function Chart({navigation,route}){
   const [isSelected, setSelection] = useState(false);
+  const typeOfUser = route.params.typeOfUser;
 
   return(
     <View style={styles.container}>
@@ -48,7 +43,14 @@ export default function Chart(props){
         <Text>J'accepte les termes sur la convention d'utilisation</Text>
       </View>
       <View style={styles.button}>
-        <ValidateButton/>
+        <ValidateButton  onPress={() => {
+            if (isSelected && typeOfUser === "truck") {
+              navigation.navigate('Truck')
+            }else if(isSelected && typeOfUser === "crane"){
+              navigation.navigate('Crane')
+            }
+          }
+        }/>
       </View>
     </View>
   );

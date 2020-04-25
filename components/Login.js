@@ -62,23 +62,27 @@ export default class Login extends React.Component{
   }
 
   redirect(){
-
+    if(this.state.selectedIndex === 2){
+      return this.props.navigation.navigate("Admin");
+    }else if(this.state.selectedIndex === 1){
+      return this.props.navigation.navigate("Chart",{typeOfUser:"crane"});
+    }else{
+      return this.props.navigation.navigate("Chart",{typeOfUser:"truck"});
+    }
   }
-
 
   // to do : change view in fonction of User type
   async formSubmit(){
     if(this.state.firstField == "" || this.state.secondField == ""){
       alert('Veuillez saisir tous les champs')
     }else{
-
       var data = {
         "nom": this.state.firstField,
         "prenom": this.state.secondField,
         "entreprise" : this.state.pickerSelected
       };
 
-      var url = "https://smtp-pi.herokuapp.com/"
+      var url = "https://smtp-pi.herokuapp.com/";
 
       switch (this.state.selectedIndex) {
         case 0:
@@ -110,16 +114,14 @@ export default class Login extends React.Component{
           this.storeDataSession("token",response.data.token);
 
           // change view
-          this.props.navigation.navigate("Root");
+          //this.props.navigation.navigate("Admin");
+          this.redirect();
         }
       })
         .catch(function (error) {
         console.log(error);
         alert("Champ incorrect !");
       });
-
-
-
     }
   }
 
@@ -148,13 +150,12 @@ export default class Login extends React.Component{
   }
 
   render(){
-
     if (this.state.companies == null){
       return (<ActivityIndicator color="red" size="large"/>);
     }else{
       var firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Prenom...";
       var secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Nom...";
-      const buttons = ['Camionneur', 'Grutier', 'Admin']
+      const buttons = ['Camionneur', 'Grutier', 'Admin'];
 
       // set Data for picker
       var pickerData = this.state.companies.map(item => item.nom);
@@ -174,7 +175,7 @@ export default class Login extends React.Component{
           <InputText placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
           <InputText placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
           <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
-          <ValidateButton onPress={this.handleValidate}/>
+          <ValidateButton onPress={this.redirect()/*this.handleValidate*/}/>
         </View>
       );
     }
