@@ -23,7 +23,10 @@ export default class UserList extends React.Component{
     super(props);
     this.onPressEditCamionneur = this.onPressEditCamionneur.bind(this);
     this.onPressEditGrutier = this.onPressEditGrutier.bind(this);
+    this.onPressDeleteCamionneur = this.onPressDeleteCamionneur.bind(this);
+    this.onPressDeleteGrutier = this.onPressDeleteGrutier.bind(this);
     this.onPressAdd = this.onPressAdd.bind(this);
+    this.onPressDelete = this.onPressDelete.bind(this);
     this.state = {
       camionneurs : null,
       grutiers : null
@@ -45,6 +48,60 @@ export default class UserList extends React.Component{
 
   onPressEditGrutier(user){
     this.props.navigation.navigate("UpdateUser",{ user : user, type : false});
+  }
+
+  onPressDeleteCamionneur(user){
+    this.onPressDelete(user,"camionneurs")
+  }
+
+  onPressDeleteGrutier(user){
+    this.onPressDelete(user,"grutiers")
+  }
+
+  async onPressDelete(user,type){
+    const token  = await AsyncStorage.getItem('token');
+    var data = { "id" : user.id}
+    axios({
+      method: 'delete',
+      url: 'https://smtp-pi.herokuapp.com/' + type,
+      headers: {'Authorization': 'Bearer ' + token},
+      data : data
+    })
+      .then( response => {
+        if(response.status != 204){
+          console.log(response.status);
+          alert(response.status);
+          return response.status;
+        }
+
+        // update list
+        if(type == "camionneurs"){
+          var copy = this.state.camionneurs.slice();
+          var index = copy.findIndex(u => u.id == user.id);
+          if (index > -1) {
+            copy.splice(index, 1);
+            this.setState({
+              camionneurs : copy
+            })
+          }
+        }else{
+          var copy = this.state.grutiers.slice();
+          var index = copy.findIndex(u => u.id == user.id);
+          if (index > -1) {
+            copy.splice(index, 1);
+            this.setState({
+              grutiers : copy
+            })
+          }
+        }
+
+        alert(user.nom + " " + user.prenom + " supprimé");
+        console.log(response.status)
+        return response.status;
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
   }
 
   onPressAdd(){
@@ -101,9 +158,7 @@ export default class UserList extends React.Component{
   render(){
     if (this.state.camionneurs === null || this.state.grutier === null){
       return (<ActivityIndicator color="red" size="large"/>);
-
     } else {
-
       return(
         <View>
 
@@ -112,13 +167,13 @@ export default class UserList extends React.Component{
           <Text>Liste des camionneurs:</Text>
           <FlatList
             data={this.state.camionneurs}
-            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur}/>}
+            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur} onPressDelete={this.onPressDeleteCamionneur}/>}
           />
 
           <Text>Liste des grutiers:</Text>
           <FlatList
             data={this.state.grutiers}
-            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier}/>}
+            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier} onPressDelete={this.onPressDeleteGrutier}/>}
           />
         </View>
       );

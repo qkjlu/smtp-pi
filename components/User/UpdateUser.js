@@ -31,14 +31,15 @@ export default class UpdateUser extends React.Component {
     this.arrayDifference = this.arrayDifference.bind(this);
     this.onPressPicker = this.onPressPicker.bind(this);
     this.onPressAddCompany = this.onPressAddCompany.bind(this);
+    this.onPressDelete = this.onPressDelete.bind(this);
 
     this.state = {
       id : null,
-      pickerSelected: "",
+      pickerSelected: null,
       companies : null,
       name: null,
       surname : null,
-      type: null,
+      type: null, // true : camionneur, false : grutier
       printCompany : false,
       company : "",
       myCompanies: null
@@ -53,7 +54,7 @@ export default class UpdateUser extends React.Component {
       name : this.props.route.params.user.nom,
       surname : this.props.route.params.user.prenom,
       myCompanies : this.props.route.params.user.Entreprises,
-      type : this.props.route.params.user.type
+      type : this.props.route.params.type
     })
   }
 
@@ -100,6 +101,7 @@ export default class UpdateUser extends React.Component {
           return response.status;
         }
         this.setState({companies : response.data})
+        this.setState({pickerSelected : response.data[0].id});
         console.log(response.status);
         return response.data;
       })
@@ -148,16 +150,19 @@ export default class UpdateUser extends React.Component {
       alert('Entrez un nom ou un prenom');
     }else{
 
+      const token  = await AsyncStorage.getItem('token');
       const data = {
         "nom": this.state.name,
         "prenom": this.state.surname,
       };
 
       var typeUser = this.state.type ? "camionneurs" : "grutiers";
+      console.log(this.state.type)
 
       await axios({
-        method: 'put',
-        url: 'https://smtp-pi.herokuapp.com/' + url,
+        method: 'patch',
+        url: 'https://smtp-pi.herokuapp.com/' + typeUser + "/" + this.state.id,
+        headers: {'Authorization': 'Bearer ' + token},
         data : data
       })
         .then((response) => {
@@ -175,6 +180,8 @@ export default class UpdateUser extends React.Component {
 
     const token  = await AsyncStorage.getItem('token');
 
+    console.log("selected:" +this.state.pickerSelected)
+
     //data to post
     var data = {
       "entreprise" : this.state.pickerSelected
@@ -184,7 +191,7 @@ export default class UpdateUser extends React.Component {
 
     axios({
       method: 'post',
-      url: "https://smtp-pi.herokuapp.com/" + typeUser +"/" + this.state.id + "/entreprise/",
+      url: "https://smtp-pi.herokuapp.com/" + typeUser +"/" + this.state.id + "/entreprise",
       headers: {'Authorization': 'Bearer ' + token},
       data: data
     })
@@ -196,7 +203,6 @@ export default class UpdateUser extends React.Component {
 
       // update List of companies of the user
       var element = this.state.companies.find(e => e.id == this.state.pickerSelected);
-      console.log()
       var copy = this.state.myCompanies.slice();
       copy.push(element);
       this.setState({
@@ -217,9 +223,54 @@ export default class UpdateUser extends React.Component {
     this.createCompany()
   }
 
+  // remove user from a company
+  // id : id of the company
+  async onPressDelete(idCompany){
+
+    const token  = await AsyncStorage.getItem('token');
+
+    var idUser = this.state.id
+    var data = { "camionneur" : idUser}
+    var url = 'https://smtp-pi.herokuapp.com/entreprises/' + idCompany + '/camionneur'
+
+    // case gruiter
+    if(!this.state.type){
+      url = 'https://smtp-pi.herokuapp.com/entreprises/' + idCompany + '/grutier'
+      data = { "grutier" : idUser}
+    }
+
+    axios({
+      method: 'delete',
+      url: url,
+      headers: {'Authorization': 'Bearer ' + token},
+      data : data
+    })
+    .then( response => {
+
+      //update data
+      var copy = this.state.myCompanies.slice();
+      var index = copy.findIndex(u => u.id == idCompany);
+      if (index > -1) {
+        copy.splice(index, 1);
+        this.setState({
+          myCompanies : copy
+        })
+      }
+
+      alert("Entreprise retiré");
+      console.log(response.status)
+      return response.status;
+    })
+    .catch(function (error) {
+      console.log(error);
+      console.log(error.response)
+    })
+
+  }
+
   render() {
 
-    if (this.state.name === null || this.state.surname === null || this.state.companies == null || this.state.myCompanies == null){
+    if (this.state.name === null || this.state.type === null || this.state.surname === null || this.state.companies == null || this.state.myCompanies == null){
       return (<ActivityIndicator color="red" size="large"/>);
     }else{
 
@@ -256,7 +307,7 @@ export default class UpdateUser extends React.Component {
           <Text>Les entreprises auxquelles j'appartiens:</Text>
           <FlatList
             data={this.state.myCompanies}
-            renderItem={({item}) => <ItemList entreprise={item.nom} onPress={this.onPressEdit}/>}
+            renderItem={({item}) => <ItemList entreprise={item} onPress={this.onPressDelete}/>}
           />
 
           <ValidateButton onPress={this.handleValidate}/>
@@ -286,7 +337,7 @@ function AddCompanyInput(props){
 function ItemList(props) {
   return(
     <View style={style.worksite}>
-      <Text style = { style.title}> {props.entreprise} </Text>
+      <Text style = { style.title}> {props.entreprise.nom} </Text>
       <View style={styles.adder} >
         <Button
           icon={
@@ -297,6 +348,7 @@ function ItemList(props) {
           }
           title=""
           type="clear"
+          onPress={button => props.onPress(props.entreprise.id)}
         />
       </View>
     </View>

@@ -153,8 +153,8 @@ export default class Login extends React.Component{
     if (this.state.companies == null){
       return (<ActivityIndicator color="red" size="large"/>);
     }else{
-      var firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Prenom...";
-      var secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Nom...";
+      var firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Prenom";
+      var secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Nom";
       const buttons = ['Camionneur', 'Grutier', 'Admin'];
 
       // set Data for picker
@@ -175,7 +175,7 @@ export default class Login extends React.Component{
           <InputText placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
           <InputText placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
           <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
-          <ValidateButton onPress={this.redirect()/*this.handleValidate*/}/>
+          <ValidateButton onPress={this.handleValidate}/>
         </View>
       );
     }

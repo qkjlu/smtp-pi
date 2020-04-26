@@ -37,6 +37,8 @@ export default function ItemList(props) {
       }
       title=""
       type="clear"
+      onPress={button => props.onPressDelete(props.user)}
+
     />
     </View>
     </View>
