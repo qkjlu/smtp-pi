@@ -2,8 +2,13 @@ import React from 'react'
 import {Text , TextInput, View, Button, Alert } from 'react-native'
 import style from "../../Style";
 import axios from 'axios'
+import WorkSiteAccessButton from "../WorkSiteAccessButton";
 
 export default class WorkSiteRow extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
     deleteWorkSite(){
         axios({
             method : 'delete',
@@ -25,25 +30,13 @@ export default class WorkSiteRow extends React.Component {
         return (
             <View style = {style.worksite}>
                 <View style={{flex : 6}}>
-                <Text> {this.props.worksite.nom} </Text>
+                    <Text> {this.props.worksite.nom} </Text>
                 </View>
-                <View style={style.button} >
-                    <Button
-                        color = 'green'
-                        onPress={() => { this.props.navigation.navigate('WorkSite', { worksite : this.props.worksite })}}
-                        title="go"
-                        accessibilityLabel="redirection vers la page du chantier"
-                    />
-                </View>
-                <View style={style.button} >
-                    <Button
-                        color = 'red'
-                        onPress={() => { this.deleteWorkSite(this.props.worksite.id)}}
-                        title="x"
-                        accessibilityLabel="redirection vers la page du chantier"
-                    />
+                <View style={{flex : 2}}>
+                    <WorkSiteAccessButton navigation={this.props.navigation} loggedIn={"crane"} worksite={this.props.worksite}/>
                 </View>
             </View>
         )
     }
 }
+

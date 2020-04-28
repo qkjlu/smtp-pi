@@ -1,8 +1,7 @@
 import * as React from 'react';
-import {Text, View, ScrollView } from 'react-native';
-import style from '../../Style'
+import { View } from 'react-native';
 import WorkSiteView from "../../components/Worksite/WorkSiteView";
-import WorkSiteMap from "../../components/Worksite/WorkSiteMap";
+
 export default function WorkSiteScreen({navigation, route}) {
     const idChargement = route.params.worksite.lieuChargementId;
     const idDechargement = route.params.worksite.lieuDéchargementId;
@@ -12,7 +11,3 @@ export default function WorkSiteScreen({navigation, route}) {
             </View>
         );
 }
-
-WorkSiteScreen.navigationOptions = {
-    header: null,
-};

@@ -43,7 +43,7 @@ export default function Chart({navigation,route}){
         <Text>J'accepte les termes sur la convention d'utilisation</Text>
       </View>
       <View style={styles.button}>
-        <ValidateButton  onPress={() => {
+        <ValidateButton  text={"Accepter"} onPress={() => {
             if (isSelected && typeOfUser === "truck") {
               navigation.navigate('Truck')
             }else if(isSelected && typeOfUser === "crane"){
@@ -73,10 +73,10 @@ const styles = StyleSheet.create({
     flex:1,
     padding:10,
     alignItems: 'center',
-    flexDirection: 'row',
   },
   button:{
     flex:1,
     padding:20,
+    alignItems :'center'
   }
 });

@@ -1,7 +1,7 @@
 import React from "react";
 import style from "../../Style";
 import axios from 'axios'
-import {Text, ActivityIndicator, View, FlatList, ListView, ScrollView} from "react-native";
+import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage} from "react-native";
 import WorkSiteRow from "./WorkSiteRow";
 import ButtonGroupAdmin from "../ButtonGroupAdmin";
 import Search from "../Search";
@@ -14,12 +14,13 @@ export default class ListWorkSite extends React.Component {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        const token = await AsyncStorage.getItem('token');
         axios({
             method : 'get',
             url :'https://smtp-pi.herokuapp.com/chantiers',
-            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
-            })
+            headers: {'Authorization': 'Bearer ' + token},
+        })
             .then( response => {
                 if(response.status != 200){
                 console.log(response.status);
@@ -48,7 +49,6 @@ export default class ListWorkSite extends React.Component {
                     <ButtonGroupAdmin/>
                     <Text style={style.getStartedText}>Liste des chantier:</Text>
                     <Search/>
-                    <ScrollView>
                         <FlatList
                             data={this.state.report}
                             renderItem={({item}) =>
@@ -57,7 +57,7 @@ export default class ListWorkSite extends React.Component {
                                 </View>
                             }
                         />
-                    </ScrollView>
+
                 </View>
             )
         }
