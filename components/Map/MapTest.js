@@ -1,6 +1,8 @@
 import React from "react";
-import MapView from 'react-native-maps';
-import {Text, View, FlatList, ListView, StyleSheet} from "react-native";
+import MapView from 'react-native-maps'
+import { UrlTile} from 'react-native-maps'
+import {Text, View, FlatList, ListView, StyleSheet,PermissionsAndroid} from "react-native";
+import TruckMarker from './TruckMarker';
 
 
 export default class MapTest extends React.Component {
@@ -17,33 +19,26 @@ export default class MapTest extends React.Component {
         <MapView
           style = {styles.map}
           region={{
-            latitude: 43.61,
-            longitude: 3.87,
+            latitude: 43.8333,
+            longitude: 4.35,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
-        />
-        <MapView.Marker
-            coordinate={{latitude: 43.61,
-            longitude: 3.87}}
-            title={"title"}
-            description={"description"}
-         />
+        >
+          <TruckMarker />
+
+          <UrlTile
+            urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}
+          />
+        </MapView>
+
       </View>
     )
   }
 }
 
+
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
   map: {
     position: 'absolute',
     top: 0,

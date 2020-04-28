@@ -119,7 +119,6 @@ export default class UpdateUser extends React.Component {
       method: 'post',
       url: 'https://smtp-pi.herokuapp.com/entreprises',
       headers: {'Authorization': 'Bearer ' + token},
-      //headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'},
       data : { "nom" : this.state.company}
     }).then((response) => {
       if(response.status != 201){

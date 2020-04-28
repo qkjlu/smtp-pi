@@ -55,7 +55,7 @@ export default class Login extends React.Component{
   async storeDataSession(item, selectedValue){
     try {
       await AsyncStorage.setItem(item, selectedValue);
-      console.log(item + "stored")
+      console.log(item + " stored")
     } catch (error) {
       console.log('AsyncStorage error: ' + error.message);
     }
@@ -83,16 +83,20 @@ export default class Login extends React.Component{
       };
 
       var url = "https://smtp-pi.herokuapp.com/";
+      var type;
 
       switch (this.state.selectedIndex) {
         case 0:
           url += "camionneurs";
+          type = "truck";
           break;
         case 1:
           url += "grutiers";
+          type = "crane"
           break;
         case 2:
           url += "admins";
+          type = "admin";
           data = {
             "mail": this.state.firstField,
             "password": this.state.secondField
@@ -110,8 +114,9 @@ export default class Login extends React.Component{
           console.log(response);
         }else{
           console.log(response.status);
-          // store token in Storage
+          // store token et type of user in Storage
           this.storeDataSession("token",response.data.token);
+          this.storeDataSession("typeUser",type);
 
           // change view
           //this.props.navigation.navigate("Admin");
@@ -153,8 +158,8 @@ export default class Login extends React.Component{
     if (this.state.companies == null){
       return (<ActivityIndicator color="red" size="large"/>);
     }else{
-      var firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Prenom";
-      var secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Nom";
+      var firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
+      var secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";
       const buttons = ['Camionneur', 'Grutier', 'Admin'];
 
       // set Data for picker

@@ -160,21 +160,26 @@ export default class UserList extends React.Component{
       return (<ActivityIndicator color="red" size="large"/>);
     } else {
       return(
-        <View>
+        <View style={styles.container}>
 
-          <Button title="Ajouter un utilisateur" buttonStyle={{width:"80%",alignItems: 'center'}} onPress={this.onPressAdd}/>
+          <Button title="Ajouter un utilisateur" buttonStyle={styles.addUser} onPress={this.onPressAdd}/>
 
-          <Text>Liste des camionneurs:</Text>
-          <FlatList
-            data={this.state.camionneurs}
-            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur} onPressDelete={this.onPressDeleteCamionneur}/>}
-          />
+          <View style={styles.truckList}>
+            <Text>Liste des camionneurs:</Text>
+            <FlatList
+              data={this.state.camionneurs}
+              renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur} onPressDelete={this.onPressDeleteCamionneur}/>}
+            />
+          </View>
 
-          <Text>Liste des grutiers:</Text>
-          <FlatList
-            data={this.state.grutiers}
-            renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier} onPressDelete={this.onPressDeleteGrutier}/>}
-          />
+          <View style={styles.truckList}>
+            <Text>Liste des grutiers:</Text>
+            <FlatList
+              data={this.state.grutiers}
+              renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier} onPressDelete={this.onPressDeleteGrutier}/>}
+            />
+          </View>
+
         </View>
       );
     }
@@ -183,7 +188,19 @@ export default class UserList extends React.Component{
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+  },
+  truckList:{
+    flex: 4,
+  },
+  addUser:{
+    flex: 2,
+    width:"80%",
+    borderRadius:25,
+    margin:10,
+    padding:10,
+    alignItems:"center",
+    justifyContent:"center",
   },
   item:{
     flexDirection: 'row',
