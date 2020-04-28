@@ -17,7 +17,7 @@ export default function CustomPicker(props){
       <View style={styles.picker}>
         <Picker
           selectedValue={props.selectedValue}
-          style={{ color: "white" }}
+          style={{ color: "black" }}
           onValueChange={(itemValue, itemIndex) => props.onValueChange(itemIndex)}
         >
         {props.data.map((item, key)=>(
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
 
   },
   picker: {
-    backgroundColor:"#465881",
+    backgroundColor:"#FFFFFF",
     borderRadius:25,
     paddingLeft:10,
   },

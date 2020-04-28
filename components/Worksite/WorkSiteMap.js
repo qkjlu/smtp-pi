@@ -1,7 +1,6 @@
 import React from 'react'
 import {Text, View, Image} from 'react-native'
 import style from '../../Style'
-import MapView from 'react-native-maps';
 export default class WorkSiteMap extends React.Component {
     render() {
         return (
