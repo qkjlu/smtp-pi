@@ -1,9 +1,7 @@
 import React from 'react'
-import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity } from 'react-native'
+import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity, AsyncStorage} from 'react-native'
 import axios from 'axios'
-import {Button} from "react-native-elements";
 import AutoCompletePlaces from "../Place/AutoCompletePlaces";
-import PlacePreview from "../Place/PlacePreview";
 export default class AddWorkSiteForm extends React.Component {
 
     constructor() {
@@ -14,7 +12,8 @@ export default class AddWorkSiteForm extends React.Component {
             idPlace2: '',
         }
     }
-    formSubmit(){
+    async formSubmit(){
+        const token  = await AsyncStorage.getItem('token');
         if (this.state.name == "" || this.state.idPlace1 == "" || this.state.idPlace2 == "") {
             console.log(this.state);
             alert('Tous les champs sont requis');
@@ -29,7 +28,7 @@ export default class AddWorkSiteForm extends React.Component {
                 method: 'post',
                 url: 'https://smtp-pi.herokuapp.com/chantiers',
                 data : data,
-                headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
+                headers: {'Authorization': 'Bearer ' + token},
             })
                 .then( response => {
                     if(response.status != 201){

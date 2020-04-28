@@ -2,9 +2,10 @@ import * as React from 'react';
 import {createStackNavigator} from "@react-navigation/stack";
 import ListWorkSite from "../../components/Worksite/ListWorkSite";
 import WorkSiteScreen from "../Admin/WorkSiteScreen";
+import TruckView from "../../components/Truck/TruckView";
 
 const HomeStack = createStackNavigator();
-export default function TruckScreen({navigation}) {
+export default function TruckScreen({navigation,route}) {
     return (
         <HomeStack.Navigator>
             <HomeStack.Screen
@@ -13,10 +14,10 @@ export default function TruckScreen({navigation}) {
                 options={() => ({headerTitle: 'Gestion des chantiers TRUCK',})}
             />
             <HomeStack.Screen
-                name="WorkSite"
-                component={WorkSiteScreen}
-                options={({ route
-                          }) => ({headerTitle: route.params.worksite.nom})}
+                name="TruckView"
+                component={TruckView}
+                options={({ route}
+                ) => ({headerTitle: route.params.worksite.nom})}
             />
         </HomeStack.Navigator>
     );

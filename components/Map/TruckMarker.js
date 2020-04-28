@@ -15,7 +15,8 @@ export default class TruckMarker extends React.Component {
   }
 
   componentDidMount(){
-    this.requestLocationPermission();
+    //this.requestLocationPermission();
+    this.watchLocation();
   }
 
   async requestLocationPermission() {

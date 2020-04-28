@@ -2,7 +2,7 @@ Arguments:
   C:\Program Files\nodejs\node.exe C:\Users\Rayan\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
 
 PATH: 
-  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\WIDCOMM\Bluetooth Software\;C:\Program Files\WIDCOMM\Bluetooth Software\syswow64;C:\mingw\bin;C:\Program Files (x86)\Yarn\bin\;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\Git\cmd;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Users\Rayan\AppData\Local\Microsoft\WindowsApps;C:\Users\Rayan\AppData\Local\GitHubDesktop\bin;C:\Users\Rayan\AppData\Local\atom\bin;C:\Users\Rayan\AppData\Roaming\npm\node_modules;C:\Users\Rayan\AppData\Local\Yarn\bin;C:\Program Files\MongoDB\Server\4.0\bin;C:\Users\Rayan\AppData\Local\.meteor;C:\Program Files (x86)\heroku\bin;C:\Users\Rayan\AppData\Local\.meteor\;C:\Users\Rayan\AppData\Local\Microsoft\WindowsApps;C:\Users\Rayan\AppData\Roaming\npm
+  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\WIDCOMM\Bluetooth Software\;C:\Program Files\WIDCOMM\Bluetooth Software\syswow64;C:\mingw\bin;C:\Program Files (x86)\Yarn\bin\;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\Git\cmd;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Java\jre1.8.0_191\bin\;C:\Users\Rayan\AppData\Local\Microsoft\WindowsApps;C:\Users\Rayan\AppData\Local\GitHubDesktop\bin;C:\Users\Rayan\AppData\Local\atom\bin;C:\Users\Rayan\AppData\Roaming\npm\node_modules;C:\Users\Rayan\AppData\Local\Yarn\bin;C:\Program Files\MongoDB\Server\4.0\bin;C:\Users\Rayan\AppData\Local\.meteor;C:\Program Files (x86)\heroku\bin;C:\Users\Rayan\AppData\Local\.meteor\;C:\Users\Rayan\AppData\Local\Microsoft\WindowsApps;C:\Users\Rayan\AppData\Roaming\npm
 
 Yarn version: 
   1.13.0
@@ -34,7 +34,7 @@ npm manifest:
       "@expo/vector-icons": "~10.0.6",
       "@react-native-community/masked-view": "0.1.6",
       "@react-navigation/bottom-tabs": "^5.0.0",
-      "@react-navigation/native": "^5.0.0",
+      "@react-navigation/native": "^5.1.6",
       "@react-navigation/stack": "^5.0.0",
       "@react-navigation/web": "~1.0.0-alpha.9",
       "axios": "^0.19.2",
@@ -48,18 +48,20 @@ npm manifest:
       "react-native": "https://github.com/expo/react-native/archive/sdk-37.0.1.tar.gz",
       "react-native-autocomplete-input": "^4.1.0",
       "react-native-elements": "^1.2.7",
-      "react-native-gesture-handler": "~1.6.0",
+      "react-native-gesture-handler": "^1.6.1",
       "react-native-reanimated": "~1.7.0",
-      "react-native-safe-area-context": "0.7.3",
+      "react-native-safe-area-context": "^0.7.3",
       "react-native-screens": "~2.2.0",
       "react-native-simple-radio-button": "^2.7.4",
       "react-native-tab-view": "^2.14.0",
-      "react-native-web": "~0.11.7"
+      "react-native-web": "~0.11.7",
+      "react-native-vector-icons": "latest"
     },
     "devDependencies": {
       "@babel/core": "^7.8.6",
       "babel-preset-expo": "~8.1.0",
-      "jest-expo": "~37.0.0"
+      "jest-expo": "~37.0.0",
+      "react-native-maps": "0.26.1"
     },
     "private": true
   }
@@ -1364,29 +1366,29 @@ Lockfile:
       color "^3.1.2"
       react-native-iphone-x-helper "^1.2.1"
   
-  "@react-navigation/core@^5.3.3":
-    version "5.3.3"
-    resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-5.3.3.tgz#0e8f174193ac10a163b74c68a5ea83a507908db9"
-    integrity sha512-YCrDIcvbuT++8RJA11gwv4qJTvsrwlp+4J1mWonGlHQnPMuB+uHvxqV8/VaHJ6FmzL11tSE6EzzdO0obm7JwIA==
+  "@react-navigation/core@^5.3.4":
+    version "5.3.4"
+    resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-5.3.4.tgz#272eb48381c4db251f4dc5cd044db1606a551551"
+    integrity sha512-ul8J7oHC1/k/qWORr7uI710nKofbcD2clYI0bK0Bix+xgAoiFPgrwRDrQcjWw4YQViYlR8CGF/DhnKK+BFA+Yw==
     dependencies:
-      "@react-navigation/routers" "^5.3.0"
+      "@react-navigation/routers" "^5.4.0"
       escape-string-regexp "^2.0.0"
       nanoid "^3.0.2"
       query-string "^6.12.0"
       react-is "^16.13.0"
       use-subscription "^1.4.0"
   
-  "@react-navigation/native@^5.0.0":
-    version "5.1.5"
-    resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-5.1.5.tgz#d07c461c583f98bdc94769f58bdcacfa28e11032"
-    integrity sha512-LP8Z8YIXS5HrGJM8CR683pLBSU5MilGRQRZYCmvp8f77oKJm2o1ETZPaOPLav8gMrtcJ2B9T02HQSP1Kz/iIxQ==
+  "@react-navigation/native@^5.1.6":
+    version "5.1.6"
+    resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-5.1.6.tgz#932ff1b5b8b9f051d8e5cd3b016d05badaa01898"
+    integrity sha512-DLLSnh29AndrGjPrHJoAgObeO9TiyrGtrASl+SA3B4ksmz4dUV2t6vaRwHogn1kejvRd+1T8VD923d3K1rjy7w==
     dependencies:
-      "@react-navigation/core" "^5.3.3"
+      "@react-navigation/core" "^5.3.4"
   
-  "@react-navigation/routers@^5.3.0":
-    version "5.3.0"
-    resolved "https://registry.yarnpkg.com/@react-navigation/routers/-/routers-5.3.0.tgz#c32cff9f74e26b127b70086b70744ffe9cd658fd"
-    integrity sha512-hU9ize/NPHS5wWR5KVx/cgN9DH29Y9iHa+SxUd3IJmBnK8ujj0rM8xz3hihY4yfu0kOvTFOPHojoBwnpH5cs+g==
+  "@react-navigation/routers@^5.4.0":
+    version "5.4.0"
+    resolved "https://registry.yarnpkg.com/@react-navigation/routers/-/routers-5.4.0.tgz#2fce2a3880e84a110d4eaea317bb7dadee27d57c"
+    integrity sha512-Z5mQF/oQH9CRLilNm1H7h0wjY3dKomWOhuuDehW8UKuLiFp2mWJI1P5N9qwaSraxhcoiVfb9QXwKZru/wBzWMQ==
     dependencies:
       nanoid "^3.0.2"
   
@@ -5730,7 +5732,7 @@ Lockfile:
       react-native-ratings "^6.3.0"
       react-native-status-bar-height "^2.2.0"
   
-  react-native-gesture-handler@~1.6.0:
+  react-native-gesture-handler@^1.6.1:
     version "1.6.1"
     resolved "https://registry.yarnpkg.com/react-native-gesture-handler/-/react-native-gesture-handler-1.6.1.tgz#678e2dce250ed66e93af409759be22cd6375dd17"
     integrity sha512-gQgIKhDiYf754yzhhliagLuLupvGb6ZyBdzYzr7aus3Fyi87TLOw63ers+r4kGw0h26oAWTAdHd34JnF4NeL6Q==
@@ -5744,6 +5746,11 @@ Lockfile:
     version "1.2.1"
     resolved "https://registry.yarnpkg.com/react-native-iphone-x-helper/-/react-native-iphone-x-helper-1.2.1.tgz#645e2ffbbb49e80844bb4cbbe34a126fda1e6772"
     integrity sha512-/VbpIEp8tSNNHIvstuA3Swx610whci1Zpc9mqNkqn14DkMbw+ORviln2u0XyHG1kPvvwTNGZY6QpeFwxYaSdbQ==
+  
+  react-native-maps@0.26.1:
+    version "0.26.1"
+    resolved "https://registry.yarnpkg.com/react-native-maps/-/react-native-maps-0.26.1.tgz#6ec316259b38d259c8974448d894bd7a23101da4"
+    integrity sha512-p4VTB8YB5ZmOmDRCUpoHZkm05amZwhIo04AJMBbB9+JAR2PNNfpo0vceoWX0Mag4wnePkdzPomeWMplr/wimTg==
   
   react-native-ratings@^6.3.0:
     version "6.5.0"
@@ -5760,7 +5767,7 @@ Lockfile:
     dependencies:
       fbjs "^1.0.0"
   
-  react-native-safe-area-context@0.7.3:
+  react-native-safe-area-context@^0.7.3:
     version "0.7.3"
     resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-0.7.3.tgz#ad6bd4abbabe195332c53810e4ce5851eb21aa2a"
     integrity sha512-9Uqu1vlXPi+2cKW/CW6OnHxA76mWC4kF3wvlqzq4DY8hn37AeiXtLFs2WkxH4yXQRrnJdP6ivc65Lz+MqwRZAA==

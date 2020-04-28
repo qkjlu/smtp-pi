@@ -33,6 +33,7 @@ export default {
         flex : 1,
         flexDirection : 'row',
         justifyContent : 'space-between',
+        alignItems: 'center',
     },
     rightWorksite : {
         color : '#FFF',
@@ -40,7 +41,7 @@ export default {
         fontSize : 22
     },
     button : {
-        width: '10%',
+        width: '100%',
         height : 40
     },
     containerlist:{

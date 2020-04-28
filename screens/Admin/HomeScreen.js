@@ -16,8 +16,7 @@ export default function HomeScreen({navigation}) {
             <HomeStack.Screen
                 name="WorkSite"
                 component={WorkSiteScreen}
-                options={({ route
-                          }) => ({headerTitle: route.params.worksite.nom})}
+                options={({ route }) => ({headerTitle: route.params.worksite.nom})}
             />
         </HomeStack.Navigator>
     );

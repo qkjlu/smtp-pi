@@ -1,9 +1,10 @@
 import React from "react";
 import Style from "../../Style";
 import axios from 'axios'
-import {Text, ActivityIndicator, View, FlatList, ListView, ScrollView} from "react-native";
+import {Text, ActivityIndicator, View} from "react-native";
 import TrucksWorkSite from "../Truck/TrucksWorkSite";
 import WorkSiteMap from "./WorkSiteMap";
+
 export default class ListWorkSite extends React.Component {
     constructor(props) {
         super(props);
