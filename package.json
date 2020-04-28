@@ -41,8 +41,8 @@
     "react-native-screens": "~2.2.0",
     "react-native-simple-radio-button": "^2.7.4",
     "react-native-tab-view": "^2.14.0",
-    "react-native-web": "~0.11.7",
-    "react-native-vector-icons": "latest"
+    "react-native-vector-icons": "latest",
+    "react-native-web": "~0.11.7"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",
