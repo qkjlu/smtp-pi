@@ -15,15 +15,14 @@ export default class TruckMarker extends React.Component {
   }
 
   componentDidMount(){
-    //this.requestLocationPermission();
+    this.requestLocationPermission();
     this.watchLocation();
   }
 
   async requestLocationPermission() {
     try {
       let {granted} = await Permissions.askAsync(Permissions.LOCATION);
-      if (granted === "granted") {
-        console.log("You can use locations ");
+      if (granted == "granted") {
         this.watchLocation();
       } else {
         console.log("Location permission denied")
