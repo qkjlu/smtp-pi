@@ -7,7 +7,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './components/Login';
 import Chart from "./components/Chart";
-import MapTest from './components/MapTest';
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import useLinking from './navigation/useLinking';
 import WorkSiteScreen from "./screens/Admin/WorkSiteScreen";

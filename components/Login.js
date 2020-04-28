@@ -2,17 +2,10 @@ import React from 'react';
 import InputText from './InputText';
 import ValidateButton from './ValidateButton';
 import CustomPicker from './CustomPicker';
-import CustomSwitch from './CustomSwitch';
 import { ButtonGroup } from 'react-native-elements'
 import axios from 'axios';
 import Style from "../Style";
-
-
-import {
-  View,
-  ActivityIndicator,
-  AsyncStorage
-} from 'react-native';
+import  {View, ActivityIndicator, AsyncStorage} from 'react-native';
 
 export default class Login extends React.Component{
 
