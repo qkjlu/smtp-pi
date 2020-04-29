@@ -76,20 +76,20 @@ export default class Login extends React.Component{
       };
 
       var url = "https://smtp-pi.herokuapp.com/";
-      var type;
+      var typeUser;
 
       switch (this.state.selectedIndex) {
         case 0:
           url += "camionneurs";
-          type = "truck";
+          typeUser = "truck";
           break;
         case 1:
           url += "grutiers";
-          type = "crane"
+          typeUser = "crane";
           break;
         case 2:
           url += "admins";
-          type = "admin";
+          typeUser = "admin";
           data = {
             "mail": this.state.firstField,
             "password": this.state.secondField
@@ -109,7 +109,7 @@ export default class Login extends React.Component{
           console.log(response.status);
           // store token et type of user in Storage
           this.storeDataSession("token",response.data.token);
-          this.storeDataSession("typeUser",type);
+          this.storeDataSession("typeUser",typeUser);
 
           // change view
           this.redirect();

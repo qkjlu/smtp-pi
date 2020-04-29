@@ -2,7 +2,7 @@ import {Button, View} from "react-native";
 import style from "../Style";
 import React from "react";
 
-export default class extends React.Component {
+export default class WorkSiteAccessButton extends React.Component {
     constructor(props) {
         super(props);
     }

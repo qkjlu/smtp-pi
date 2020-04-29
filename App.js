@@ -56,7 +56,7 @@ export default function App(props) {
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <NavigationContainer initialRouteName="Login">
           <Stack.Navigator>
-            <Stack.Screen name="Login" component={MapTest} options={{headerShown:false}}/>
+            <Stack.Screen name="Login" component={Login} options={{headerShown:false}}/>
             <Stack.Screen name="Chart" component={Chart} options={{}}/>
             <Stack.Screen name="Truck" component={TruckScreen} options={{headerShown:false}}/>
             <Stack.Screen name="Crane" component={CraneScreen} options={{headerShown:false}}/>
