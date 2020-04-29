@@ -7,7 +7,7 @@ import * as Permissions from 'expo-permissions';
 export default class TruckMarker extends React.Component {
   constructor(props) {
       super(props);
-      this.watchLocation = this.watchLocation.bind(this);
+      this.handleCoordinates = this.handleCoordinates.bind(this);
       this.state = {
         latitude: 43.8333,
         longitude : 4.35
@@ -15,47 +15,18 @@ export default class TruckMarker extends React.Component {
   }
 
   componentDidMount(){
-    this.requestLocationPermission();
-    this.watchLocation();
+    console.log("enter here")
+    this.props.socket.listenCoordinates(this.handleCoordinates);
   }
 
-  async requestLocationPermission() {
-    try {
-      let {granted} = await Permissions.askAsync(Permissions.LOCATION);
-      if (granted == "granted") {
-        this.watchLocation();
-      } else {
-        console.log("Location permission denied")
-      }
-    } catch (err) {
-      console.log(err)
-    }
+  handleCoordinates(data){
+    console.log(data)
+    this.setState({
+      latitude : data.coordinates.coordinates.latitude,
+      longitude : data.coordinates.coordinates.longitude
+    });
   }
 
-  async componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchID);
-  }
-
-  watchLocation(){
-    console.log("enter location")
-    this.watchID = Location.watchPositionAsync(
-      // option
-      {
-        accuracy: Location.Accuracy.Highest
-      },
-      position => {
-        let { coords } = position;
-
-        this.setState({
-          latitude : coords.latitude,
-          longitude : coords.longitude
-        });
-      },
-
-      error => console.log(error)
-    )
-
-  }
 
   render() {
     return(

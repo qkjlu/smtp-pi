@@ -23,3 +23,13 @@ watchLocation(){
   )
 
 }
+
+{
+  accuracy: Location.Accuracy.Highest,
+  timeInterval: 5000,
+  distanceInterval: 10
+},
+
+// Connection to server: socket
+// passer la socket(fonction lister) dans les props du marker dans le marker
+//
