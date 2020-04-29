@@ -3,14 +3,39 @@ import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
 import {Text, View, FlatList, ListView, StyleSheet,PermissionsAndroid} from "react-native";
 import TruckMarker from './TruckMarker';
+import ConnectionToServer from '../Connection/ConnectionToServer';
 
 
 export default class MapTest extends React.Component {
   constructor(props) {
       super(props);
+      this.handleConnection = this.handleConnection.bind(this);
       this.state = {
-          report: null
+        socket : null,
+        users: [],
       };
+  }
+
+  async componentDidMount(){
+    let s = await new ConnectionToServer();
+    await s.listenConnection(this.handleConnection);
+    await s.initConnection(56,1);
+    s.listenConnection(this.handleConnection);
+    this.setState({socket : s});
+  }
+
+  getChantier(){
+
+  }
+
+  handleConnection(data){
+    console.log(data.userId +" is connected")
+    var copy = this.state.users.slice();
+    copy.push(data.userId);
+    console.log(copy);
+    this.setState({
+      users : copy
+    });
   }
 
   render() {
@@ -21,11 +46,14 @@ export default class MapTest extends React.Component {
           region={{
             latitude: 43.8333,
             longitude: 4.35,
-            latitudeDelta: 0.0922,
+            latitudeDelta: 0.1,
             longitudeDelta: 0.0421,
           }}
         >
-          <TruckMarker />
+
+        <TruckMarker
+          socket={this.state.socket}
+        />
 
           <UrlTile
             urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}
