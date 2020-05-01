@@ -83,11 +83,9 @@ export default class ConnectionToServer{
         let { coords } = position;
 
         let toSubmit = {
-            "coordinates":{
               "longitude": coords.longitude,
               "latitude" : coords.latitude
             }
-        }
 
         this.submitPosition(toSubmit);
 
