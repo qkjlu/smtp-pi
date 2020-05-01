@@ -45,9 +45,15 @@ export default function Chart({navigation,route}){
       <View style={styles.button}>
         <ValidateButton  text={"Accepter"} onPress={() => {
             if (isSelected && typeOfUser === "truck") {
-              navigation.navigate('Truck')
+              navigation.navigate('Truck', {
+                screen: 'WorkSiteManagment',
+                params: {typeOfUser:"truck"}
+                })
             }else if(isSelected && typeOfUser === "crane"){
-              navigation.navigate('Crane')
+              navigation.navigate('Crane', {
+                screen: 'WorkSiteManagment',
+                params: {typeOfUser:"crane"}
+              })
             }
           }
         }/>

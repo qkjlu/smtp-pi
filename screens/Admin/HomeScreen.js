@@ -3,15 +3,21 @@ import {StyleSheet} from 'react-native';
 import ListWorkSite from "../../components/Worksite/ListWorkSite";
 import WorkSiteScreen from "./WorkSiteScreen";
 import {createStackNavigator} from "@react-navigation/stack";
-
+import LogoutButton from "../../components/LogoutButton";
+import Button from "react-native-web/dist/exports/Button";
 const HomeStack = createStackNavigator();
 export default function HomeScreen({navigation}) {
     return (
-        <HomeStack.Navigator>
+        <HomeStack.Navigator screenOptions={{headerRight : () => (<LogoutButton/>)}}>
             <HomeStack.Screen
                 name="WorkSiteManagment"
                 component={ListWorkSite}
-                options={() => ({headerTitle: 'Gestion des chantiers',})}
+                options={{
+                    headerTitle: 'Gestion des chantiers',
+                    headerRight : () => (
+                        <LogoutButton/>
+                    ),
+                }}
             />
             <HomeStack.Screen
                 name="WorkSite"

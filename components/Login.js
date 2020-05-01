@@ -2,9 +2,10 @@ import React from 'react';
 import InputText from './InputText';
 import ValidateButton from './ValidateButton';
 import CustomPicker from './CustomPicker';
-import { ButtonGroup } from 'react-native-elements'
+import { ButtonGroup } from 'react-native-elements';
+import {Image} from "react-native";
 import axios from 'axios';
-import Style from "../Style";
+import style from "../Style";
 import  {View, ActivityIndicator, AsyncStorage} from 'react-native';
 
 export default class Login extends React.Component{
@@ -56,7 +57,7 @@ export default class Login extends React.Component{
 
   redirect(){
     if(this.state.selectedIndex === 2){
-      return this.props.navigation.navigate("Admin");
+      return this.props.navigation.navigate("Admin",{typeOfUser:"admin"});
     }else if(this.state.selectedIndex === 1){
       return this.props.navigation.navigate("Chart",{typeOfUser:"crane"});
     }else{
@@ -162,15 +163,16 @@ export default class Login extends React.Component{
       var selected = this.state.companies[selectedIndex].nom;
 
       return (
-        <View style={Style.container}>
+        <View style={style.container}>
+          <Image  source={require('../assets/images/logoSMTP.png')}/>
           <ButtonGroup
             onPress={this.updateIndex}
             selectedIndex={this.state.selectedIndex}
             buttons={buttons}
             containerStyle={{height: 50}}
           />
-          <InputText placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
-          <InputText placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
+          <InputText style = { style.input } placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
+          <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
           <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
           <ValidateButton text={"valider"} onPress={this.handleValidate}/>
         </View>

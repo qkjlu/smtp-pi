@@ -2,7 +2,6 @@
 export default {
     container:{
       flex: 1,
-      backgroundColor: '#FFF8DC',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -42,6 +41,11 @@ export default {
     },
     button : {
         width: '100%',
+        height : 40,
+        paddingHorizontal : 4,
+    },
+    littleButton : {
+        width: '10%',
         height : 40
     },
     containerlist:{

@@ -7,11 +7,20 @@ export default class ButtonGroupAdmin extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedIndex: null
+            selectedIndex: null,
+            typeUser : ""
         };
         this.updateIndex = this.updateIndex.bind(this)
     }
 
+    componentDidMount() {
+        this.getUser().then( res => this.setState({typeUser : res }))
+    }
+
+    async getUser(){
+        const typeUser = await AsyncStorage.getItem('typeUser');
+        return typeUser;
+    }
     updateIndex (selectedIndex) {
         if(selectedIndex == this.state.selectedIndex){
             this.setState({selectedIndex : null})
@@ -19,17 +28,14 @@ export default class ButtonGroupAdmin extends React.Component {
             this.setState({selectedIndex})
         }
     }
-    async typeUser(){
-        const type = await AsyncStorage.getItem('typeUser')
-        return type
-    }
+
+
 
     render () {
         const buttons = ['Ajouter Chantier', 'Ajouter Utilisateur', 'Ajouter Entreprise'];
         const { selectedIndex } = this.state;
 
-        console.log(this.typeUser())
-        if(this.typeUser() !== "admin"){
+        if(this.state.typeUser !== "admin"){
             return null
         }else{
             return (
