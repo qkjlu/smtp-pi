@@ -36,6 +36,11 @@ export default class ListWorkSite extends React.Component {
             })
     }
 
+    async getUser(){
+        const typeUser = await AsyncStorage.getItem('typeUser');
+        console.log(typeUser);
+        return typeUser
+    }
     render() {
         if (this.state.report === null) {
             return (
@@ -51,15 +56,11 @@ export default class ListWorkSite extends React.Component {
                     <Search/>
                         <FlatList
                             data={this.state.report}
-                            renderItem={({item}) =>
-                                <View>
-                                    <WorkSiteRow worksite={item} navigation={this.props.navigation}/>
-                                </View>
-                            }
+                            renderItem={({item}) => <WorkSiteRow worksite={item}/>}
                         />
-
                 </View>
             )
         }
     }
 }
+

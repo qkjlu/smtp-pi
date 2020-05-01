@@ -7,7 +7,7 @@ const HomeStack = createStackNavigator();
 
 export default function CraneScreen({navigation,route}) {
     return (
-        <HomeStack.Navigator>
+        <HomeStack.Navigator screenOptions={{headerRight : () => (<LogoutButton/>)}}>
             <HomeStack.Screen
                 name="WorkSiteManagment"
                 component={ListWorkSite}

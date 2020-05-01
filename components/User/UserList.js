@@ -160,25 +160,23 @@ export default class UserList extends React.Component{
       return (<ActivityIndicator color="red" size="large"/>);
     } else {
       return(
-        <View style={styles.container}>
+        <View>
+          <View style={{ alignItems:"center"}}>
+            <Button title="Ajouter un utilisateur" buttonStyle={styles.addUser} onPress={this.onPressAdd}/>
+          </View>
 
-          <Button title="Ajouter un utilisateur" buttonStyle={styles.addUser} onPress={this.onPressAdd}/>
-
-          <View style={styles.truckList}>
-            <Text>Liste des camionneurs:</Text>
+            <Text style={style.getStartedText}>Liste des camionneurs:</Text>
             <FlatList
               data={this.state.camionneurs}
               renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur} onPressDelete={this.onPressDeleteCamionneur}/>}
             />
-          </View>
 
-          <View style={styles.truckList}>
-            <Text>Liste des grutiers:</Text>
+            <Text style={style.getStartedText}>Liste des grutiers:</Text>
             <FlatList
               data={this.state.grutiers}
               renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier} onPressDelete={this.onPressDeleteGrutier}/>}
             />
-          </View>
+
 
         </View>
       );
@@ -194,13 +192,9 @@ const styles = StyleSheet.create({
     flex: 4,
   },
   addUser:{
-    flex: 2,
-    width:"80%",
     borderRadius:25,
     margin:10,
     padding:10,
-    alignItems:"center",
-    justifyContent:"center",
   },
   item:{
     flexDirection: 'row',
