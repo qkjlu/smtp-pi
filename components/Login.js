@@ -92,8 +92,8 @@ export default class Login extends React.Component{
           url += "admins";
           typeUser = "admin";
           data = {
-            "mail": this.state.firstField,
-            "password": this.state.secondField
+            "mail": this.state.firstField.trim(),
+            "password": this.state.secondField.trim()
           };
           break;
       }
