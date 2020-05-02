@@ -1,11 +1,12 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, ListView, StyleSheet,PermissionsAndroid} from "react-native";
+import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid} from "react-native";
 import TruckMarker from './TruckMarker';
 import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
+
 import io from "socket.io-client";
 
 export default class MapAdmin extends React.Component {
@@ -106,13 +107,10 @@ export default class MapAdmin extends React.Component {
   }
 }
 
-
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   map: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+      width : width,
+      height: height,
   },
 });
