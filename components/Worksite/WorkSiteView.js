@@ -3,7 +3,7 @@ import Style from "../../Style";
 import axios from 'axios'
 import {Text, ActivityIndicator, View} from "react-native";
 import TrucksWorkSite from "../Truck/TrucksWorkSite";
-import WorkSiteMap from "./WorkSiteMap";
+import MapAdmin from "../Map/MapAdmin";
 
 export default class ListWorkSite extends React.Component {
     constructor(props) {
@@ -66,7 +66,7 @@ export default class ListWorkSite extends React.Component {
             return (
                 <View>
                     <View style={{alignItems: 'center', justifyContent: 'center', paddingTop: 10,}}>
-                        <WorkSiteMap/>
+                        <MapAdmin/>
                     </View>
                     <TrucksWorkSite/>
                     <Text> adresse de chargement : {this.state.chargement.adresse}</Text>
