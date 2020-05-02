@@ -8,7 +8,7 @@ import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import io from "socket.io-client";
 
-export default class MapTest extends React.Component {
+export default class MapTruck extends React.Component {
   constructor(props) {
       super(props);
       this.handleConnection = this.handleConnection.bind(this);
@@ -30,7 +30,7 @@ export default class MapTest extends React.Component {
     await socket.on("chantier/user/connected", this.handleConnection);
     await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
     await socket.emit("chantier/connect", {
-          "userId" : 11111,
+          "userId" : 123456,
           "chantierId" : 31,
           "coordinates": {
             "longitude": 43.8333,
@@ -39,6 +39,21 @@ export default class MapTest extends React.Component {
     });
 
     await this.requestLocationPermission(socket);
+
+  }
+
+  async requestLocationPermission(socket) {
+    try {
+      let {granted} = await Permissions.askAsync(Permissions.LOCATION);
+      if (granted) {
+        console.log("acces to position granted")
+        this.watchLocation(socket);
+      } else {
+        console.log("Location permission denied")
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   watchLocation(socket){
@@ -58,10 +73,6 @@ export default class MapTest extends React.Component {
         }
 
         socket.emit("chantier/sendCoordinates", toSubmit);
-        this.setState({myPos : {
-          latitude : coords.latitude,
-          longitude : coords.longitude
-        }})
 
       },
       error => console.log(error)
@@ -75,36 +86,13 @@ export default class MapTest extends React.Component {
 
   handleConnection(data){
     console.log(data.userId +" is connected")
-    var copy = this.state.users.slice();
-    copy.push(data.userId);
-    console.log("users:" + copy);
-    this.setState({
-      users : copy
-    });
+    // this.setState({
+    //   users : copy
+    // });
   }
 
   handleCoordinates(data){
     console.log("coordianates receve: " + JSON.stringify(data));
-    let copy = this.state.users.slice();
-    copy[data.userId] = data.coordinates;
-    console.log("copy : " + JSON.stringify(copy));
-    this.setState({
-      users : copy
-    })
-  }
-
-  async requestLocationPermission(socket) {
-    try {
-      let {granted} = await Permissions.askAsync(Permissions.LOCATION);
-      if (granted) {
-        console.log("acces to position granted")
-        this.watchLocation(socket);
-      } else {
-        console.log("Location permission denied")
-      }
-    } catch (err) {
-      console.log(err)
-    }
   }
 
   render() {
@@ -112,34 +100,8 @@ export default class MapTest extends React.Component {
     console.log(this.state.users);
     return(
       <View style={{flex: 1}}>
-        <MapView
-          style = {styles.map}
-          region={{
-            latitude: 43.8333,
-            longitude: 4.35,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.0421,
-          }}
-        >
-          <UrlTile
-            urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}
-          />
 
-        {this.state.users.map(marker => {
-
-          const coordinates = {
-            "coordinates" : {
-                latitude: marker.coordinates.latitude,
-                longitude: marker.coordinates.longitude,
-              }
-            };
-
-          return( <TruckMarker coords={coordinates}/>)
-
-        })}
-
-        </MapView>
-
+        <Text> tEST ENVOIE COORDONNEES CAMIONNEURS</Text>
 
       </View>
     )
