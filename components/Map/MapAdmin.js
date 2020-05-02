@@ -45,29 +45,31 @@ export default class MapAdmin extends React.Component {
   handleConnection(data){
     console.log(data.userId +" is connected")
     var copy = this.state.users.slice();
-    copy.push(data.userId);
+    copy.push(data);
     console.log("users:" + copy);
-    // this.setState({
-    //   users : copy
-    // });
+    this.setState({
+      users : copy
+    });
   }
 
   handleCoordinates(data){
-    console.log("coordianates receve: " + JSON.stringify(data));
-    let camData = data.coordinates;
-    // copy[data.userId] = data.coordinates;
-    // console.log("copy : " + JSON.stringify(copy));
-    this.setState({
-      myPos : {
-        latitude : camData.coordinates.latitude,
-        longitude : camData.coordinates.latitude
-      }
-    })
+    console.log("coordinates receve: " + JSON.stringify(data));
+    let truckData = data.coordinates;
+    var copy = this.state.users.slice();
+    var index = copy.findIndex(s => s.userId == data.userId);
+    if( index != -1){
+      copy[index] = data;
+      this.setState({
+        users : copy
+      });
+    }else{
+      console.log("user not connected or internal error")
+    }
+
   }
 
   render() {
 
-    console.log(this.state.users);
     return(
       <View style={{flex: 1}}>
         <MapView
@@ -83,7 +85,18 @@ export default class MapAdmin extends React.Component {
             urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}
           />
 
-          <TruckMarker coords={this.state.myPos}/>
+          {this.state.users.map(marker => {
+
+            const coordinates = {
+              "coordinates" : {
+                  latitude: marker.coordinates.coordinates.latitude,
+                  longitude: marker.coordinates.coordinates.longitude,
+                }
+              };
+
+            return( <TruckMarker coords={coordinates}/>)
+
+          })}
 
         </MapView>
 
