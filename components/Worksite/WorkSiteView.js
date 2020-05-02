@@ -65,14 +65,17 @@ export default class ListWorkSite extends React.Component {
         } else {
             return (
                 <View>
+                    <MapAdmin/>
+                    {/*
                     <View style={{alignItems: 'center', justifyContent: 'center', paddingTop: 10,}}>
-                        <MapAdmin/>
+
                     </View>
                     <TrucksWorkSite/>
                     <Text> adresse de chargement : {this.state.chargement.adresse}</Text>
                     <Text> longitude : {this.state.chargement.longitude} latitude : {this.state.chargement.latitude}</Text>
                     <Text> adresse de dechargement : {this.state.dechargement.adresse}</Text>
                     <Text> longitude : {this.state.dechargement.longitude} latitude : {this.state.dechargement.latitude}</Text>
+                    */}
                 </View>
             )
         }
