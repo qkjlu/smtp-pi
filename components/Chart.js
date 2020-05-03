@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   checkbox:{
     flex:1,
-    padding:10,
+    paddingTop:10,
     alignItems: 'center',
   },
   button:{

@@ -1,11 +1,12 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, ListView, StyleSheet,PermissionsAndroid} from "react-native";
+import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid} from "react-native";
 import TruckMarker from './TruckMarker';
 import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
+
 import io from "socket.io-client";
 
 export default class MapAdmin extends React.Component {
@@ -14,7 +15,10 @@ export default class MapAdmin extends React.Component {
       this.handleConnection = this.handleConnection.bind(this);
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
+      this.connectToServer = this.connectToServer.bind(this);
       this.state = {
+        connected : false,
+        myId : 11111,
         myPos : {
           latitude : -1,
           longitude : -1
@@ -27,15 +31,31 @@ export default class MapAdmin extends React.Component {
     const socket = await io("https://smtp-pi.herokuapp.com/")
     await socket.on("chantier/user/connected", this.handleConnection);
     await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
-    await socket.emit("chantier/connect", {
-          "userId" : 11111,
-          "chantierId" : 31,
-          "coordinates": {
-            "longitude": 43.8333,
-            "latitude": 4.35
-          }
-    });
+    this.connectToServer(socket);
+    // await socket.emit("chantier/connect", {
+    //       "userId" : 11111,
+    //       "chantierId" : 31,
+    //       "coordinates": {
+    //         "longitude": 43.8333,
+    //         "latitude": 4.35
+    //       }
+    // });
 
+  }
+
+  // try to connect
+  async connectToServer(socket){
+    while(!this.state.connected){
+      console.log("try to connect");
+      await socket.emit("chantier/connect", {
+            "userId" : 11111,
+            "chantierId" : 31,
+            "coordinates": {
+              "longitude": 43.8333,
+              "latitude": 4.35
+            }
+      });
+    }
   }
 
   getChantier(){
@@ -44,6 +64,11 @@ export default class MapAdmin extends React.Component {
 
   handleConnection(data){
     console.log(data.userId +" is connected")
+    if(data.userId == this.state.myId){
+      this.setState({
+        connected : true
+      })
+    }
     var copy = this.state.users.slice();
     copy.push(data);
     console.log("users:" + copy);
@@ -56,6 +81,7 @@ export default class MapAdmin extends React.Component {
     console.log("coordinates receve: " + JSON.stringify(data));
     let truckData = data.coordinates;
     var copy = this.state.users.slice();
+    console.log(JSON.stringify(copy));
     var index = copy.findIndex(s => s.userId == data.userId);
     if( index != -1){
       copy[index] = data;
@@ -106,13 +132,10 @@ export default class MapAdmin extends React.Component {
   }
 }
 
-
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   map: {
-    position: 'absolute',
-    top: 1,
-    left: 1,
-    right: 1,
-    bottom: 1,
+      width : width,
+      height: height,
   },
 });
