@@ -1,7 +1,10 @@
 import React from 'react'
-import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity, AsyncStorage} from 'react-native'
+import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity, AsyncStorage, View , Button} from 'react-native'
 import axios from 'axios'
 import AutoCompletePlaces from "../Place/AutoCompletePlaces";
+import AddPlaceForm from "../Place/AddPlaceForm";
+import ValidateButton from "../ValidateButton";
+import {MaterialIcons, Ionicons} from "@expo/vector-icons";
 export default class AddWorkSiteForm extends React.Component {
 
     constructor() {
@@ -10,6 +13,7 @@ export default class AddWorkSiteForm extends React.Component {
             name: '',
             idPlace1: '',
             idPlace2: '',
+            showNewPlaceForm : false
         }
     }
     async formSubmit(){
@@ -49,12 +53,22 @@ export default class AddWorkSiteForm extends React.Component {
     render() {
             return (
                 <ScrollView style={styles.addForm}>
-                    <Text style={styles.header}> Ajout d'un chantier</Text>
+                    <View style={{ flexDirection:"row" , paddingTop :10}}>
+                        <Text style={styles.header}> Ajout d'un chantier</Text>
+                        <View style={{flex:2, flexDirection:"row", paddingTop :5}}>
+                            <MaterialIcons
+                                name={'add'}
+                                size={24}
+                                onPress={() => this.setState({ showNewPlaceForm: !this.state.showNewPlaceForm }) }
+                            />
+                            <Text style={{fontWeight:"bold"}}> lieu </Text>
+                        </View>
+                    </View>
 
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
                                value={this.state.name} placeholder={"Nom du chantier"}
                     />
-
+                    <AddPlaceForm show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />
                     <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"}/>
 
                     <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"}/>
@@ -78,6 +92,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#1f1f1f',
         marginBottom : 10,
+        flex :8,
         borderBottomColor : '#199187',
     },
     textinput : {

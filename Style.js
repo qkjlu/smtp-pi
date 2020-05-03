@@ -57,7 +57,8 @@ export default {
     },
     title : {
         fontWeight: 'bold',
-        fontSize: 30
+        fontSize: 30,
+        paddingTop : 20
     },
     formInput : {
         height : 40 ,
@@ -71,6 +72,14 @@ export default {
         color: 'rgba(96,100,109, 1)',
         lineHeight: 24,
         textAlign: 'center',
+    },
+    textinput : {
+        alignSelf: 'stretch',
+        height: 40,
+        color: "black",
+        backgroundColor: '#ffffff',
+        borderWidth : 1,
+        borderColor : '#abb0b0',
     },
 
 }

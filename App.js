@@ -60,7 +60,7 @@ export default function App(props) {
         <NavigationContainer ref={navigationRef} initialRouteName="Login">
           <Stack.Navigator>
             <Stack.Screen name="Login" component={Login} options={{headerShown:false}}/>
-            <Stack.Screen name="Chart" component={Chart} options={{}}/>
+            <Stack.Screen name="Chart" component={Chart} options={{headerShown:false}}/>
             <Stack.Screen name="Truck" component={TruckScreen} options={{headerShown:false}}/>
             <Stack.Screen name="Crane" component={CraneScreen} options={{headerShown:false}}/>
             <Stack.Screen name="Admin" component={BottomTabNavigator} options={{headerShown:false}}/>

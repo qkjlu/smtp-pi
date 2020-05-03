@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity , Text} from 'react-native';
+import { StyleSheet, TouchableOpacity , Text, View} from 'react-native';
 import Constants from 'expo-constants';
 import axios from 'axios';
 import Autocomplete from "react-native-autocomplete-input";
 import PlacePreview from "./PlacePreview";
+import ValidateButton from "../ValidateButton";
 export default class AutoCompletePlaces extends React.Component {
 
     constructor (props) {
@@ -11,7 +12,7 @@ export default class AutoCompletePlaces extends React.Component {
         this.state = {
             query: '',
             places : [],
-            showPreview :false
+            showPreview :false,
         }
     }
 
@@ -44,28 +45,28 @@ export default class AutoCompletePlaces extends React.Component {
         const placeHolderName = "addresse du lieu de "+ this.props.name;
         if(!this.state.showPreview){
             return (
-                <Autocomplete
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    data={places.length === 1 && comp(query, places[0].adresse) ? [] : places}
-                    defaultValue={query}
-                    onChangeText={text => this.setState({ query: text })}
-                    placeholder={placeHolderName}
-                    containerStyle={styles.autocompleteContainer}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() =>
-                        {
-                            this.setState({ query: item.adresse });
-                            this.props.changePlace(item.id);
-                            this.setState({showPreview : true})
-                        }
-                        }>
-                            <Text>
-                                {item.adresse}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
-                />
+                    <Autocomplete
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        data={places.length === 1 && comp(query, places[0].adresse) ? [] : places}
+                        defaultValue={query}
+                        onChangeText={text => this.setState({ query: text })}
+                        placeholder={placeHolderName}
+                        containerStyle={styles.autocompleteContainer}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity onPress={() =>
+                            {
+                                this.setState({ query: item.adresse });
+                                this.props.changePlace(item.id);
+                                this.setState({showPreview : true})
+                            }
+                            }>
+                                <Text>
+                                    {item.adresse}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                    />
             );
         }else{
             return (

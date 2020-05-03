@@ -2,7 +2,7 @@ import React from 'react'
 import {Text , TextInput, View, Button, Alert } from 'react-native'
 import style from "../../Style";
 import axios from 'axios'
-import WorkSiteAccessButton from "../WorkSiteAccessButton";
+import WorkSiteAccessButton from "./WorkSiteAccessButton";
 
 export default function WorkSiteRow(props) {
 
