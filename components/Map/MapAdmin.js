@@ -15,10 +15,8 @@ export default class MapAdmin extends React.Component {
       this.handleConnection = this.handleConnection.bind(this);
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
-      this.connectToServer = this.connectToServer.bind(this);
       this.state = {
         connected : false,
-        myId : 11111,
         myPos : {
           latitude : -1,
           longitude : -1
@@ -31,57 +29,40 @@ export default class MapAdmin extends React.Component {
     const socket = await io("https://smtp-pi.herokuapp.com/")
     await socket.on("chantier/user/connected", this.handleConnection);
     await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
-    this.connectToServer(socket);
-    // await socket.emit("chantier/connect", {
-    //       "userId" : 11111,
-    //       "chantierId" : 31,
-    //       "coordinates": {
-    //         "longitude": 43.8333,
-    //         "latitude": 4.35
-    //       }
-    // });
-
-  }
-
-  // try to connect
-  async connectToServer(socket){
-    while(!this.state.connected){
-      console.log("try to connect");
-      await socket.emit("chantier/connect", {
-            "userId" : 11111,
-            "chantierId" : 31,
-            "coordinates": {
-              "longitude": 43.8333,
-              "latitude": 4.35
-            }
-      });
-    }
+    await socket.emit("chantier/connect", {
+          "userId" : 987654,
+          "chantierId" : 31,
+          "coordinates": {
+            "longitude": 43.8333,
+            "latitude": 4.35
+          }
+    });
   }
 
   getChantier(){
 
   }
 
-  handleConnection(data){
-    console.log(data.userId +" is connected")
-    if(data.userId == this.state.myId){
-      this.setState({
-        connected : true
-      })
-    }
-    var copy = this.state.users.slice();
-    copy.push(data);
-    console.log("users:" + copy);
-    this.setState({
-      users : copy
-    });
+  async handleConnection(data){
+    console.log("Admin: " + data.userId +" is connected")
+    // var index = this.state.users.findIndex(s => s.userId == data.userId);
+    // if( index != -1){
+    //   console.log("Admin: " + data.userId +" is connected")
+    //   var copy = this.state.users.slice();
+    //   copy.push(data);
+    //   console.log("Admin: [users]=" + JSON.stringify(copy));
+    //   this.setState({
+    //     users : copy
+    //   });
+    // }else{
+    //   console.log(data.userId + " is already connected")
+    // }
   }
 
-  handleCoordinates(data){
-    console.log("coordinates receve: " + JSON.stringify(data));
-    let truckData = data.coordinates;
+  async handleCoordinates(data){
+    console.log("Admin: coordinates receve: " + JSON.stringify(data));
     var copy = this.state.users.slice();
-    console.log(JSON.stringify(copy));
+    console.log("copy in handleCoordinates:" + JSON.stringify(copy));
     var index = copy.findIndex(s => s.userId == data.userId);
     if( index != -1){
       copy[index] = data;
@@ -89,9 +70,11 @@ export default class MapAdmin extends React.Component {
         users : copy
       });
     }else{
-      console.log("user not connected or internal error")
+      copy.push(data);
+      this.setState({
+        users : copy
+      });
     }
-
   }
 
   render() {
@@ -113,12 +96,14 @@ export default class MapAdmin extends React.Component {
 
           {this.state.users.map(marker => {
 
+            console.log("render:" + JSON.stringify(marker))
             const coordinates = {
               "coordinates" : {
                   latitude: marker.coordinates.coordinates.latitude,
                   longitude: marker.coordinates.coordinates.longitude,
                 }
               };
+            console.log("after affectation:" + JSON.stringify(coordinates))
 
             return( <TruckMarker coords={coordinates}/>)
 

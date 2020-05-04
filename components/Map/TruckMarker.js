@@ -9,11 +9,12 @@ export default class TruckMarker extends React.Component {
 
 
   render() {
+    console.log("props:" + JSON.stringify(this.props))
     return(
       <Marker
         coordinate={{
-          latitude: this.props.coords.latitude,
-          longitude: this.props.coords.longitude,
+          latitude: this.props.coords.coordinates.latitude,
+          longitude: this.props.coords.coordinates.longitude,
         }}
         title={"marker test"}
         description={"marker description"}

@@ -28,9 +28,8 @@ export default class MapTruck extends React.Component {
   async componentDidMount(){
     const socket = await io("https://smtp-pi.herokuapp.com/")
     await socket.on("chantier/user/connected", this.handleConnection);
-    await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
     await socket.emit("chantier/connect", {
-          "userId" : Math.floor(Math.random() * 1000),
+          "userId" : 123456,
           "chantierId" : 31,
           "coordinates": {
             "longitude": 43.8333,
@@ -85,7 +84,7 @@ export default class MapTruck extends React.Component {
   }
 
   handleConnection(data){
-    console.log(data.userId +" is connected")
+    console.log("User say:" + data.userId +" is connected")
     // this.setState({
     //   users : copy
     // });
