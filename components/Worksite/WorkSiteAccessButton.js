@@ -1,7 +1,7 @@
 import {AsyncStorage, Button, View} from "react-native";
-import style from "../Style";
+import style from "../../Style";
 import React from "react";
-import * as RootNavigation from '../navigation/RootNavigation.js';
+import * as RootNavigation from '../../navigation/RootNavigation.js';
 
 export default class WorkSiteAccessButton extends React.Component {
     constructor(props) {

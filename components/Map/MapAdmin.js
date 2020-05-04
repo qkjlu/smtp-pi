@@ -3,6 +3,7 @@ import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
 import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid} from "react-native";
 import TruckMarker from './TruckMarker';
+import {Marker} from "react-native-maps";
 import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
@@ -78,22 +79,20 @@ export default class MapAdmin extends React.Component {
   }
 
   render() {
-
     return(
       <View style={{flex: 1}}>
         <MapView
           style = {styles.map}
           region={{
-            latitude: 43.8333,
-            longitude: 4.35,
-            latitudeDelta: 0.1,
+            latitude: this.props.chargement.latitude,
+            longitude: this.props.chargement.longitude,
+            latitudeDelta: 0.15,
             longitudeDelta: 0.0421,
           }}
         >
-          <UrlTile
-            urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}
-          />
-
+          <UrlTile urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}/>
+          <Marker coordinate={{ latitude: this.props.chargement.latitude, longitude: this.props.chargement.longitude}} title={"chargement"} pinColor={"#3895ff"}/>
+          <Marker coordinate={{ latitude: this.props.dechargement.latitude, longitude: this.props.dechargement.longitude}} title={"dechargement"} pinColor={"#3895ff"}/>
           {this.state.users.map(marker => {
 
             console.log("render:" + JSON.stringify(marker))
@@ -106,12 +105,8 @@ export default class MapAdmin extends React.Component {
             console.log("after affectation:" + JSON.stringify(coordinates))
 
             return( <TruckMarker coords={coordinates}/>)
-
           })}
-
         </MapView>
-
-
       </View>
     )
   }

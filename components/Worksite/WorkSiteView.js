@@ -65,7 +65,7 @@ export default class ListWorkSite extends React.Component {
         } else {
             return (
                 <View>
-                    <MapAdmin/>
+                    <MapAdmin chargement={this.state.chargement} dechargement={this.state.dechargement}/>
                     {/*
                     <View style={{alignItems: 'center', justifyContent: 'center', paddingTop: 10,}}>
 
