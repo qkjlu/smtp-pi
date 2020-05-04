@@ -29,7 +29,7 @@ export default class MapTruck extends React.Component {
     const socket = await io("https://smtp-pi.herokuapp.com/")
     await socket.on("chantier/user/connected", this.handleConnection);
     await socket.emit("chantier/connect", {
-          "userId" : 123456,
+          "userId" : Math.floor(Math.random() * 1000),
           "chantierId" : 31,
           "coordinates": {
             "longitude": 43.8333,

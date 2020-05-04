@@ -34,8 +34,8 @@ export default class MapAdmin extends React.Component {
           "userId" : 987654,
           "chantierId" : 31,
           "coordinates": {
-            "longitude": 43.8333,
-            "latitude": 4.35
+            "longitude": -1,
+            "latitude": -1
           }
     });
   }
