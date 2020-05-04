@@ -36,21 +36,14 @@ export default function Chart({navigation,route}){
          </Text>
        </ScrollView>
       </View>
-      <View style={styles.checkbox}>
-        <CheckBox
-          value={isSelected}
-          onValueChange={setSelection}
-        />
-        <Text>J'accepte les termes sur la convention d'utilisation</Text>
-      </View>
       <View style={styles.button}>
         <ValidateButton  text={"Accepter"} onPress={() => {
-            if (isSelected && typeOfUser === "truck") {
+            if  (typeOfUser === "truck") {
               navigation.navigate('Truck', {
                 screen: 'WorkSiteManagment',
                 params: {typeOfUser:"truck"}
                 })
-            }else if(isSelected && typeOfUser === "crane"){
+            }else if(typeOfUser === "crane"){
               navigation.navigate('Crane', {
                 screen: 'WorkSiteManagment',
                 params: {typeOfUser:"crane"}
@@ -58,6 +51,7 @@ export default function Chart({navigation,route}){
             }
           }
         }/>
+        <Text> En cliquant sur ce bouton vous acceptez les termes sur la convention d'utilisation</Text>
       </View>
     </View>
   );
