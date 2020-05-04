@@ -33,10 +33,6 @@ export default class MapAdmin extends React.Component {
     await socket.emit("chantier/connect", {
           "userId" : 987654,
           "chantierId" : 31,
-          "coordinates": {
-            "longitude": -1,
-            "latitude": -1
-          }
     });
   }
 
