@@ -30,7 +30,7 @@ export default class MapTruck extends React.Component {
     await socket.on("chantier/user/connected", this.handleConnection);
     await socket.emit("chantier/connect", {
           "userId" : Math.floor(Math.random() * 1000),
-          "chantierId" : 31,
+          "chantierId" : this.props.worksite.id,
     });
 
     await this.requestLocationPermission(socket);
@@ -94,7 +94,7 @@ export default class MapTruck extends React.Component {
 
     console.log(this.state.users);
     return(
-      <View style={{flex: 1}}>
+      <View>
 
         <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
 
