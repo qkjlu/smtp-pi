@@ -5,9 +5,10 @@ import WorkSiteView from "../../components/Worksite/WorkSiteView";
 export default function WorkSiteScreen({navigation, route}) {
     const idChargement = route.params.worksite.lieuChargementId;
     const idDechargement = route.params.worksite.lieuDéchargementId;
+    const worksite = route.params.worksite;
     return (
             <View>
-                <WorkSiteView idChargement = {idChargement} idDechargement = {idDechargement} />
+                <WorkSiteView worksite={worksite} idChargement = {idChargement} idDechargement = {idDechargement} />
             </View>
         );
 }

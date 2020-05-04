@@ -9,9 +9,9 @@ import MapTruck from "../Map/MapTruck";
 export default function TruckView({navigation, route}) {
     return (
         <View>
-            {/*<TimeBetween/>*/}
+            <TimeBetween/>
             <MapTruck/>
-            {/*<StopButtons/>*/}
+            <StopButtons/>
         </View>
     );
 }
