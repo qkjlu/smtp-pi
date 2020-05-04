@@ -30,7 +30,7 @@ export default class MapTruck extends React.Component {
     await socket.on("chantier/user/connected", this.handleConnection);
     await socket.emit("chantier/connect", {
           "userId" : Math.random()*1000,
-          "chantierId" : 31,
+          "chantierId" : this.props.worksite.id,
           "coordinates": {
             "longitude": 43.8333,
             "latitude": 4.35
