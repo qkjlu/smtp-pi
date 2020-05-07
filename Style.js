@@ -25,7 +25,6 @@ export default {
     },
     previewPlace : {
         backgroundColor : '#FFFFFF',
-        borderWidth: 1,
         borderBottomColor : '#202340',
         marginTop : 30,
         height : 37,
@@ -43,6 +42,7 @@ export default {
         width: '100%',
         height : 40,
         paddingHorizontal : 4,
+        flex :1
     },
     littleButton : {
         width: '10%',

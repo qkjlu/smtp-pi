@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  StyleSheet,
-  View,
-  Picker,
-  Text
-} from 'react-native';
+import {StyleSheet, View, Picker, Text} from 'react-native';
 
 export default function CustomPicker(props){
   if(props.isVisible){

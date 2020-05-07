@@ -1,22 +1,26 @@
 import React from 'react'
-import {StyleSheet, TextInput, View, Text, TouchableOpacity, Button, Alert} from 'react-native'
+import {StyleSheet, TextInput, View, Text, TouchableOpacity, Alert} from 'react-native'
 import style from "../../Style";
+import {Button, Icon} from "react-native-elements"
 export default class PlacePreview extends React.Component {
 
     render() {
             return (
                 <View style={style.previewPlace}>
-                    <Text style={style.title}>  {this.props.idPlace} </Text>
+
+                    <Text style={style.getStartedText}> Lieu sélectionné :  {this.props.idPlace} </Text>
+
                     <View style={style.button}>
                         <Button
-                            color='red'
+                            icon={<Icon name='trash' type='font-awesome' color="red"/>}
                             onPress={() => {
-                                    this.props.showPreview(false);
+                                    this.props.unShowPreview();
                                     this.props.changePlace("");
                                     this.props.changeQuery("");
                                 }
                             }
-                            title="x"
+                            type="clear"
+                            title=""
                         />
                     </View>
                 </View>
