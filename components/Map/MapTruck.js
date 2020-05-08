@@ -1,7 +1,7 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, ListView, StyleSheet, PermissionsAndroid, Dimensions} from "react-native";
+import {Text, View, FlatList, ListView, StyleSheet, PermissionsAndroid, Dimensions, AsyncStorage} from "react-native";
 import TruckMarker from './TruckMarker';
 import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
@@ -17,21 +17,18 @@ export default class MapTruck extends React.Component {
       this.requestLocationPermission = this.requestLocationPermission.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
       this.state = {
-        myPos : {
-          latitude : -1,
-          longitude : -1
-        },
         users: [],
       };
   }
 
   async componentDidMount(){
-    const socket = await io("https://smtp-pi.herokuapp.com/")
-    await socket.on("chantier/user/connected", this.handleConnection);
+    const socket = await io("https://smtp-pi.herokuapp.com/");
+    const userId  = await AsyncStorage.getItem('userId');
     await socket.emit("chantier/connect", {
-          "userId" : Math.floor(Math.random() * 1000),
+          "userId" :  userId,
           "chantierId" : this.props.worksite.id,
     });
+    await socket.on("chantier/user/connected", this.handleConnection);
 
     await this.requestLocationPermission(socket);
 
@@ -56,6 +53,7 @@ export default class MapTruck extends React.Component {
       // option
       {
         accuracy: Location.Accuracy.Highest,
+        timeInterval: 5000,
       },
       position => {
         let { coords } = position;

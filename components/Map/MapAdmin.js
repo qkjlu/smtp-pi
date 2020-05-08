@@ -1,7 +1,7 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid} from "react-native";
+import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid,AsyncStorage} from "react-native";
 import TruckMarker from './TruckMarker';
 import {Marker} from "react-native-maps";
 import ConnectionToServer from '../Connection/ConnectionToServer';
@@ -17,27 +17,26 @@ export default class MapAdmin extends React.Component {
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
       this.state = {
+        socket : null,
         connected : false,
-        myPos : {
-          latitude : -1,
-          longitude : -1
-        },
         users: [],
       };
   }
 
   async componentDidMount(){
-    const socket = await io("https://smtp-pi.herokuapp.com/")
-    await socket.on("chantier/user/connected", this.handleConnection);
-    await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+    const socket = await io("https://smtp-pi.herokuapp.com/");
+    const userId  = await AsyncStorage.getItem('userId');
     await socket.emit("chantier/connect", {
-          "userId" : 987654,
+          "userId" : userId,
           "chantierId" : this.props.worksite.id,
     });
+    await socket.on("chantier/user/connected", this.handleConnection);
+    await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+    this.setState({ socket : socket});
   }
 
-  getChantier(){
-
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextState.users.length > this.state.users.length;
   }
 
   async handleConnection(data){
@@ -59,7 +58,6 @@ export default class MapAdmin extends React.Component {
   async handleCoordinates(data){
     console.log("Admin: coordinates receve: " + JSON.stringify(data));
     var copy = this.state.users.slice();
-    console.log("copy in handleCoordinates:" + JSON.stringify(copy));
     var index = copy.findIndex(s => s.userId == data.userId);
     if( index != -1){
       copy[index] = data;
@@ -86,7 +84,6 @@ export default class MapAdmin extends React.Component {
             longitudeDelta: 0.0421,
           }}
         >
-          <UrlTile urlTemplate={"http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"}/>
           <Marker coordinate={{ latitude: this.props.chargement.latitude, longitude: this.props.chargement.longitude}} title={"chargement"} pinColor={"#3895ff"}/>
           <Marker coordinate={{ latitude: this.props.dechargement.latitude, longitude: this.props.dechargement.longitude}} title={"dechargement"} pinColor={"#3895ff"}/>
           {this.state.users.map(marker => {
@@ -100,7 +97,7 @@ export default class MapAdmin extends React.Component {
               };
             console.log("after affectation:" + JSON.stringify(coordinates))
 
-            return( <TruckMarker coords={coordinates}/>)
+            return( <TruckMarker userId={marker.userId} socket={this.state.socket}/>)
           })}
         </MapView>
       </View>
