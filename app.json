@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "SMTP-TEST",
+    "name": "SMTP-V0",
     "slug": "SMTP",
     "platforms": [
       "ios",

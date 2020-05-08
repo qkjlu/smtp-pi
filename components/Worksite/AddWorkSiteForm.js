@@ -1,9 +1,10 @@
 import React from 'react'
-import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity, AsyncStorage, View , Button} from 'react-native'
+import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity, AsyncStorage, View } from 'react-native'
 import axios from 'axios'
+import {Button} from 'react-native-elements'
 import AutoCompletePlaces from "../Place/AutoCompletePlaces";
 import AddPlaceForm from "../Place/AddPlaceForm";
-import ValidateButton from "../ValidateButton";
+import style from "../../Style";
 import {MaterialIcons, Ionicons} from "@expo/vector-icons";
 export default class AddWorkSiteForm extends React.Component {
 
@@ -13,9 +14,24 @@ export default class AddWorkSiteForm extends React.Component {
             name: '',
             idPlace1: '',
             idPlace2: '',
+            places : [],
             showNewPlaceForm : false
         }
     }
+
+    componentDidMount() {
+        axios({
+            method: 'get',
+            url:'https://smtp-pi.herokuapp.com/lieux',
+            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}            })
+            .then( response => {
+                this.setState({places: response.data});
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+
     async formSubmit(){
         const token  = await AsyncStorage.getItem('token');
         if (this.state.name == "" || this.state.idPlace1 == "" || this.state.idPlace2 == "") {
@@ -41,7 +57,8 @@ export default class AddWorkSiteForm extends React.Component {
                         return response.status;
                     }
                     console.log(response.status);
-                    this.setState({report : response.data});
+                    this.setState({name : '',idPlace1:'',idPlace2: '', showNewPlaceForm : false});
+                    this.props.unShowForm();
                     return response.status;
                 })
                 .catch((error) => {
@@ -52,7 +69,7 @@ export default class AddWorkSiteForm extends React.Component {
 
     render() {
             return (
-                <ScrollView style={styles.addForm}>
+                <View style={{padding : 20}}>
                     <View style={{ flexDirection:"row" , paddingTop :10}}>
                         <Text style={styles.header}> Ajout d'un chantier</Text>
                         <View style={{flex:2, flexDirection:"row", paddingTop :5}}>
@@ -64,19 +81,22 @@ export default class AddWorkSiteForm extends React.Component {
                             <Text style={{fontWeight:"bold"}}> lieu </Text>
                         </View>
                     </View>
-
+                    <View style={{padding : 20}}>
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
-                               value={this.state.name} placeholder={"Nom du chantier"}
+                               value={this.state.name} placeholder={"Nom du chantier"}/>
+
+                    <AddPlaceForm  style={{padding: 20}} show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />
+
+                    <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"} places={this.state.places}/>
+
+                    <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"} places={this.state.places}/>
+                    </View>
+                    <Button
+                            buttonStyle={styles.button}
+                            onPress={() => this.formSubmit().then(this.props.onReload)}
+                            title={"Valider"}
                     />
-                    <AddPlaceForm show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />
-                    <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"}/>
-
-                    <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"}/>
-
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.txtbutton} onPress={() => this.formSubmit()}> Valider </Text>
-                    </TouchableOpacity>
-                </ScrollView>
+                </View>
             );
     }
 }

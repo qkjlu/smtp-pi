@@ -1,7 +1,8 @@
-import {AsyncStorage, Button, View} from "react-native";
+import {AsyncStorage, View} from "react-native";
 import style from "../../Style";
 import React from "react";
 import * as RootNavigation from '../../navigation/RootNavigation.js';
+import { Icon, Button } from 'react-native-elements'
 
 export default class WorkSiteAccessButton extends React.Component {
     constructor(props) {
@@ -20,17 +21,19 @@ export default class WorkSiteAccessButton extends React.Component {
             <View style={{flexDirection:"row", flex :6}}>
                 <View style={style.button} >
                     <Button
-                        color = 'green'
+                        icon={<Icon name='map' type='font-awesome' color="green"/>}
                         onPress={() => { RootNavigation.navigate('WorkSite', { worksite : this.props.worksite })}}
-                        title="go"
+                        title=""
+                        type="clear"
                         accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>
                 <View style={style.button} >
                     <Button
-                        color = 'red'
-                        onPress={() => { this.deleteWorkSite(this.props.worksite.id)}}
-                        title="x"
+                        icon={<Icon name='trash' type='font-awesome' color="red"/>}
+                        onPress={() => { this.props.onDelete(this.props.worksite.id) }}
+                        title=""
+                        type="clear"
                         accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>
@@ -45,7 +48,7 @@ export default class WorkSiteAccessButton extends React.Component {
                     <Button
                         color = 'blue'
                         onPress={() => { RootNavigation.navigate('TruckView', { worksite : this.props.worksite })}}
-                        title="connexion"
+                        title="Go"
                         accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>
@@ -60,7 +63,7 @@ export default class WorkSiteAccessButton extends React.Component {
                     <Button
                         color = 'orange'
                         onPress={() => { RootNavigation.navigate('CraneView', { worksite : this.props.worksite })}}
-                        title="go"
+                        title="Go"
                         accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>
