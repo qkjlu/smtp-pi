@@ -7,6 +7,7 @@ import {Image} from "react-native";
 import axios from 'axios';
 import style from "../Style";
 import  {View, ActivityIndicator, AsyncStorage} from 'react-native';
+var jwtDecode = require('jwt-decode');
 
 export default class Login extends React.Component{
 
@@ -108,11 +109,10 @@ export default class Login extends React.Component{
           console.log(response);
         }else{
           console.log(response.status);
-          // store token et type of user in Storage
+          const payload = jwtDecode(response.data.token);
           this.storeDataSession("token",response.data.token);
           this.storeDataSession("typeUser",typeUser);
-
-          // change view
+          this.storeDataSession("userId",payload.id);
           this.redirect();
         }
       })
