@@ -32,6 +32,7 @@ export default class UpdateUser extends React.Component {
     this.onPressPicker = this.onPressPicker.bind(this);
     this.onPressAddCompany = this.onPressAddCompany.bind(this);
     this.onPressDelete = this.onPressDelete.bind(this);
+    this.refreshFunction = this.props.route.params.refreshFunction;
 
     this.state = {
       id : null,
@@ -167,6 +168,8 @@ export default class UpdateUser extends React.Component {
         .then((response) => {
           alert(typeUser +  'modifié');
           console.log(response.status);
+          this.refreshFunction();
+          this.props.navigation.goBack();
         })
         .catch(function (error) {
           console.log(error);
@@ -309,7 +312,7 @@ export default class UpdateUser extends React.Component {
             renderItem={({item}) => <ItemList entreprise={item} onPress={this.onPressDelete}/>}
           />
 
-          <ValidateButton onPress={this.handleValidate}/>
+          <ValidateButton text={"Modifier"} onPress={this.handleValidate}/>
         </View>
       );
     }
@@ -357,7 +360,6 @@ function ItemList(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8DC',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -367,6 +369,7 @@ const styles = StyleSheet.create({
   },
   bouton:{
     backgroundColor:"#228B22",
+    alignSelf : "flex-end",
     borderRadius:25,
     margin:10,
     padding:10

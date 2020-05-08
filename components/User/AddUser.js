@@ -15,8 +15,8 @@ import axios from 'axios';
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 
 export default class AddUser extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.handlePickerChange = this.handlePickerChange.bind(this);
     this.handleChangeName = this.handleChangeName.bind(this);
     this.handleChangeSurname = this.handleChangeSurname.bind(this);
@@ -25,6 +25,7 @@ export default class AddUser extends React.Component {
     this.getCompany = this.getCompany.bind(this);
     this.createCompany = this.createCompany.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
+    this.refreshFunction = this.props.route.params.refreshFunction;
     this.state = {
       pickerSelected: "",
       companies : null,
@@ -129,11 +130,12 @@ export default class AddUser extends React.Component {
         url: 'https://smtp-pi.herokuapp.com/' + url,
         data : data,
         headers: {'Authorization': 'Bearer ' + token}
-        //headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
       })
         .then((response) => {
           alert(url +  ' crée');
           console.log(response.status);
+          this.refreshFunction();
+          this.props.navigation.goBack();
         })
         .catch(function (error) {
           console.log(error);
@@ -175,7 +177,7 @@ export default class AddUser extends React.Component {
             initial={this.state.type}
             onPress={(value) => {this.setState({type:value})}}
           />
-          <ValidateButton onPress={this.handleValidate}/>
+        <ValidateButton text={"Ajouter"} onPress={this.handleValidate}/>
         </View>
       );
     }
@@ -187,7 +189,6 @@ export default class AddUser extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8DC',
     alignItems: 'center',
     justifyContent: 'center',
   },

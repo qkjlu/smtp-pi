@@ -5,6 +5,7 @@ import CustomSwitch from '../CustomSwitch';
 import ItemList from './ItemList.js';
 import axios from 'axios';
 import { Icon, Button } from 'react-native-elements'
+import { withNavigation } from "react-navigation";
 import style from '../../Style'
 
 
@@ -27,6 +28,7 @@ export default class UserList extends React.Component{
     this.onPressDeleteGrutier = this.onPressDeleteGrutier.bind(this);
     this.onPressAdd = this.onPressAdd.bind(this);
     this.onPressDelete = this.onPressDelete.bind(this);
+    this.refresh = this.refresh.bind(this);
     this.state = {
       camionneurs : null,
       grutiers : null
@@ -38,16 +40,21 @@ export default class UserList extends React.Component{
     this.getGrutiers();
   }
 
+  refresh(){
+    this.getCamionneurs();
+    this.getGrutiers();
+  }
+
   handleSwitchChange(){
     this.setState({isAdmin : !this.state.isAdmin})
   }
 
   onPressEditCamionneur(user){
-    this.props.navigation.navigate("UpdateUser",{ user : user, type : true});
+    this.props.navigation.navigate("UpdateUser",{ user : user, type : true, refreshFunction: this.refresh});
   }
 
   onPressEditGrutier(user){
-    this.props.navigation.navigate("UpdateUser",{ user : user, type : false});
+    this.props.navigation.navigate("UpdateUser",{ user : user, type : false, refreshFunction: this.refresh});
   }
 
   onPressDeleteCamionneur(user){
@@ -56,6 +63,10 @@ export default class UserList extends React.Component{
 
   onPressDeleteGrutier(user){
     this.onPressDelete(user,"grutiers")
+  }
+
+  onPressAdd(){
+    this.props.navigation.navigate("AddUser", {refreshFunction: this.refresh});
   }
 
   async onPressDelete(user,type){
@@ -102,10 +113,6 @@ export default class UserList extends React.Component{
       .catch(function (error) {
         console.log(error);
       })
-  }
-
-  onPressAdd(){
-    this.props.navigation.navigate("AddUser");
   }
 
   async getCamionneurs(){
