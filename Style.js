@@ -5,18 +5,22 @@ export default {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    containerForm:{
+        alignItems: 'center',
+    },
+
     input : {
         height : 40 ,
         padding : 10,
         borderColor: 'gray',
         borderWidth:1 ,
-        marginHorizontal : 60
+        marginHorizontal : 15
     },
     worksite : {
         backgroundColor : '#FFFFFF',
         borderWidth: 1,
         borderBottomColor : '#202340',
-        marginHorizontal : 60,
+        marginHorizontal : 15,
         paddingHorizontal : 20,
         paddingVertical : 10,
         flex : 1,
@@ -80,6 +84,8 @@ export default {
         backgroundColor: '#ffffff',
         borderWidth : 1,
         borderColor : '#abb0b0',
+        marginHorizontal : 15,
+        marginBottom: 15,
     },
 
 }

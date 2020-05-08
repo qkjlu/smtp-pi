@@ -17,11 +17,11 @@ export default class MapTruck extends React.Component {
       this.requestLocationPermission = this.requestLocationPermission.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
       this.state = {
-        myPos : {
-          latitude : -1,
-          longitude : -1
-        },
-        users: [],
+          myPos : {
+                latitude : -1,
+                longitude : -1
+          },
+          users: [],
       };
   }
 
@@ -32,9 +32,7 @@ export default class MapTruck extends React.Component {
           "userId" : Math.floor(Math.random() * 1000),
           "chantierId" : this.props.worksite.id,
     });
-
     await this.requestLocationPermission(socket);
-
   }
 
   async requestLocationPermission(socket) {
@@ -63,20 +61,19 @@ export default class MapTruck extends React.Component {
         let toSubmit = {
             "coordinates":{
               "longitude": coords.longitude,
-              "latitude" : coords.latitude
-            }
-        }
-
+              "latitude" : coords.latitude,
+            },
+            "etat": this.props.etat,
+        };
         socket.emit("chantier/sendCoordinates", toSubmit);
-
       },
       error => console.log(error)
     )
-
   }
 
-  getChantier(){
 
+  getCoordinatesChargement(){
+      return [this.props.worksite.lieuDéchargementId,]
   }
 
   handleConnection(data){
@@ -95,9 +92,12 @@ export default class MapTruck extends React.Component {
     console.log(this.state.users);
     return(
       <View>
-
-        <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
-
+          <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
+          <Text>  chargement  : long {this.props.chargement.longitude} lat : {this.props.chargement.latitude} </Text>
+          <Text>  dechargement  : long {this.props.dechargement.longitude} lat : {this.props.dechargement.latitude} </Text>
+          <Text>  coordonnées user : long {this.state.myPos.longitude} lat : {this.state.myPos.latitude} </Text>
+          <Text>  mon etat : {this.props.data.etat}</Text>
+          <Text>  mon etat précédent : {this.props.data.previousEtat}</Text>
       </View>
     )
   }

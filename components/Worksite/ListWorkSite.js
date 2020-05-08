@@ -17,25 +17,7 @@ export default class ListWorkSite extends React.Component {
     }
 
     async componentDidMount() {
-        const token = await AsyncStorage.getItem('token');
-        axios({
-            method : 'get',
-            url :'https://smtp-pi.herokuapp.com/chantiers',
-            headers: {'Authorization': 'Bearer ' + token},
-        })
-            .then( response => {
-                if(response.status != 200){
-                console.log(response.status);
-                alert(response.status);
-                return response.status;
-                }
-                console.log(response.status);
-                this.setState({report : response.data});
-                return response.status;
-                })
-            .catch((error) => {
-                console.log(error);
-            })
+        this.reloadData();
     }
 
     async deleteWorkSite(id) {

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {Text, View, StyleSheet } from 'react-native';
 import style from '../../Style'
-import WorkSiteView from "../Worksite/WorkSiteView";
 
 export default function TruckView({navigation, route}) {
 

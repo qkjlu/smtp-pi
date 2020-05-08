@@ -43,12 +43,14 @@ export default class WorkSiteAccessButton extends React.Component {
 
     TruckAccess() {
         return (
-            <View style={{flexDirection:"row", flex :6}}>
+            <View style={{flexDirection:"row", flex :1}}>
                 <View style={style.button} >
                     <Button
+                        icon={<Icon name='map' type='font-awesome' color="blue"/>}
                         color = 'blue'
                         onPress={() => { RootNavigation.navigate('TruckView', { worksite : this.props.worksite })}}
-                        title="Go"
+                        title=""
+                        type={"clear"}
                         accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>
@@ -70,6 +72,7 @@ export default class WorkSiteAccessButton extends React.Component {
             </View>
         )
     }
+
     async getUser(){
         const typeUser = await AsyncStorage.getItem('typeUser');
         console.log(typeUser);

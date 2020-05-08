@@ -29,7 +29,7 @@ export default class AutoCompletePlaces extends React.Component {
         const { query } = this.state;
         const places = this.findPlace(query);
         const comp = (a, b) => a.toLowerCase().trim() === b.toLowerCase().trim();
-        const placeHolderName = "addresse du lieu de "+ this.props.name;
+        const placeHolderName = " Addresse du lieu de "+ this.props.name;
         if(!this.state.showPreview){
             return (
                 <ScrollView>

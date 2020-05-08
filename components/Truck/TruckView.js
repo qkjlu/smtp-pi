@@ -1,17 +1,15 @@
 import * as React from 'react';
 import {Text, View, ScrollView } from 'react-native';
 import style from '../../Style'
-import TimeBetween from "./TimeBetween";
-import StopButtons from "../StopButtons";
-import MapTruck from "../Map/MapTruck";
+import WorkSiteView from "../Worksite/WorkSiteView";
 
 export default function TruckView({navigation, route}) {
+    const idChargement = route.params.worksite.lieuChargementId;
+    const idDechargement = route.params.worksite.lieuDéchargementId;
     const worksite = route.params.worksite;
     return (
         <View>
-            <TimeBetween/>
-            <MapTruck worksite={worksite}/>
-            <StopButtons/>
+            <WorkSiteView worksite={worksite} idChargement = {idChargement} idDechargement = {idDechargement} />
         </View>
     );
 }

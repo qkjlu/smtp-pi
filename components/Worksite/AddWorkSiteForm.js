@@ -83,7 +83,7 @@ export default class AddWorkSiteForm extends React.Component {
                     </View>
                     <View style={{padding : 20}}>
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
-                               value={this.state.name} placeholder={"Nom du chantier"}/>
+                               value={this.state.name} placeholder={" Nom du chantier"}/>
 
                     <AddPlaceForm  style={{padding: 20}} show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />
 
