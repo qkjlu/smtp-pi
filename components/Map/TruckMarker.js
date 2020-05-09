@@ -9,11 +9,12 @@ export default class TruckMarker extends React.Component {
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.getCamionneurInfo = this.getCamionneurInfo.bind(this);
       this.state = {
-        userId: this.props.userId,
-        latitude : -1,
-        longitude : -1,
+        latitude : this.props.user.coordinates.latitude,
+        longitude : this.props.user.coordinates.longitude,
         nom: "",
-        prenom : ""
+        prenom : "",
+        etat : null,
+        previousEtat : null
       }
   }
 
@@ -27,7 +28,7 @@ export default class TruckMarker extends React.Component {
     const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
-      url: 'https://smtp-pi.herokuapp.com/camionneurs/' + this.props.userId,
+      url: 'https://smtp-pi.herokuapp.com/camionneurs/' + this.props.user.userId,
       headers: {'Authorization': 'Bearer ' + token},
     })
       .then( response => {
@@ -47,10 +48,10 @@ export default class TruckMarker extends React.Component {
 
   async handleCoordinates(data){
     console.log("Marker: coordinates receve: " + JSON.stringify(data));
-    if(data.userId == this.state.userId){
+    if(data.userId == this.props.user.userId){
       this.setState({
-        latitude : data.coordinates.coordinates.latitude,
-        longitude : data.coordinates.coordinates.longitude,
+        latitude : data.coordinates.latitude,
+        longitude : data.coordinates.longitude,
       })
     }
   }

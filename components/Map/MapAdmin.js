@@ -14,8 +14,10 @@ export default class MapAdmin extends React.Component {
   constructor(props) {
       super(props);
       this.handleConnection = this.handleConnection.bind(this);
+      this.handleDisconnection = this.handleDisconnection.bind(this);
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
+      this.succesConnection = this.succesConnection.bind(this);
       this.state = {
         socket : null,
         connected : false,
@@ -29,30 +31,44 @@ export default class MapAdmin extends React.Component {
     await socket.emit("chantier/connect", {
           "userId" : userId,
           "chantierId" : this.props.worksite.id,
-    });
+  });
+    await socket.on("chantier/connect/success", this.succesConnection);
     await socket.on("chantier/user/connected", this.handleConnection);
+    await socket.on("chantier/user/disconnected", this.handleDisconnection);
     await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
     this.setState({ socket : socket});
   }
 
+  async componentWillUnmount(){
+    await this.state.socket.emit("chantier/disconnect","")
+    console.log("Admin : Close connection to socket");
+    this.state.socket.close();
+  }
+
+  // update map when an user connect or disconnect
   shouldComponentUpdate(nextProps, nextState) {
-    return nextState.users.length > this.state.users.length;
+    return nextState.users.length != this.state.users.length;
+  }
+
+  handleDisconnection(data){
+    console.log("Admin:" + data.userId + " disconnect");
+  }
+
+  succesConnection(data){
+    console.log("Admin: ACK connection: ");
   }
 
   async handleConnection(data){
     console.log("Admin: " + data.userId +" is connected")
-    // var index = this.state.users.findIndex(s => s.userId == data.userId);
-    // if( index != -1){
-    //   console.log("Admin: " + data.userId +" is connected")
-    //   var copy = this.state.users.slice();
-    //   copy.push(data);
-    //   console.log("Admin: [users]=" + JSON.stringify(copy));
-    //   this.setState({
-    //     users : copy
-    //   });
-    // }else{
-    //   console.log(data.userId + " is already connected")
-    // }
+    // check if the user connecting is a admin
+    var isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
+    if(!isAdmin){
+      var copy = this.state.users.slice();
+      copy.push(data);
+      this.setState({
+        users : copy
+      });
+    }
   }
 
   async handleCoordinates(data){
@@ -73,6 +89,7 @@ export default class MapAdmin extends React.Component {
   }
 
   render() {
+    console.log("users:" + this.state.users)
     return(
       <View style={{flex: 1}}>
         <MapView
@@ -87,17 +104,15 @@ export default class MapAdmin extends React.Component {
           <Marker coordinate={{ latitude: this.props.chargement.latitude, longitude: this.props.chargement.longitude}} title={"chargement"} pinColor={"#3895ff"}/>
           <Marker coordinate={{ latitude: this.props.dechargement.latitude, longitude: this.props.dechargement.longitude}} title={"dechargement"} pinColor={"#3895ff"}/>
           {this.state.users.map(marker => {
+            // const coordinates = {
+            //   "coordinates" : {
+            //       latitude: marker.coordinates.coordinates.latitude,
+            //       longitude: marker.coordinates.coordinates.longitude,
+            //     }
+            //   };
+            // console.log("after affectation:" + JSON.stringify(coordinates))
 
-            console.log("render:" + JSON.stringify(marker))
-            const coordinates = {
-              "coordinates" : {
-                  latitude: marker.coordinates.coordinates.latitude,
-                  longitude: marker.coordinates.coordinates.longitude,
-                }
-              };
-            console.log("after affectation:" + JSON.stringify(coordinates))
-
-            return( <TruckMarker userId={marker.userId} socket={this.state.socket}/>)
+            return( <TruckMarker user={marker} socket={this.state.socket}/>)
           })}
         </MapView>
       </View>
