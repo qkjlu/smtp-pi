@@ -35,7 +35,7 @@ export default class ButtonGroupAdmin extends React.Component {
     }
 
     render () {
-        const buttons = ['Ajouter Chantier', 'Ajouter Lieu', 'Ajouter Entreprise'];
+        const buttons = ['Ajouter Chantier',  'Afficher Lieux', 'Afficher Entreprises'];
         const { selectedIndex } = this.state;
 
         if(this.state.typeUser !== "admin"){

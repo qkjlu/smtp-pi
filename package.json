@@ -28,6 +28,7 @@
     "expo-location": "~8.1.0",
     "expo-permissions": "~8.1.0",
     "expo-web-browser": "8.2.0",
+    "geolib": "^3.2.1",
     "jwt-decode": "^2.2.0",
     "path": "^0.12.7",
     "react": "~16.9.0",

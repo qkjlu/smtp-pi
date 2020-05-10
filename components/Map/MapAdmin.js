@@ -19,9 +19,10 @@ export default class MapAdmin extends React.Component {
       this.componentDidMount =this.componentDidMount.bind(this);
       this.succesConnection = this.succesConnection.bind(this);
       this.state = {
-        socket : null,
-        connected : false,
-        users: [],
+          socket : null,
+          connected : false,
+          users: [],
+          etat : null,
       };
   }
 
@@ -72,7 +73,7 @@ export default class MapAdmin extends React.Component {
   }
 
   async handleCoordinates(data){
-    console.log("Admin: coordinates receve: " + JSON.stringify(data));
+    //console.log("Admin: coordinates receive: " + JSON.stringify(data));
     var copy = this.state.users.slice();
     var index = copy.findIndex(s => s.userId == data.userId);
     if( index != -1){

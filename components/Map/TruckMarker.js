@@ -1,7 +1,8 @@
 import React from "react";
-import { Marker } from 'react-native-maps'
+import {Callout, Marker} from 'react-native-maps'
 import {Text, View, StyleSheet,AsyncStorage} from "react-native";
 import axios from 'axios';
+import MapCallout from "react-native-maps/lib/components/MapCallout";
 
 export default class TruckMarker extends React.Component {
   constructor(props) {
@@ -13,8 +14,8 @@ export default class TruckMarker extends React.Component {
         longitude : this.props.user.coordinates.longitude,
         nom: "",
         prenom : "",
-        etat : null,
-        previousEtat : null
+        etat : this.props.user.etat,
+        previousEtat : this.props.user.etat
       }
   }
 
@@ -23,6 +24,8 @@ export default class TruckMarker extends React.Component {
     this.getCamionneurInfo();
     await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
   }
+
+
 
   async getCamionneurInfo(){
     const token  = await AsyncStorage.getItem('token');
@@ -47,25 +50,49 @@ export default class TruckMarker extends React.Component {
   }
 
   async handleCoordinates(data){
-    console.log("Marker: coordinates receve: " + JSON.stringify(data));
-    if(data.userId == this.props.user.userId){
-      this.setState({
-        latitude : data.coordinates.latitude,
-        longitude : data.coordinates.longitude,
-      })
-    }
+      console.log("Marker: coordinates receive: " + JSON.stringify(data));
+      if(data.userId == this.props.user.userId){
+          this.setState({
+              latitude : data.coordinates.latitude,
+              longitude : data.coordinates.longitude,
+              etat : data.etat,
+          })
+      }
+  }
+
+  colorForThisEtat(){
+      switch (this.state.etat) {
+          case "déchargé":
+              return "blue";
+          case "chargé":
+              return "green";
+          case "pause":
+              return "yellow";
+          case "probleme":
+              return "orange";
+          case "urgence":
+              return "red";
+          case "enDéchargement":
+              return "purple";
+          case "enChargement":
+              return "purple";
+          case null:
+              return "black";
+      }
   }
 
   render() {
     return(
       <Marker
-        coordinate={{
-          latitude: this.state.latitude,
-          longitude: this.state.longitude,
-        }}
-        title={this.state.prenom + " " + this.state.nom}
-      />
-    );
-  }
+          coordinate={{
+              latitude: this.state.latitude,
+              longitude: this.state.longitude,
+          }}
+          title={this.state.prenom + ' ' + this.state.nom }
+          pinColor={this.colorForThisEtat()}
+          description={this.state.etat}
 
+      />
+  )
+  }
 }
