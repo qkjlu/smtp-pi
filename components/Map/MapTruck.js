@@ -24,7 +24,7 @@ export default class MapTruck extends React.Component {
       this.rollBack = this.rollBack.bind(this);
       this.calculateFlightDistance = this.calculateFlightDistance.bind(this);
       this.state = {
-          distanceMinToChangeEtatNearToAPlace : 120,
+          distanceMinToChangeEtatNearToAPlace : 40,
           socket : null,
           users: [],
           myPos : {
@@ -109,7 +109,7 @@ export default class MapTruck extends React.Component {
       // option
       {
         accuracy: Location.Accuracy.Highest,
-        timeInterval: 5000,
+        timeInterval: 1000,
       },
       position => {
         let { coords } = position;
@@ -153,25 +153,26 @@ export default class MapTruck extends React.Component {
   }
 
   // calcul meters between 2 coordinates
-  async calculateFlightDistance(lat1,lon1,lat2,lon2){
-      var result = await getDistance({latitude: lat1, longitude: lon1,}, {latitude : lat2, longitude : lon2,});
+  calculateFlightDistance(lat1,lon1,lat2,lon2){
+      var result = getDistance({latitude: lat1, longitude: lon1,}, {latitude : lat2, longitude : lon2,});
+      console.log("lat1: "+lat1+ " lon1 :"+lon1+"lat2: "+lat2+" lon2 : "+lon2+"=>  "+result)
       return result
   }
 
   //test if a truck is near to a place and have to change his own "etat"
-  async changeEtatNearPlaces(distanceMinToUpdateEtat){
-      let me = this.state.myPos;
+  changeEtatNearPlaces(distanceMinToUpdateEtat){
+      var me = this.state.myPos;
       if(this.state.etat === "déchargé") {
-          let place = this.getCoordinatesChargement();
-          let distance = await this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
-          console.log("distance déchargé->enChargement ="+distance);
+          var distance = this.calculateFlightDistance(me.latitude,me.longitude,this.props.chargement.latitude,this.props.chargement.longitude);
+          console.log("distance déchargé->enChargement = "+distance);
           if(distance<distanceMinToUpdateEtat){
                 console.log("changement d'etat car assez proche du lieu de chargement");
                 this.setState({etat: "enChargement"})
-            }
-      }else if (this.state.etat === "chargé"){
+          }
+      }
+      else if (this.state.etat === "chargé"){
           let place = this.getCoordinatesDechargement();
-          let distance = await this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
+          let distance = this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
           console.log("distance chargé->enDéchargement ="+distance);
           if(distance<distanceMinToUpdateEtat){
                 console.log("changement d'etat car assez proche du lieu de dechargement");
@@ -179,7 +180,7 @@ export default class MapTruck extends React.Component {
             }
       }else if (this.state.etat === "enChargement"){
           let place = this.getCoordinatesChargement();
-          let distance = await this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
+          let distance = this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
           console.log("distance enChargement->chargé ="+distance);
           if(distance>distanceMinToUpdateEtat){
               console.log("changement d'etat car assez loin du lieu de chargement");
@@ -187,7 +188,7 @@ export default class MapTruck extends React.Component {
           }
       }else if (this.state.etat === "enDéchargement"){
           let place = this.getCoordinatesDechargement();
-          let distance = await this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
+          let distance = this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
           console.log("distance enDéchargement->déchargé ="+distance);
           if(distance>distanceMinToUpdateEtat){
               console.log("changement d'etat car assez loin du lieu de déchargement");
@@ -195,23 +196,22 @@ export default class MapTruck extends React.Component {
           }
       }
   }
-  // update etat with the 3 buttons pause probleme urgence
-  async updateEtat(etat){
+   // update etat with the 3 buttons pause probleme urgence
+  updateEtat(etat){
       if(etat === "pause" || etat === "probleme" || etat === "urgence"){
-            await this.setState({previousEtat : this.state.etat})
+          this.setState({previousEtat : this.state.etat})
       }
-        console.log("tentative avec "+etat);
-        await this.setState({etat : etat});
-        console.log("changement etat => "+ this.state.etat);
-        let toSubmit = {
+      this.setState({etat : etat});
+      console.log("changement etat => "+ this.state.etat);
+      let toSubmit = {
             "coordinates":{
               "longitude": this.state.myPos.longitude,
               "latitude" : this.state.myPos.latitude,
             },
             "etat": this.state.etat,
             "previousEtat": this.state.previousEtat,
-        };
-        this.state.socket.emit("chantier/sendCoordinates", toSubmit);
+      };
+      this.state.socket.emit("chantier/sendCoordinates", toSubmit);
   }
 
   // rollback the state after a pause/probleme/urgence

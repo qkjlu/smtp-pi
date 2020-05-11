@@ -73,19 +73,19 @@ export default class AddWorkSiteForm extends React.Component {
                             size={24}
                             onPress={() => this.props.toggleShow()}
                         />
+                        <Text style={style.getStartedText}> Création d'un lieu manuel en fonction des points GPS :</Text>
+                        <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
+                                   value={this.state.adress} placeholder={" libellé adresse"}/>
+                        <TextInput style={style.textinput} onChangeText={(lon) => this.setState({lon})}
+                                   value={this.state.lon} placeholder={" Longitude"}/>
+                        <TextInput style={style.textinput} onChangeText={(lat) => this.setState({lat})}
+                                   value={this.state.lat} placeholder={" Latitude"}/>
+                        <ValidateButton text={"Ajouter le lieu"} onPress={() => this.postPlace()}/>
                         <Text style={style.getStartedText}> Création d'un lieu automatique en fonction d'une adresse :</Text>
                         <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
                                    value={this.state.adress} placeholder={" Adresse exemple : 570 Route De Ganges"}/>
                         <TextInput style={style.textinput} onChangeText={(city) => this.setState({city})}
                                    value={this.state.city} placeholder={" Ville"}/>
-                        <ValidateButton text={"Ajouter le lieu"} onPress={() => this.getLieu()}/>
-                        <Text style={style.getStartedText}> Création d'un lieu manuel en fonction des points GPS :</Text>
-                        <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
-                                   value={this.state.adress} placeholder={" libellé adresse"}/>
-                        <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
-                                   value={this.state.adress} placeholder={" Longitude"}/>
-                        <TextInput style={style.textinput} onChangeText={(city) => this.setState({city})}
-                                   value={this.state.city} placeholder={" Latitude"}/>
                         <ValidateButton text={"Ajouter le lieu"} onPress={() => this.getLieu()}/>
                     </View>
                 </Modal>

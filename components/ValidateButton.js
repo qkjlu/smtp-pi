@@ -8,7 +8,7 @@ import {
 export default function ValidateButton(props){
   return(
     <TouchableOpacity style={styles.container} onPress={() => props.onPress()}>
-      <Text style={{color: "white"}}>{ props.text}</Text>
+      <Text style={{color: "white"}}>{ props.text ? props.text:valider}</Text>
     </TouchableOpacity>
   )
 }

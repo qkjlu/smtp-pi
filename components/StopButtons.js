@@ -1,5 +1,4 @@
-import {View, Text} from "react-native";
-import {Button} from "react-native-elements";
+import {View} from "react-native";
 import ValidateButton from "./ValidateButton";
 import * as React from "react";
 
@@ -13,7 +12,7 @@ export default class StopButtons extends React.Component {
     render() {
             if(!this.state.oneButtonIsActivate){
                 return (
-                    <View style={{flex: 1, flexDirection: "row", alignContent: "flex-end"}}>
+                    <View style={{ flexDirection: "row", alignContent: "center"}}>
                         <View style={{flex: 2}}>
                             <ValidateButton text={"Pause"}  onPress={ () => {
                                 this.props.changeEtat("pause");
@@ -36,7 +35,7 @@ export default class StopButtons extends React.Component {
                 );
             }else{
                 return(
-                    <View style={{flexDirection:"row", justifyContent:"center", textAlign: 'center'}}>
+                    <View style={{justifyContent:"center", textAlign: 'center'}}>
                         <ValidateButton text={"Reprendre"}  onPress={ () => {
                             this.props.rollBack();
                             this.setState({oneButtonIsActivate : false})
@@ -44,6 +43,5 @@ export default class StopButtons extends React.Component {
                     </View>
                 );
             }
-        }
-
+    }
 }
