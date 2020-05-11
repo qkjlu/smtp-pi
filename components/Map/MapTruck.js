@@ -202,7 +202,16 @@ export default class MapTruck extends React.Component {
       }
         console.log("tentative avec "+etat);
         await this.setState({etat : etat});
-        console.log("changement etat => "+ this.state.etat)
+        console.log("changement etat => "+ this.state.etat);
+        let toSubmit = {
+            "coordinates":{
+              "longitude": this.state.myPos.longitude,
+              "latitude" : this.state.myPos.latitude,
+            },
+            "etat": this.state.etat,
+            "previousEtat": this.state.previousEtat,
+        };
+        this.state.socket.emit("chantier/sendCoordinates", toSubmit);
   }
 
   // rollback the state after a pause/probleme/urgence

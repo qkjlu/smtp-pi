@@ -51,12 +51,22 @@ export default class MapAdmin extends React.Component {
     return nextState.users.length != this.state.users.length;
   }
 
+
+  // delete in user array the user that deconnecting
   handleDisconnection(data){
     console.log("Admin:" + data.userId + " disconnect");
+    var copy = this.state.users.slice();
+    var index = copy.findIndex(s => s.userId == data.userId);
+    if (index > -1) {
+      copy.splice(index, 1);
+      this.setState({
+        users : copy
+      })
+    }
   }
 
   succesConnection(data){
-    console.log("Admin: ACK connection: ");
+    console.log("Admin: ACK connection");
   }
 
   async handleConnection(data){
@@ -90,7 +100,7 @@ export default class MapAdmin extends React.Component {
   }
 
   render() {
-    console.log("users:" + this.state.users)
+    console.log("users:" + JSON.stringify(this.state.users))
     return(
       <View style={{flex: 1}}>
         <MapView
