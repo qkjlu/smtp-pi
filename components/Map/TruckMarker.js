@@ -9,23 +9,26 @@ export default class TruckMarker extends React.Component {
       super(props);
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.getCamionneurInfo = this.getCamionneurInfo.bind(this);
+      this.colorForThisEtat = this.colorForThisEtat.bind(this);
       this.state = {
+        socket : this.props.socket,
         latitude : this.props.user.coordinates.latitude,
         longitude : this.props.user.coordinates.longitude,
         nom: "",
         prenom : "",
         etat : this.props.user.etat,
-        previousEtat : this.props.user.etat
       }
   }
 
   async componentDidMount(){
-    const socket = this.props.socket;
+    //const socket = this.props.socket;
     this.getCamionneurInfo();
-    await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+    await this.state.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
   }
 
-
+  async componentWillUnmount(){
+    this.state.socket.off("chantier/user/sentCoordinates", this.handleCoordinates);
+  }
 
   async getCamionneurInfo(){
     const token  = await AsyncStorage.getItem('token');
@@ -60,8 +63,8 @@ export default class TruckMarker extends React.Component {
       }
   }
 
-  colorForThisEtat(){
-      switch (this.state.etat) {
+  colorForThisEtat(etat){
+      switch (etat) {
           case "déchargé":
               return "blue";
           case "chargé":
@@ -84,12 +87,13 @@ export default class TruckMarker extends React.Component {
   render() {
     return(
       <Marker
+          key = {this.props.user.userId + this.state.etat}
           coordinate={{
               latitude: this.state.latitude,
               longitude: this.state.longitude,
           }}
           title={this.state.prenom + ' ' + this.state.nom }
-          pinColor={this.colorForThisEtat()}
+          pinColor={this.colorForThisEtat(this.state.etat)}
           description={this.state.etat}
 
       />

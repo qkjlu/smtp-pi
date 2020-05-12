@@ -3,7 +3,7 @@ import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
 import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid,AsyncStorage} from "react-native";
 import TruckMarker from './TruckMarker';
-import {Marker} from "react-native-maps";
+import {Marker, Circle} from "react-native-maps";
 import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
@@ -100,7 +100,10 @@ export default class MapAdmin extends React.Component {
   }
 
   render() {
-    console.log("users:" + JSON.stringify(this.state.users))
+    console.log("users:" + JSON.stringify(this.state.users));
+    const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
+    const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
+
     return(
       <View style={{flex: 1}}>
         <MapView
@@ -112,8 +115,10 @@ export default class MapAdmin extends React.Component {
             longitudeDelta: 0.0421,
           }}
         >
-          <Marker coordinate={{ latitude: this.props.chargement.latitude, longitude: this.props.chargement.longitude}} title={"chargement"} pinColor={"#3895ff"}/>
-          <Marker coordinate={{ latitude: this.props.dechargement.latitude, longitude: this.props.dechargement.longitude}} title={"dechargement"} pinColor={"#3895ff"}/>
+          <Marker coordinate={chargement} title={"chargement"} pinColor={"#3895ff"}/>
+          <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#3895ff"}/>
+          <Circle key = {"chargementCircle"} center={chargement} radius = {20} />
+          <Circle key = {"chargementCircle"} center={dechargement} radius = {20} />
           {this.state.users.map(marker => {
             // const coordinates = {
             //   "coordinates" : {

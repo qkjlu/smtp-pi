@@ -208,7 +208,7 @@ export default class MapTruck extends React.Component {
               "longitude": this.state.myPos.longitude,
               "latitude" : this.state.myPos.latitude,
             },
-            "etat": this.state.etat,
+            "etat": etat,
             "previousEtat": this.state.previousEtat,
       };
       this.state.socket.emit("chantier/sendCoordinates", toSubmit);
@@ -218,6 +218,15 @@ export default class MapTruck extends React.Component {
   rollBack(){
         //demande son etat persisté au serveur
         //sinon
+        let toSubmit = {
+              "coordinates":{
+                "longitude": this.state.myPos.longitude,
+                "latitude" : this.state.myPos.latitude,
+              },
+              "etat": this.state.previousEtat,
+              "previousEtat": this.state.etat
+        };
+        this.state.socket.emit("chantier/sendCoordinates", toSubmit);
         this.setState({etat : this.state.previousEtat})
   }
 
