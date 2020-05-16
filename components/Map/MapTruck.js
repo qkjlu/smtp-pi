@@ -51,23 +51,58 @@ export default class MapTruck extends React.Component {
     });
     //await socket.on("chantier/connect/success", this.succesConnection);
     await socket.on("chantier/user/connected", this.handleConnection);
+    await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+    await socket.on("chantier/user/disconnected", this.handleDisconnection);
     await this.watchLocation(socket);
     this.setState({socket : socket});
   }
 
-  // try to get his etat if he was connected during the day (to prevent an issue after disconnect/crash)
-  getMyEtatFromServer() {
-      //TODO : demander au serveur les données persistées du camionneur
-      // if the server already know the state of the truck
-
-      //else
-      this.setState({etat:"déchargé"})
+  // delete in user array the user that deconnecting
+  handleDisconnection(data){
+    console.log("Truck:" + data.userId + " disconnect");
+    var copy = this.state.users.slice();
+    var index = copy.findIndex(s => s.userId == data.userId);
+    if (index > -1) {
+      copy.splice(index, 1);
+      this.setState({
+        users : copy
+      })
+    }
   }
 
   async componentWillUnmount(){
     await this.state.socket.emit("chantier/disconnect","");
     console.log("Truck : Close connection to socket");
     this.state.socket.close();
+  }
+
+  handleConnection(data){
+    console.log("Truck:" + data.userId +" is connected");
+    var isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
+    if(!isAdmin){
+      var copy = this.state.users.slice();
+      copy.push(data);
+      this.setState({
+        users : copy
+      });
+    }
+  }
+
+  handleCoordinates(data){
+    console.log("Truck : coordianates receve: " + JSON.stringify(data));
+    var copy = this.state.users.slice();
+    var index = copy.findIndex(s => s.userId == data.userId);
+    if( index != -1){
+      copy[index] = data;
+      this.setState({
+        users : copy
+      });
+    }else{
+      copy.push(data);
+      this.setState({
+        users : copy
+      });
+    }
   }
 
   succesConnection(data){
@@ -228,15 +263,6 @@ export default class MapTruck extends React.Component {
         };
         this.state.socket.emit("chantier/sendCoordinates", toSubmit);
         this.setState({etat : this.state.previousEtat})
-  }
-
-
-  handleConnection(data){
-    console.log("Truck:" + data.userId +" is connected")
-  }
-
-  handleCoordinates(data){
-    console.log("coordianates receve: " + JSON.stringify(data));
   }
 
   render() {
