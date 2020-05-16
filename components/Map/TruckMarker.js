@@ -2,7 +2,6 @@ import React from "react";
 import {Callout, Marker} from 'react-native-maps'
 import {Text, View, StyleSheet,AsyncStorage} from "react-native";
 import axios from 'axios';
-import MapCallout from "react-native-maps/lib/components/MapCallout";
 
 export default class TruckMarker extends React.Component {
   constructor(props) {
@@ -95,7 +94,6 @@ export default class TruckMarker extends React.Component {
           title={this.state.prenom + ' ' + this.state.nom }
           pinColor={this.colorForThisEtat(this.state.etat)}
           description={this.state.etat}
-
       />
   )
   }

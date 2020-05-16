@@ -52,7 +52,7 @@ export default class MapAdmin extends React.Component {
   }
 
 
-  // delete in user array the user that deconnecting
+  // delete in user array the user disconnecting
   handleDisconnection(data){
     console.log("Admin:" + data.userId + " disconnect");
     var copy = this.state.users.slice();
@@ -71,7 +71,7 @@ export default class MapAdmin extends React.Component {
 
   async handleConnection(data){
     console.log("Admin: " + data.userId +" is connected")
-    // check if the user connecting is a admin
+    // check if the user connecting is an admin
     var isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
     if(!isAdmin){
       var copy = this.state.users.slice();
@@ -88,14 +88,10 @@ export default class MapAdmin extends React.Component {
     var index = copy.findIndex(s => s.userId == data.userId);
     if( index != -1){
       copy[index] = data;
-      this.setState({
-        users : copy
-      });
+      this.setState({users : copy});
     }else{
       copy.push(data);
-      this.setState({
-        users : copy
-      });
+      this.setState({users : copy});
     }
   }
 
@@ -127,7 +123,6 @@ export default class MapAdmin extends React.Component {
             //     }
             //   };
             // console.log("after affectation:" + JSON.stringify(coordinates))
-
             return( <TruckMarker user={marker} socket={this.state.socket}/>)
           })}
         </MapView>
