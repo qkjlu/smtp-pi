@@ -13,6 +13,7 @@ export default class MapTruck extends React.Component {
   constructor(props) {
       super(props);
       this.handleConnection = this.handleConnection.bind(this);
+      this.handleDisconnection = this.handleDisconnection.bind(this);
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.watchLocation = this.watchLocation.bind(this);
       this.requestLocationPermission = this.requestLocationPermission.bind(this);
@@ -27,6 +28,7 @@ export default class MapTruck extends React.Component {
           distanceMinToChangeEtatNearToAPlace : 40,
           socket : null,
           users: [],
+          ETA : 0, //Estimate Time Arrival
           myPos : {
               latitude : null,
               longitude : null
@@ -55,6 +57,14 @@ export default class MapTruck extends React.Component {
     await socket.on("chantier/user/disconnected", this.handleDisconnection);
     await this.watchLocation(socket);
     this.setState({socket : socket});
+  }
+
+  handleConnection(data){
+    console.log("Truck:" + data.userId +" is connected")
+  }
+
+  handleCoordinates(data){
+    console.log("coordinates receve: " + JSON.stringify(data));
   }
 
   // delete in user array the user that deconnecting
@@ -162,29 +172,12 @@ export default class MapTruck extends React.Component {
             },
             "etat": this.state.etat,
             "previousEtat": this.state.previousEtat,
+            "ETA" : this.state.ETA
         };
         socket.emit("chantier/sendCoordinates", toSubmit);
       },
       error => console.log("error :" +error)
     )
-  }
-
-  getCoordinatesChargement() {
-      return(
-          {
-              latitude :this.props.chargement.latitude,
-              longitude :this.props.chargement.longitude,
-          }
-      );
-  }
-
-  getCoordinatesDechargement(){
-      return(
-          {
-              latitude :this.props.dechargement.latitude,
-              longitude :this.props.dechargement.longitude,
-          }
-      );
   }
 
   // calcul meters between 2 coordinates
@@ -206,24 +199,21 @@ export default class MapTruck extends React.Component {
           }
       }
       else if (this.state.etat === "chargé"){
-          let place = this.getCoordinatesDechargement();
-          let distance = this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
+          let distance = this.calculateFlightDistance(me.latitude,me.longitude,this.props.dechargement.latitude,this.props.dechargement.longitude);
           console.log("distance chargé->enDéchargement ="+distance);
           if(distance<distanceMinToUpdateEtat){
                 console.log("changement d'etat car assez proche du lieu de dechargement");
                 this.setState({etat: "enDéchargement"})
             }
       }else if (this.state.etat === "enChargement"){
-          let place = this.getCoordinatesChargement();
-          let distance = this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
+          let distance = this.calculateFlightDistance(me.latitude,me.longitude,this.props.chargement.latitude,this.props.chargement.longitude);
           console.log("distance enChargement->chargé ="+distance);
           if(distance>distanceMinToUpdateEtat){
               console.log("changement d'etat car assez loin du lieu de chargement");
               this.setState({etat: "chargé"})
           }
       }else if (this.state.etat === "enDéchargement"){
-          let place = this.getCoordinatesDechargement();
-          let distance = this.calculateFlightDistance(me.latitude,me.longitude,place.latitude,place.longitude);
+          let distance = this.calculateFlightDistance(me.latitude,me.longitude,this.props.dechargement.latitude,this.props.dechargement.longitude);
           console.log("distance enDéchargement->déchargé ="+distance);
           if(distance>distanceMinToUpdateEtat){
               console.log("changement d'etat car assez loin du lieu de déchargement");
@@ -268,7 +258,7 @@ export default class MapTruck extends React.Component {
   render() {
     return(
       <View>
-          <TimeBetween/>
+          <TimeBetween timeBetween={this.state.timeBetween}/>
           <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
           <Text>  chargement  : long {this.props.chargement.longitude} lat : {this.props.chargement.latitude} </Text>
           <Text>  dechargement  : long {this.props.dechargement.longitude} lat : {this.props.dechargement.latitude} </Text>

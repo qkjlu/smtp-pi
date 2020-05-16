@@ -2,17 +2,22 @@ import * as React from 'react';
 import {Text, View, StyleSheet } from 'react-native';
 import style from '../../Style'
 
-export default function TruckView({navigation, route}) {
+export default class TruckView extends React.Component{
 
-    return (
-        <View style={styles.contain}>
-            <Text style={styles.text}> Vous êtes à 5 minutes du prochain camion </Text>
-        </View>
-    );
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <View style={styles.contain}>
+                <Text style={styles.text}> Vous êtes à {this.props.ETA} minutes du prochain camion </Text>
+            </View>
+        );
+    }
 }
 const styles = StyleSheet.create({
     text: {
-
         fontWeight: 'bold',
         fontSize: 20,
         paddingTop : 15,
@@ -22,6 +27,5 @@ const styles = StyleSheet.create({
         backgroundColor : '#FFF',
         borderWidth: 1,
         height : 60,
-
     }
 });
