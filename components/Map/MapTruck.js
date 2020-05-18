@@ -20,7 +20,7 @@ export default class MapTruck extends React.Component {
       this.componentDidMount =this.componentDidMount.bind(this);
       this.succesConnection = this.succesConnection.bind(this);
       this.getLocation = this.getLocation.bind(this);
-      this.getMyEtatFromServer = this.getMyEtatFromServer.bind(this);
+      //this.getMyEtatFromServer = this.getMyEtatFromServer.bind(this);
       this.updateEtat = this.updateEtat.bind(this);
       this.rollBack = this.rollBack.bind(this);
       this.calculateFlightDistance = this.calculateFlightDistance.bind(this);
@@ -42,7 +42,7 @@ export default class MapTruck extends React.Component {
     const socket = await io("https://smtp-pi.herokuapp.com/");
     const userId  = await AsyncStorage.getItem('userId');
     await this.requestLocationPermission();
-    await this.getMyEtatFromServer();
+    //await this.getMyEtatFromServer();
     await socket.emit("chantier/connect", {
           "userId" :  userId,
           "chantierId" : this.props.worksite.id,
@@ -57,14 +57,6 @@ export default class MapTruck extends React.Component {
     await socket.on("chantier/user/disconnected", this.handleDisconnection);
     await this.watchLocation(socket);
     this.setState({socket : socket});
-  }
-
-  handleConnection(data){
-    console.log("Truck:" + data.userId +" is connected")
-  }
-
-  handleCoordinates(data){
-    console.log("coordinates receve: " + JSON.stringify(data));
   }
 
   // delete in user array the user that deconnecting
@@ -172,7 +164,7 @@ export default class MapTruck extends React.Component {
             },
             "etat": this.state.etat,
             "previousEtat": this.state.previousEtat,
-            "ETA" : this.state.ETA
+            "ETA" : 10
         };
         socket.emit("chantier/sendCoordinates", toSubmit);
       },
