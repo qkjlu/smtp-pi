@@ -20,7 +20,6 @@ export default class MapTruck extends React.Component {
       this.componentDidMount =this.componentDidMount.bind(this);
       this.succesConnection = this.succesConnection.bind(this);
       this.getLocation = this.getLocation.bind(this);
-      this.getMyEtatFromServer = this.getMyEtatFromServer.bind(this);
       this.updateEtat = this.updateEtat.bind(this);
       this.rollBack = this.rollBack.bind(this);
       this.calculateFlightDistance = this.calculateFlightDistance.bind(this);
@@ -28,7 +27,7 @@ export default class MapTruck extends React.Component {
           distanceMinToChangeEtatNearToAPlace : 40,
           socket : null,
           users: [],
-          ETA : 0, //Estimate Time Arrival
+          estimatedTimeArrival : Math.floor(Math.random() * 11), //Estimate Time Arrival
           myPos : {
               latitude : null,
               longitude : null
@@ -42,14 +41,13 @@ export default class MapTruck extends React.Component {
     const socket = await io("https://smtp-pi.herokuapp.com/");
     const userId  = await AsyncStorage.getItem('userId');
     await this.requestLocationPermission();
-    await this.getMyEtatFromServer();
     await socket.emit("chantier/connect", {
           "userId" :  userId,
           "chantierId" : this.props.worksite.id,
           "coordinates": {
             "longitude": this.state.myPos.longitude,
             "latitude": this.state.myPos.latitude
-          }
+          },
     });
     //await socket.on("chantier/connect/success", this.succesConnection);
     await socket.on("chantier/user/connected", this.handleConnection);
@@ -64,7 +62,7 @@ export default class MapTruck extends React.Component {
   }
 
   handleCoordinates(data){
-    console.log("coordinates receve: " + JSON.stringify(data));
+    console.log("coordinates receive: " + JSON.stringify(data));
   }
 
   // delete in user array the user that deconnecting
@@ -172,7 +170,7 @@ export default class MapTruck extends React.Component {
             },
             "etat": this.state.etat,
             "previousEtat": this.state.previousEtat,
-            "ETA" : this.state.ETA
+            "ETA" : this.state.estimatedTimeArrival
         };
         socket.emit("chantier/sendCoordinates", toSubmit);
       },
@@ -258,13 +256,14 @@ export default class MapTruck extends React.Component {
   render() {
     return(
       <View>
-          <TimeBetween timeBetween={this.state.timeBetween}/>
+          <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>
           <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
           <Text>  chargement  : long {this.props.chargement.longitude} lat : {this.props.chargement.latitude} </Text>
           <Text>  dechargement  : long {this.props.dechargement.longitude} lat : {this.props.dechargement.latitude} </Text>
           <Text>  coordonnées user : long :{this.state.myPos.longitude} , lat : {this.state.myPos.latitude} </Text>
           <Text>  mon etat : {this.state.etat}</Text>
           <Text>  mon etat précédent : {this.state.previousEtat}</Text>
+          <Text>  mon ETA  : {this.state.ETA}</Text>
           <StopButtons  changeEtat={e => this.updateEtat(e)} rollBack={() => this.rollBack()}/>
       </View>
     )

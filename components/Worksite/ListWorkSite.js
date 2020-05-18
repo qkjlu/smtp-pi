@@ -83,6 +83,7 @@ export default class ListWorkSite extends React.Component {
         } else {
             return (
                 <View>
+                    <ScrollView>
                     <ButtonGroupAdmin onReload={this.reloadData}/>
                     <Text style={style.getStartedText}>Liste des chantier:</Text>
                     <Search/>
@@ -90,6 +91,7 @@ export default class ListWorkSite extends React.Component {
                             data={this.state.report}
                             renderItem={({item}) => <WorkSiteRow worksite={item} onDelete={(id) =>this.deleteWorkSite(id)}/>}
                         />
+                    </ScrollView>
                 </View>
             )
         }
