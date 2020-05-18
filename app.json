@@ -36,6 +36,7 @@
       },
       "versionCode": 1
     },
-    "description": ""
+    "description": "",
+    "entryPoint": "node_modules/expo/AppEntry.js"
   }
 }
