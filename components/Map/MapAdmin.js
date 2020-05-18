@@ -7,14 +7,16 @@ import {Marker, Circle} from "react-native-maps";
 import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
+import axios from 'axios';
 import CraneView from "../Crane/CraneView";
-
 import io from "socket.io-client";
 
 export default class MapAdmin extends React.Component {
   constructor(props) {
       super(props);
       this.handleConnection = this.handleConnection.bind(this);
+      this.handleProbleme = this.handleProbleme.bind(this);
+      this.getUserInfo = this.getUserInfo.bind(this);
       this.handleDisconnection = this.handleDisconnection.bind(this);
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.componentDidMount =this.componentDidMount.bind(this);
@@ -83,8 +85,48 @@ export default class MapAdmin extends React.Component {
     }
   }
 
+  async handleProbleme(userId,etat){
+    // get Info of user
+    var userInfo = await this.getUserInfo("camionneurs",userId);
+    if(userInfo == -1){
+      userInfo = await this.getUserInfo("grutiers",userId);
+    }
+    console.log(userInfo);
+    var msg = userInfo.prenom + " " + userInfo.nom;
+    if(etat == "probleme"){
+      msg = msg + " a un problème ! Veuillez le contactez au plus vite !"
+    }else{
+      msg = msg + " a une urgence ! Veuillez le contactez au plus vite !"
+    }
+    alert(msg);
+  }
+
+  async getUserInfo(typeUser,userId){
+    const token  = await AsyncStorage.getItem('token');
+    return axios({
+      method: 'get',
+      url: 'https://smtp-pi.herokuapp.com/' + typeUser + '/' + userId,
+      headers: {'Authorization': 'Bearer ' + token},
+    })
+      .then( response => {
+        if(response.status != 200){
+          console.log(response.status);
+          return -1
+        }
+        console.log(response.status)
+        return response.data
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+  }
+
   async handleCoordinates(data){
     //console.log("Admin: coordinates receive: " + JSON.stringify(data));
+    // handle if receive probleme:
+    if(data.etat == "probleme" || data.etat == "urgence"){
+      this.handleProbleme(data.userId,data.etat);
+    }
     var copy = this.state.users.slice();
     var index = copy.findIndex(s => s.userId == data.userId);
     if( index != -1){
