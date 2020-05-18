@@ -8,10 +8,27 @@ export default class TruckView extends React.Component{
         super(props);
     }
 
+    getTimeBetween(){
+        var time = null;
+        for (const user of this.props.users){
+            if (user.etat === this.props.etat && user.ETA < this.props.ETA){
+                if(time === null || time >= Math.abs(user.ETA - this.props.ETA) ){
+                    time = Math.abs(user.ETA - this.props.ETA)
+                }
+            }
+        }
+        if(time === null){
+            // pas de camion devant lui donc on renvoie l'ETA
+            console.log("pas de camion devant lui donc on renvoie ETA")
+            time = this.props.ETA
+        }
+        return time
+    }
+
     render() {
         return (
             <View style={styles.contain}>
-                <Text style={styles.text}> Vous êtes à {this.props.ETA} minutes du prochain camion </Text>
+                <Text style={styles.text}> à {this.getTimeBetween()} minutes du camion devant </Text>
             </View>
         );
     }
