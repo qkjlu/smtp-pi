@@ -2,11 +2,10 @@ import React from "react";
 import Style from "../../Style";
 import axios from 'axios'
 import {Text, ActivityIndicator, View, AsyncStorage} from "react-native";
-import TrucksWorkSite from "../Truck/TrucksWorkSite";
 import MapAdmin from "../Map/MapAdmin";
 import MapTruck from "../Map/MapTruck";
-import StopButtons from "../StopButtons";
-import TimeBetween from "../Truck/TimeBetween";
+import CraneView from "../Crane/CraneView";
+
 export default class ListWorkSite extends React.Component {
     constructor(props) {
         super(props);
@@ -19,14 +18,16 @@ export default class ListWorkSite extends React.Component {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        console.log(this.props.worksite)
         // get typeOfUser
         this.getUser().then( res => this.setState({typeUser : res }))
+        const token = await AsyncStorage.getItem('token');
         //get chargement
         axios({
             method : 'get',
-            url :'https://smtp-pi.herokuapp.com/lieux/'+this.props.idChargement,
-            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
+            url :'https://smtp-pi.herokuapp.com/lieux/'+this.props.worksite.lieuChargementId,
+            headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {
                 if(response.status != 200){
@@ -44,8 +45,8 @@ export default class ListWorkSite extends React.Component {
         //get dechargement
         axios({
             method : 'get',
-            url :'https://smtp-pi.herokuapp.com/lieux/'+this.props.idDechargement,
-            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}
+            url :'https://smtp-pi.herokuapp.com/lieux/'+this.props.worksite.lieuDéchargementId,
+            headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {
                 if(response.status != 200){
@@ -86,7 +87,8 @@ export default class ListWorkSite extends React.Component {
             } else {
                 return (
                     <View>
-                        <MapAdmin worksite={this.props.worksite} chargement={this.state.chargement} dechargement={this.state.dechargement}/>
+                        <MapAdmin worksite={this.props.worksite} chargement={this.state.chargement} dechargement={this.state.dechargement}
+                                  auChargement={this.props.auChargement}typeOfUser={this.state.typeUser}/>
                     </View>
                 )
             }

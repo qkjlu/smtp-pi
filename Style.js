@@ -43,7 +43,7 @@ export default {
         fontSize : 22
     },
     button : {
-        width: '100%',
+        width: '40%',
         height : 40,
         paddingHorizontal : 4,
         flex :1

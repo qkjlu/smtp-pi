@@ -27,7 +27,7 @@ export default class MapTruck extends React.Component {
           distanceMinToChangeEtatNearToAPlace : 40,
           socket : null,
           users: [],
-          ETA : 0, //Estimate Time Arrival
+          estimatedTimeArrival : Math.floor(Math.random() * 11), //Estimate Time Arrival
           myPos : {
               latitude : null,
               longitude : null
@@ -170,7 +170,7 @@ export default class MapTruck extends React.Component {
             },
             "etat": this.state.etat,
             "previousEtat": this.state.previousEtat,
-            "ETA" : this.state.ETA
+            "ETA" : this.state.estimatedTimeArrival
         };
         socket.emit("chantier/sendCoordinates", toSubmit);
       },
@@ -256,7 +256,7 @@ export default class MapTruck extends React.Component {
   render() {
     return(
       <View>
-          <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} ETA={this.state.ETA}/>
+          <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>
           <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
           <Text>  chargement  : long {this.props.chargement.longitude} lat : {this.props.chargement.latitude} </Text>
           <Text>  dechargement  : long {this.props.dechargement.longitude} lat : {this.props.dechargement.latitude} </Text>

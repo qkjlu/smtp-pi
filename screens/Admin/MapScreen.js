@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {createStackNavigator} from "@react-navigation/stack";
-import WorkSiteMap from "../../components/Worksite/WorkSiteMap";
 import MapTest from "../../components/Map/MapTest";
 const HomeStack = createStackNavigator();
 

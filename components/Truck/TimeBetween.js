@@ -11,9 +11,9 @@ export default class TruckView extends React.Component{
     getTimeBetween(){
         var time = null;
         for (const user of this.props.users){
-            if (user.etat === this.props.etat && user.ETA < this.props.ETA){
-                if(time === null || time >= Math.abs(user.ETA - this.props.ETA) ){
-                    time = Math.abs(user.ETA - this.props.ETA)
+            if (user.etat === this.props.etat && user.ETA < this.props.estimatedTimeArrival){
+                if(time === null || time >= Math.abs(user.ETA - this.props.estimatedTimeArrival) ){
+                    time = Math.abs(user.ETA - this.props.estimatedTimeArrival)
                 }
             }
         }

@@ -60,12 +60,20 @@ export default class WorkSiteAccessButton extends React.Component {
 
     CraneAccess() {
         return (
-            <View style={{ flex : 1}}>
+            <View style={{ flex : 1 , flexDirection: "row"}}>
                 <View style={style.button} >
                     <Button
-                        color = 'orange'
-                        onPress={() => { RootNavigation.navigate('CraneView', { worksite : this.props.worksite })}}
-                        title="Go"
+                        buttonStyle={{backgroundColor:'#3a8209'}}
+                        onPress={() => { RootNavigation.navigate('CraneView', { worksite : this.props.worksite, auChargement:true })}}
+                        title="Charger"
+                        accessibilityLabel="redirection vers la page du chantier"
+                    />
+                </View>
+                <View style={style.button} >
+                    <Button
+                        buttonStyle={{backgroundColor:'#820c3e'}}
+                        onPress={() => { RootNavigation.navigate('CraneView', { worksite : this.props.worksite, auChargement:false })}}
+                        title="Décharger"
                         accessibilityLabel="redirection vers la page du chantier"
                     />
                 </View>

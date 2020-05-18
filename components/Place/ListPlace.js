@@ -83,12 +83,14 @@ export default class ListWorkSite extends React.Component {
         } else {
             return (
                 <View>
+                    <ScrollView>
                     <Text style={style.getStartedText}>Liste des lieux:</Text>
                     <Search/>
                     <FlatList
                         data={this.state.report}
                         renderItem={({item}) => <PlaceRow place={item} onDelete={(id) =>this.deletePlace(id)}/>}
                     />
+                    </ScrollView>
                 </View>
             )
         }
