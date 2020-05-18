@@ -55,7 +55,7 @@ export default function App(props) {
     
     return null;
   } else {
-    console.log("zub")
+    
     return (
       <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}

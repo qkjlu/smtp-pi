@@ -1,13 +1,14 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, ListView, StyleSheet, PermissionsAndroid, Dimensions, AsyncStorage} from "react-native";
+import {Text, View, FlatList, ListView, StyleSheet, PermissionsAndroid, Dimensions, AsyncStorage, Button} from "react-native";
 import { getDistance } from 'geolib';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import io from "socket.io-client";
 import StopButtons from "../StopButtons";
 import TimeBetween from "../Truck/TimeBetween";
+import ActivityStarter from '../../ActivityStarter';
 
 export default class MapTruck extends React.Component {
   constructor(props) {
@@ -256,6 +257,13 @@ export default class MapTruck extends React.Component {
   render() {
     return(
       <View>
+          <Button
+          // onPress={() => {ActivityStarter.startNavigation([3.866575956344605, 43.625855729888755],[3.8642907142639165, 43.632382851071256])}}
+            onPress={() => ActivityStarter.startNavigation(
+              [this.props.chargement.longitude, this.props.chargement.latitude],
+              [this.props.dechargement.longitude,this.props.dechargement.latitude])}
+            title="Start navigation"
+          />
           <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>
           <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
           <Text>  chargement  : long {this.props.chargement.longitude} lat : {this.props.chargement.latitude} </Text>
