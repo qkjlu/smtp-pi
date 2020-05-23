@@ -10,44 +10,82 @@ export default class CraneView extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            myTrucks : [],
-            nbTrucks : 0
+            socket : this.props.socket,
+            myTrucks : this.props.users,
+            nbTrucks : 0,
         }
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.filterTrucksComingMyWay = this.filterTrucksComingMyWay.bind(this);
+        this.sortTruckByETA = this.sortTruckByETA.bind(this);
+        this.handleCoordinates = this.handleCoordinates.bind(this);
     }
 
-    componentDidMount(){
-        this.filterTrucksComingMyWay();
-        this.sortTruckByETA();
-        console.log("heho")
+    async componentDidMount(){
+        if(this.state.myTrucks.length != 0){
+            const trucks = await this.filterTrucksComingMyWay();
+            this.sortTruckByETA(trucks);
+            console.log("heho")
+        }
+        await this.state.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
     }
 
-    filterTrucksComingMyWay(){
+    async componentDidUpdate(prevProps){
+        if(prevProps.users.length != this.props.users.length){
+
+            console.log("heeeeeeeeeeeeeeeeeeeeeeeeereeeeeeeeeeeeeeeeeeeeeeeee")
+            const trucks = await this.filterTrucksComingMyWay();
+            console.log("trucks :" + trucks);
+            this.sortTruckByETA(trucks);
+        }
+    }
+
+    async handleCoordinates(data){
+        console.log("Crane: coordinates receive: " + JSON.stringify(data));
+        var copy = this.state.myTrucks.slice();
+        copy.push(data);
+        this.setState({myTrucks : copy});
+        // var index = copy.findIndex(s => s.userId == data.userId);
+        // if( index != -1){
+        //   copy[index] = data;
+        //   this.setState({myTrucks : copy});
+        // }else{
+        //   copy.push(data);
+        //   this.setState({myTrucks : copy});
+        // }
+    }
+
+    async filterTrucksComingMyWay(){
         var i = -1;
         var res = [];
-        for (const filteredTrucks of this.props.users) {
+        await this.props.users.map(user => {
             if(this.props.auChargement){
-                if(filteredTrucks.etat === "déchargé"){
-                    res[i+1] = filteredTrucks;
+                if(user.etat === "déchargé"){
+                    res[i+1] = user;
                     i = i+1;
                 }
             }else{
-                if(filteredTrucks.etat === "chargé"){
-                    res[i+1] = filteredTrucks;
+                if(user.etat === "chargé"){
+                    res[i+1] = user;
                     i = i+1;
                 }
             }
-        }
+        })
+
         console.log("res : "+res);
         console.log("i : "+i);
-        this.setState({
-            myTrucks : res,
-            nbTrucks : i+1
-        })
+        return res
+        // this.setState({
+        //     myTrucks : res,
+        //     nbTrucks : i+1
+        // })
     }
 
-    sortTruckByETA(){
-        this.state.myTrucks.sort(function(a , b){return a.ETA - b.ETA});
+    sortTruckByETA(trucks){
+        const copy = trucks.sort(function(a , b){return a.ETA - b.ETA});
+        this.setState({
+            myTrucks : copy,
+            nbTrucks : copy.length + 1
+        })
         console.log("tri : "+this.state.myTrucks)
     }
 
