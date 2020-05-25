@@ -25,6 +25,7 @@ export default class MapTruck extends React.Component {
         this.rollBack = this.rollBack.bind(this);
         this.calculateFlightDistance = this.calculateFlightDistance.bind(this);
         this.state = {
+            userId: null,
             distanceMinToChangeEtatNearToAPlace : 40,
             socket : null,
             users: [],
@@ -36,11 +37,13 @@ export default class MapTruck extends React.Component {
             etat : "déchargé",
             previousEtat : null,
         };
+        
     }
 
     async componentDidMount(){
         const socket = await io("https://smtp-pi.herokuapp.com/");
         const userId  = await AsyncStorage.getItem('userId');
+        this.setState({userId: userId})
         await this.requestLocationPermission();
         await socket.emit("chantier/connect", {
             "userId" :  userId,
@@ -98,7 +101,7 @@ export default class MapTruck extends React.Component {
     }
 
     handleCoordinates(data){
-        console.log("Truck : coordianates receve: " + JSON.stringify(data));
+        console.log("Truck : coordinates received: " + JSON.stringify(data));
         var copy = this.state.users.slice();
         var index = copy.findIndex(s => s.userId == data.userId);
         if( index != -1){
@@ -256,13 +259,15 @@ export default class MapTruck extends React.Component {
     }
 
     render() {
+        console.log(this.state.userId, this.props.worksite.id);
         return(
             <View>
                 <Button
-                    // onPress={() => {ActivityStarter.startNavigation([3.866575956344605, 43.625855729888755],[3.8642907142639165, 43.632382851071256])}}
                     onPress={() => ActivityStarter.startNavigation(
                         [this.props.chargement.longitude, this.props.chargement.latitude],
-                        [this.props.dechargement.longitude,this.props.dechargement.latitude])}
+                        [this.props.dechargement.longitude,this.props.dechargement.latitude], 
+                        this.state.userId,
+                        this.props.worksite.id)}
                     title="Start navigation"
                 />
                 <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>
