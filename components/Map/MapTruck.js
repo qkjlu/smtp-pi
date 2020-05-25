@@ -248,7 +248,8 @@ export default class MapTruck extends React.Component {
                 "latitude" : this.state.myPos.latitude,
             },
             "etat": this.state.previousEtat,
-            "previousEtat": this.state.etat
+            "previousEtat": this.state.etat,
+            "ETA" : this.state.estimatedTimeArrival
         };
         this.state.socket.emit("chantier/sendCoordinates", toSubmit);
         this.setState({etat : this.state.previousEtat})
@@ -271,7 +272,7 @@ export default class MapTruck extends React.Component {
                 <Text>  coordonnées user : long :{this.state.myPos.longitude} , lat : {this.state.myPos.latitude} </Text>
                 <Text>  mon etat : {this.state.etat}</Text>
                 <Text>  mon etat précédent : {this.state.previousEtat}</Text>
-                <Text>  mon ETA  : {this.state.ETA}</Text>
+                <Text>  mon ETA  : {this.state.estimatedTimeArrival}</Text>
                 <StopButtons  changeEtat={e => this.updateEtat(e)} rollBack={() => this.rollBack()}/>
             </View>
         )

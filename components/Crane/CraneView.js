@@ -18,23 +18,21 @@ export default class CraneView extends React.Component {
         this.filterTrucksComingMyWay = this.filterTrucksComingMyWay.bind(this);
         this.sortTruckByETA = this.sortTruckByETA.bind(this);
         this.handleCoordinates = this.handleCoordinates.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
     }
 
     async componentDidMount(){
+      await this.state.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
         if(this.state.myTrucks.length != 0){
-            const trucks = await this.filterTrucksComingMyWay();
+            const trucks = await this.filterTrucksComingMyWay(this.state.myTrucks);
             this.sortTruckByETA(trucks);
-            console.log("heho")
         }
-        await this.state.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+      //this.setState({socket : this.props.socket})
     }
 
     async componentDidUpdate(prevProps){
         if(prevProps.users.length != this.props.users.length){
-
-            console.log("heeeeeeeeeeeeeeeeeeeeeeeeereeeeeeeeeeeeeeeeeeeeeeeee")
-            const trucks = await this.filterTrucksComingMyWay();
-            console.log("trucks :" + trucks);
+            const trucks = await this.filterTrucksComingMyWay(this.props.users);
             this.sortTruckByETA(trucks);
         }
     }
@@ -42,22 +40,22 @@ export default class CraneView extends React.Component {
     async handleCoordinates(data){
         console.log("Crane: coordinates receive: " + JSON.stringify(data));
         var copy = this.state.myTrucks.slice();
-        copy.push(data);
-        this.setState({myTrucks : copy});
-        // var index = copy.findIndex(s => s.userId == data.userId);
-        // if( index != -1){
-        //   copy[index] = data;
-        //   this.setState({myTrucks : copy});
-        // }else{
-        //   copy.push(data);
-        //   this.setState({myTrucks : copy});
-        // }
+        var index = copy.findIndex(s => s.userId == data.userId);
+        if( index != -1){
+          copy[index] = data;
+          //this.setState({myTrucks : copy});
+        }else{
+          copy.push(data);
+          //this.setState({myTrucks : copy});
+        }
+        const trucks = await this.filterTrucksComingMyWay(copy);
+        this.sortTruckByETA(trucks);
     }
 
-    async filterTrucksComingMyWay(){
+    async filterTrucksComingMyWay(tabUser){
         var i = -1;
         var res = [];
-        await this.props.users.map(user => {
+        await tabUser.map(user => {
             if(this.props.auChargement){
                 if(user.etat === "déchargé"){
                     res[i+1] = user;
@@ -70,14 +68,7 @@ export default class CraneView extends React.Component {
                 }
             }
         })
-
-        console.log("res : "+res);
-        console.log("i : "+i);
         return res
-        // this.setState({
-        //     myTrucks : res,
-        //     nbTrucks : i+1
-        // })
     }
 
     sortTruckByETA(trucks){
@@ -86,7 +77,6 @@ export default class CraneView extends React.Component {
             myTrucks : copy,
             nbTrucks : copy.length + 1
         })
-        console.log("tri : "+this.state.myTrucks)
     }
 
     render() {

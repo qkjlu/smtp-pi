@@ -10,6 +10,7 @@ import * as Permissions from 'expo-permissions';
 import axios from 'axios';
 import CraneView from "../Crane/CraneView";
 import io from "socket.io-client";
+import KeepAwake from 'react-native-keep-awake';
 
 export default class MapAdmin extends React.Component {
     constructor(props) {
@@ -21,6 +22,7 @@ export default class MapAdmin extends React.Component {
         this.handleCoordinates = this.handleCoordinates.bind(this);
         this.componentDidMount =this.componentDidMount.bind(this);
         this.succesConnection = this.succesConnection.bind(this);
+        this.socket = io("https://smtp-pi.herokuapp.com/");
         this.state = {
             socket : null,
             connected : false,
@@ -30,23 +32,23 @@ export default class MapAdmin extends React.Component {
     }
 
     async componentDidMount(){
-        const socket = await io("https://smtp-pi.herokuapp.com/");
+        //const socket = await io("https://smtp-pi.herokuapp.com/");
         const userId  = await AsyncStorage.getItem('userId');
-        await socket.emit("chantier/connect", {
+        await this.socket.emit("chantier/connect", {
             "userId" : userId,
             "chantierId" : this.props.worksite.id,
         });
-        await socket.on("chantier/connect/success", this.succesConnection);
-        await socket.on("chantier/user/connected", this.handleConnection);
-        await socket.on("chantier/user/disconnected", this.handleDisconnection);
-        await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
-        this.setState({ socket : socket});
+        await this.socket.on("chantier/connect/success", this.succesConnection);
+        await this.socket.on("chantier/user/connected", this.handleConnection);
+        await this.socket.on("chantier/user/disconnected", this.handleDisconnection);
+        await this.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+        //this.setState({ socket : socket});
     }
 
     async componentWillUnmount(){
-        await this.state.socket.emit("chantier/disconnect","")
+        await this.socket.emit("chantier/disconnect","")
         console.log("Admin : Close connection to socket");
-        this.state.socket.close();
+        this.socket.close();
     }
 
     // update map when an user connect or disconnect
@@ -142,10 +144,10 @@ export default class MapAdmin extends React.Component {
         console.log("users:" + JSON.stringify(this.state.users));
         const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
         const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
-        console.log("typeOfUser : "+this.props.typeOfUser)
         if(this.props.typeOfUser === "crane"){
             return(
                 <View>
+                  <KeepAwake />
                     <MapView
                         style={styles.mapCrane}
                         region={{
@@ -157,19 +159,20 @@ export default class MapAdmin extends React.Component {
                     >
                         <Marker coordinate={chargement} title={"chargement"} pinColor={"#3895ff"}/>
                         <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#3895ff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={20}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={20}/>
+                        <Circle key={"chargementCircle"} center={chargement} radius={40}/>
+                        <Circle key={"dechargementCircle"} center={dechargement} radius={40}/>
                         {this.state.users.map(marker => {
-                                return (<TruckMarker user={marker} socket={this.state.socket}/>)
+                                return (<TruckMarker user={marker} socket={this.socket}/>)
                             }
                         )}
                     </MapView>
-                    <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.state.socket}/>
+                    <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/>
                 </View>
             )
         }else {
             return (
                 <View style={{flex: 1}}>
+                  <KeepAwake />
                     <MapView
                         style={styles.map}
                         region={{
@@ -184,7 +187,7 @@ export default class MapAdmin extends React.Component {
                         <Circle key={"chargementCircle"} center={chargement} radius={20}/>
                         <Circle key={"chargementCircle"} center={dechargement} radius={20}/>
                         {this.state.users.map(marker => {
-                                return (<TruckMarker user={marker} socket={this.state.socket}/>)
+                                return (<TruckMarker user={marker} socket={this.socket}/>)
                             }
                         )}
                     </MapView>
