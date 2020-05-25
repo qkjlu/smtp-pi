@@ -64,7 +64,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private double remainingTime;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat = "chargé";
-    private double rayonChangementEtat = 30;
+    private double rayonChangementEtat = 40;
 
     private Socket mSocket;
     {
@@ -192,8 +192,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private float getDistanceFromDestination(Location location){
         float[] distanceFromDestination = new float[3];
         Point destination = null;
-        if(myEtat.equals("chargé") || myEtat.equals("enChargement")) { destination = DESTINATION; }
-        if(myEtat.equals("déchargé") || myEtat.equals("enDéchargement")) { destination = ORIGIN; }
+        if(myEtat.equals("chargé") || myEtat.equals("enDéchargement")) { destination = DESTINATION; }
+        if(myEtat.equals("déchargé") || myEtat.equals("enChargement")) { destination = ORIGIN; }
         if(destination == null){ throw new Error("getDistanceFromDestination: destination cannot be null"); }
         Location.distanceBetween(
                 location.getLatitude(),
@@ -308,10 +308,10 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private boolean rerouteUserIfNecessary(boolean etatChanged){
         boolean userRerouted = false;
         if(etatChanged){
-            if(myEtat.equals("enChargement")) {
+            if(myEtat.equals("chargé")) {
                 fetchRoute(ORIGIN, DESTINATION);
                 userRerouted = true;
-            } else if( myEtat.equals("enDéchargement")) {
+            } else if( myEtat.equals("déchargé")) {
                 fetchRoute(DESTINATION, ORIGIN);
                 userRerouted = true;
             }
