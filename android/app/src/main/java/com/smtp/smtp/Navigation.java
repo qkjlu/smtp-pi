@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
@@ -177,17 +178,32 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         }
     }
 
+    private float getDistanceFromDestination(Location location){
+        float[] distanceFromDestination = new float[3];
+        Point destination = null;
+        if(myEtat.equals("chargé") || myEtat.equals("enChargement")) { destination = DESTINATION; }
+        if(myEtat.equals("déchargé") || myEtat.equals("enDéchargement")) { destination = ORIGIN; }
+        if(destination == null){ throw new Error("getDistanceFromDestination: destination cannot be null"); }
+        Location.distanceBetween(
+                location.getLatitude(),
+                location.getLongitude(),
+                destination.latitude(),
+                destination.longitude(),
+                distanceFromDestination
+                );
+        return distanceFromDestination[0];
+    }
     @Override
     public void onProgressChange(Location location, RouteProgress routeProgress) {
         boolean didEtatChanged;
-        double distanceRemaining = routeProgress.distanceRemaining();
+        float distanceFromDestination = getDistanceFromDestination(location);
         coordinates = new JSONObject();
         remainingTime = routeProgress.durationRemaining();
-        didEtatChanged = changeMyEtatIfNecessary(distanceRemaining);
+        didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         rerouteUserIfNecessary(didEtatChanged);
 
         Log.d(TAG, "Remaining time: " + remainingTime);
-        Log.d(TAG, "Distance remaining: " + distanceRemaining);
+        Log.d(TAG, "Distance remaining: " + distanceFromDestination);
         try {
             coordinates.put("longitude", location.getLongitude());
             coordinates.put("latitude", location.getLatitude());
@@ -218,14 +234,12 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
                             route = response.body().routes().get(0);
                             launchNavigation();
                         } else {
-                            //Snackbar.make(mapView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
                         }
-
                     }
-
                     @Override
                     public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
-                        //Snackbar.make(mapView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
                     }
                 });
     }
