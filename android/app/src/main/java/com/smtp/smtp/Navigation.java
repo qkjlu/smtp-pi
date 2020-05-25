@@ -19,7 +19,9 @@ import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
+import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
+import com.mapbox.services.android.navigation.v5.offroute.OffRoute;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 
@@ -43,6 +45,15 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private PermissionsManager permissionsManager;
     private final boolean SHOULD_SIMULATE = false;
     private static final String TAG = "Navigation";
+    private OffRoute neverOffRouteEngine = new OffRoute() {
+        @Override
+        public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
+            // User will never be off-route
+            return false;
+        }
+    };
+
+
 
     private Point ORIGIN;
     private Point DESTINATION;
@@ -262,6 +273,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
                 .waynameChipEnabled(false)
                 .shouldSimulateRoute(SHOULD_SIMULATE)
                 .directionsRoute(route);
+
         navigationView.startNavigation(navViewBuilderOptions.build());
     }
 
@@ -368,7 +380,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
             obj.put("chantierId", chantierId);
             obj.put("coordinates", coordinates);
         } catch (JSONException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+            Log.e(TAG, e.getMessage());
             return;
         }
         Log.d(TAG,"Connecting to chantier");
