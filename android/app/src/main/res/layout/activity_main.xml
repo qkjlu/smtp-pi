@@ -9,5 +9,17 @@
         android:id="@+id/navigationView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/timeDiffTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginLeft="16dp"
+        android:background="@android:color/white"
+        android:elevation="3dp"
+        android:gravity="center"
+        android:padding="6dp"
+        android:textColor="@android:color/black"
+        android:textSize="35sp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
