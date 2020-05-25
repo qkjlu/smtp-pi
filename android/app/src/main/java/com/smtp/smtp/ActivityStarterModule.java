@@ -20,7 +20,7 @@ class ActivityStarterModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    void startNavigation(ReadableArray origin, ReadableArray destination) {
+    void startNavigation(ReadableArray origin, ReadableArray destination, String userId, String chantierId) {
         double[] originLnglat = new double[2];
         double[] destinationLnglat = new double[2];
 
@@ -34,6 +34,9 @@ class ActivityStarterModule extends ReactContextBaseJavaModule {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("origin", originLnglat);
         intent.putExtra("destination", destinationLnglat);
+        intent.putExtra("userId", userId);
+        intent.putExtra("chantierId", chantierId);
+
         reactContext.startActivity(intent);
     }
 }
