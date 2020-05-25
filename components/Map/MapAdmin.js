@@ -144,6 +144,7 @@ export default class MapAdmin extends React.Component {
         console.log("users:" + JSON.stringify(this.state.users));
         const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
         const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
+        console.log("typeOfUser : "+this.props.typeOfUser);
         if(this.props.typeOfUser === "crane"){
             return(
                 <View>
@@ -157,10 +158,10 @@ export default class MapAdmin extends React.Component {
                             longitudeDelta: 0.0421,
                         }}
                     >
-                        <Marker coordinate={chargement} title={"chargement"} pinColor={"#3895ff"}/>
-                        <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#3895ff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={40}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={40}/>
+                        <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
+                        <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
+                        <Circle key={"chargementCircle"} center={chargement} radius={20}/>
+                        <Circle key={"dechargementCircle"} center={dechargement} radius={20}/>
                         {this.state.users.map(marker => {
                                 return (<TruckMarker user={marker} socket={this.socket}/>)
                             }
@@ -182,8 +183,8 @@ export default class MapAdmin extends React.Component {
                             longitudeDelta: 0.0421,
                         }}
                     >
-                        <Marker coordinate={chargement} title={"chargement"} pinColor={"#3895ff"}/>
-                        <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#3895ff"}/>
+                        <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
+                        <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
                         <Circle key={"chargementCircle"} center={chargement} radius={20}/>
                         <Circle key={"chargementCircle"} center={dechargement} radius={20}/>
                         {this.state.users.map(marker => {

@@ -65,21 +65,21 @@ export default class TruckMarker extends React.Component {
   colorForThisEtat(etat){
       switch (etat) {
           case "déchargé":
-              return "blue";
+              return "#00a6ff";
           case "chargé":
-              return "green";
+              return "#079c00";
           case "pause":
-              return "yellow";
+              return "#d6d100";
           case "probleme":
-              return "orange";
+              return "#cf6402";
           case "urgence":
-              return "red";
+              return "#c91000";
           case "enDéchargement":
-              return "purple";
+              return "#9c0279";
           case "enChargement":
-              return "purple";
+              return "#9c0279";
           case null:
-              return "black";
+              return "#1f1f1f";
       }
   }
 
