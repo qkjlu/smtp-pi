@@ -37,7 +37,7 @@ export default class MapTruck extends React.Component {
             etat : "déchargé",
             previousEtat : null,
         };
-        
+
     }
 
     async componentDidMount(){
@@ -265,7 +265,7 @@ export default class MapTruck extends React.Component {
                 <Button
                     onPress={() => ActivityStarter.startNavigation(
                         [this.props.chargement.longitude, this.props.chargement.latitude],
-                        [this.props.dechargement.longitude,this.props.dechargement.latitude], 
+                        [this.props.dechargement.longitude,this.props.dechargement.latitude],
                         this.state.userId,
                         this.props.worksite.id)}
                     title="Start navigation"
