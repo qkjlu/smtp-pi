@@ -185,7 +185,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     @Override
     public void onNavigationReady(boolean isRunning) {
         if (askLocationPermissionIfNeeded()) {
-            fetchRoute(ORIGIN, DESTINATION);
+            if(myEtat.equals("chargé") || myEtat.equals("enChargement")) { fetchRoute(ORIGIN, DESTINATION); }
+            if(myEtat.equals("déchargé") || myEtat.equals("enDéchargement")) { fetchRoute(DESTINATION, ORIGIN); }
         }
     }
 
