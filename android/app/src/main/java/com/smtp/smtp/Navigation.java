@@ -63,7 +63,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private JSONObject coordinates;
     private double remainingTime;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
-    private String myEtat = "chargé";
+    private String myEtat = "déchargé";
     private double rayonChangementEtat = 40;
 
     private Socket mSocket;
