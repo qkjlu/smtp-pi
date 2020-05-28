@@ -41,24 +41,24 @@ export default class MapTruck extends React.Component {
     }
 
     async componentDidMount(){
-        const socket = await io("https://smtp-pi.herokuapp.com/");
+        // const socket = await io("https://smtp-pi.herokuapp.com/");
         const userId  = await AsyncStorage.getItem('userId');
         this.setState({userId: userId})
-        await this.requestLocationPermission();
-        await socket.emit("chantier/connect", {
-            "userId" :  userId,
-            "chantierId" : this.props.worksite.id,
-            "coordinates": {
-                "longitude": this.state.myPos.longitude,
-                "latitude": this.state.myPos.latitude
-            },
-        });
-        await socket.on("chantier/connect/success", this.succesConnection);
-        await socket.on("chantier/user/connected", this.handleConnection);
-        await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
-        await socket.on("chantier/user/disconnected", this.handleDisconnection);
-        await this.watchLocation(socket);
-        this.setState({socket : socket});
+        // await this.requestLocationPermission();
+        // await socket.emit("chantier/connect", {
+        //     "userId" :  userId,
+        //     "chantierId" : this.props.worksite.id,
+        //     "coordinates": {
+        //         "longitude": this.state.myPos.longitude,
+        //         "latitude": this.state.myPos.latitude
+        //     },
+        // });
+        // await socket.on("chantier/connect/success", this.succesConnection);
+        // await socket.on("chantier/user/connected", this.handleConnection);
+        // await socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
+        // await socket.on("chantier/user/disconnected", this.handleDisconnection);
+        // await this.watchLocation(socket);
+        // this.setState({socket : socket});
     }
 
     handleConnection(data){
@@ -270,7 +270,7 @@ export default class MapTruck extends React.Component {
                         this.props.worksite.id)}
                     title="Start navigation"
                 />
-                <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>
+                {/* <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>
                 <Text> TEST ENVOIE COORDONNEES CAMIONNEURS</Text>
                 <Text>  chargement  : long {this.props.chargement.longitude} lat : {this.props.chargement.latitude} </Text>
                 <Text>  dechargement  : long {this.props.dechargement.longitude} lat : {this.props.dechargement.latitude} </Text>
@@ -278,7 +278,7 @@ export default class MapTruck extends React.Component {
                 <Text>  mon etat : {this.state.etat}</Text>
                 <Text>  mon etat précédent : {this.state.previousEtat}</Text>
                 <Text>  mon ETA  : {this.state.estimatedTimeArrival}</Text>
-                <StopButtons  changeEtat={e => this.updateEtat(e)} rollBack={() => this.rollBack()}/>
+                <StopButtons  changeEtat={e => this.updateEtat(e)} rollBack={() => this.rollBack()}/> */}
             </View>
         )
     }
