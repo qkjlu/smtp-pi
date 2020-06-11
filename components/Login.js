@@ -3,6 +3,10 @@ import InputText from './InputText';
 import ValidateButton from './ValidateButton';
 import CustomPicker from './CustomPicker';
 import { ButtonGroup } from 'react-native-elements';
+import * as Permissions from 'expo-permissions';
+import * as Location from 'expo-location';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import NetInfo from "@react-native-community/netinfo";
 import {Image} from "react-native";
 import axios from 'axios';
 import style from "../Style";
@@ -17,6 +21,9 @@ export default class Login extends React.Component{
     this.handlePickerChange = this.handlePickerChange.bind(this);
     this.handleChangeFirstField = this.handleChangeFirstField.bind(this);
     this.handleChangeSecondField = this.handleChangeSecondField.bind(this);
+    this.requestLocationPermission = this.requestLocationPermission.bind(this);
+    this.internetCheck = this.internetCheck.bind(this);
+    this.accesLocation = this.accesLocation.bind(this);
     this.handleValidate = this.handleValidate.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
@@ -29,8 +36,10 @@ export default class Login extends React.Component{
     };
   }
 
-  componentDidMount(){
-    axios.get('https://smtp-pi.herokuapp.com/entreprises')
+  async componentDidMount(){
+    await this.requestLocationPermission();
+    await this.internetCheck();
+    await axios.get('https://smtp-pi.herokuapp.com/entreprises')
       .then( response => {
         if(response.status != 200){
           console.log(response.status);
@@ -46,6 +55,60 @@ export default class Login extends React.Component{
         console.log(error);
       });
   }
+
+  // handle connection error
+  async internetCheck(){
+    NetInfo.fetch().then(state => {
+      if (state.type === 'cellular' || state.type === 'wifi') {
+        console.log("send request");
+        axios.get('https://smtp-pi.herokuapp.com/entreprises',{timeout:5000})
+          .then( response => {
+            console.log(response.status);
+            }
+          ).catch(function (error) {
+            console.log(error);
+            alert("Erreur réseau ! Veuillez activez les données mobiles");
+          });
+      }else{
+        alert("Erreur Réseau ! Veuillez activez les données mobiles");
+      }
+    }).catch(function (error){
+      alert("error")
+    });
+  }
+
+  accesLocation(){
+    return RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastInterval: 5000})
+    .then(data => {
+      console.log("data" + data)
+      return true
+    }).catch(err => {
+      return false
+    });
+  }
+
+  // ask location to GPS and get current position if granted
+  async requestLocationPermission() {
+    let permission = false;
+    let acces = false;
+    while (!permission || !acces){
+      try {
+          let {granted} = await Permissions.askAsync(Permissions.LOCATION);
+          if (granted) {
+              console.log("access to position granted");
+              permission = true;
+              acces = this.accesLocation();
+              console.log(acces);
+          } else {
+              console.log("Location permission denied");
+          }
+      } catch (err) {
+          console.log("error "+err)
+      }
+    }
+  }
+
+
 
   async storeDataSession(item, selectedValue){
     try {
