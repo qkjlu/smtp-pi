@@ -11,6 +11,8 @@ import axios from 'axios';
 import CraneView from "../Crane/CraneView";
 import io from "socket.io-client";
 import KeepAwake from 'react-native-keep-awake';
+import Config from "react-native-config"; 
+
 
 export default class MapAdmin extends React.Component {
     constructor(props) {
@@ -24,7 +26,7 @@ export default class MapAdmin extends React.Component {
         this.succesConnection = this.succesConnection.bind(this);
         this.enableConnection = this.enableConnection.bind(this);
 
-        this.socket = io("https://smtp-pi.herokuapp.com/");
+        this.socket = io(Config.API_URL);
         this.state = {
             socket : null,
             connected : false,
@@ -35,18 +37,8 @@ export default class MapAdmin extends React.Component {
     }
 
     async componentDidMount(){
-        //const socket = await io("https://smtp-pi.herokuapp.com/");
         this.enableConnection();
         AppState.addEventListener('change', this.handleAppStateChange);
-        // await this.socket.emit("chantier/connect", {
-        //     "userId" : userId,
-        //     "chantierId" : this.props.worksite.id,
-        // });
-        // await this.socket.on("chantier/connect/success", this.succesConnection);
-        // await this.socket.on("chantier/user/connected", this.handleConnection);
-        // await this.socket.on("chantier/user/disconnected", this.handleDisconnection);
-        // await this.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
-        //this.setState({ socket : socket});
     }
 
     // enable socket connection
@@ -146,7 +138,7 @@ export default class MapAdmin extends React.Component {
         const token  = await AsyncStorage.getItem('token');
         return axios({
             method: 'get',
-            url: 'https://smtp-pi.herokuapp.com/' + typeUser + '/' + userId,
+            url: Config.API_URL + typeUser + '/' + userId,
             headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {

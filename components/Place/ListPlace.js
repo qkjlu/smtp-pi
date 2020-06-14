@@ -4,6 +4,7 @@ import axios from 'axios'
 import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions} from "react-native";
 import PlaceRow from "./PlaceRow";
 import Search from "../Search";
+import Config from "react-native-config"; 
 
 export default class ListWorkSite extends React.Component {
     constructor(props) {
@@ -25,7 +26,7 @@ export default class ListWorkSite extends React.Component {
         var data = { "id" : id};
         axios({
             method : 'delete',
-            url :'https://smtp-pi.herokuapp.com/lieux',
+            url : Config.API_URL + 'lieux',
             headers: {'Authorization': 'Bearer ' + token},
             data: data
         })
@@ -55,7 +56,7 @@ export default class ListWorkSite extends React.Component {
         const token = await AsyncStorage.getItem('token');
         axios({
             method : 'get',
-            url :'https://smtp-pi.herokuapp.com/lieux',
+            url : Config.API_URL + 'lieux',
             headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {
@@ -96,4 +97,3 @@ export default class ListWorkSite extends React.Component {
         }
     }
 }
-

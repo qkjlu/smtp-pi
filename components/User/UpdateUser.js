@@ -16,6 +16,7 @@ import axios from 'axios';
 import { Icon, Button } from 'react-native-elements'
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import style from '../../Style'
+import Config from "react-native-config"; 
 
 export default class UpdateUser extends React.Component {
   constructor(props) {
@@ -94,7 +95,7 @@ export default class UpdateUser extends React.Component {
 
   // API call for get and initialise list of company
   async getCompany(){
-    axios.get('https://smtp-pi.herokuapp.com/entreprises')
+    axios.get('entreprises')
       .then( response => {
         if(response.status != 200){
           console.log(response.status);
@@ -118,7 +119,7 @@ export default class UpdateUser extends React.Component {
     const token  = await AsyncStorage.getItem('token');
     await axios({
       method: 'post',
-      url: 'https://smtp-pi.herokuapp.com/entreprises',
+      url: Config.API_URL + 'entreprises',
       headers: {'Authorization': 'Bearer ' + token},
       data : { "nom" : this.state.company}
     }).then((response) => {
@@ -161,7 +162,7 @@ export default class UpdateUser extends React.Component {
 
       await axios({
         method: 'patch',
-        url: 'https://smtp-pi.herokuapp.com/' + typeUser + "/" + this.state.id,
+        url: Config.API_URL + typeUser + "/" + this.state.id,
         headers: {'Authorization': 'Bearer ' + token},
         data : data
       })
@@ -193,7 +194,7 @@ export default class UpdateUser extends React.Component {
 
     axios({
       method: 'post',
-      url: "https://smtp-pi.herokuapp.com/" + typeUser +"/" + this.state.id + "/entreprise",
+      url: Config.API_URL + typeUser +"/" + this.state.id + "/entreprise",
       headers: {'Authorization': 'Bearer ' + token},
       data: data
     })
@@ -233,11 +234,11 @@ export default class UpdateUser extends React.Component {
 
     var idUser = this.state.id
     var data = { "camionneur" : idUser}
-    var url = 'https://smtp-pi.herokuapp.com/entreprises/' + idCompany + '/camionneur'
+    var url = Config.API_URL + 'entreprises/' + idCompany + '/camionneur'
 
     // case gruiter
     if(!this.state.type){
-      url = 'https://smtp-pi.herokuapp.com/entreprises/' + idCompany + '/grutier'
+      url = Config.API_URL + 'entreprises/' + idCompany + '/grutier'
       data = { "grutier" : idUser}
     }
 

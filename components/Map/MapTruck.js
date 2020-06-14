@@ -41,7 +41,6 @@ export default class MapTruck extends React.Component {
     }
 
     async componentDidMount(){
-        // const socket = await io("https://smtp-pi.herokuapp.com/");
         const userId  = await AsyncStorage.getItem('userId');
         this.setState({userId: userId})
         // await this.requestLocationPermission();

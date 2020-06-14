@@ -13,6 +13,7 @@ import AddCompany from '../Company/AddCompany';
 import CustomPicker from '../CustomPicker';
 import axios from 'axios';
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
+import Config from "react-native-config";
 
 export default class AddUser extends React.Component {
   constructor(props) {
@@ -63,7 +64,7 @@ export default class AddUser extends React.Component {
 
   // API call for get and initialise list of company
   getCompany(){
-    axios.get('https://smtp-pi.herokuapp.com/entreprises')
+    axios.get( Config.API_URL + 'entreprises')
       .then( response => {
         if(response.status != 200){
           console.log(response.status);
@@ -87,7 +88,7 @@ export default class AddUser extends React.Component {
 
     await axios({
       method: 'post',
-      url: 'https://smtp-pi.herokuapp.com/entreprises',
+      url: Config.API_URL + 'entreprises',
       headers: {'Authorization': 'Bearer ' + token},
       data : { "nom" : this.state.company}
     }).then((response) => {
@@ -127,7 +128,7 @@ export default class AddUser extends React.Component {
 
       await axios({
         method: 'post',
-        url: 'https://smtp-pi.herokuapp.com/' + url,
+        url: Config.API_URL + url,
         data : data,
         headers: {'Authorization': 'Bearer ' + token}
       })
