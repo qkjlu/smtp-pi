@@ -7,9 +7,7 @@ export default class PlacePreview extends React.Component {
     render() {
             return (
                 <View style={style.previewPlace}>
-
                     <Text style={style.getStartedText}> Lieu sélectionné :  {this.props.idPlace} </Text>
-
                     <View style={style.button}>
                         <Button
                             icon={<Icon name='trash' type='font-awesome' color="red"/>}

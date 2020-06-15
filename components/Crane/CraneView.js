@@ -90,7 +90,7 @@ export default class CraneView extends React.Component {
                     <TruckArrivalTime truck={this.state.myTrucks[3]}/>
                     <TruckArrivalTime truck={this.state.myTrucks[4]}/>
                 </View>
-                <StopButtons/>
+                {/*<StopButtons/>*/}
             </View>
         );
     }

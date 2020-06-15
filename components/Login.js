@@ -6,11 +6,14 @@ import { ButtonGroup } from 'react-native-elements';
 import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import {Image} from "react-native";
+import {Image, ScrollView, Text} from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import style from "../Style";
 import  {View, ActivityIndicator, AsyncStorage} from 'react-native';
+import AutoCompletePlaces from "./Place/AutoCompletePlaces";
+import AutoCompleteUsers from "./AutoCompleteUsers";
+import Style from "../Style";
 var jwtDecode = require('jwt-decode');
 
 export default class Login extends React.Component{
@@ -32,7 +35,8 @@ export default class Login extends React.Component{
       companies : null,
       firstField: "",
       secondField : "",
-      selectedIndex: 0
+      selectedIndex: 0,
+      user : null,
     };
   }
 
@@ -139,7 +143,7 @@ export default class Login extends React.Component{
         "prenom": this.state.secondField,
         "entreprise" : this.state.pickerSelected
       };
-
+      console.log(data)
       var url = "https://smtp-pi.herokuapp.com/";
       var typeUser;
 
@@ -214,32 +218,50 @@ export default class Login extends React.Component{
     if (this.state.companies == null){
       return (<ActivityIndicator color="red" size="large"/>);
     }else{
-      var firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
-      var secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";
+      let firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
+      let secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";
       const buttons = ['Camionneur', 'Grutier', 'Admin'];
 
       // set Data for picker
-      var pickerData = this.state.companies.map(item => item.nom);
+      let pickerData = this.state.companies.map(item => item.nom);
       // set selectedValue for picker
-      var resIndex = this.state.companies.findIndex(s => s.id == this.state.pickerSelected);
-      var selectedIndex = resIndex == -1 ? 0 : resIndex
-      var selected = this.state.companies[selectedIndex].nom;
+      let resIndex = this.state.companies.findIndex(s => s.id == this.state.pickerSelected);
+      let selectedIndex = resIndex == -1 ? 0 : resIndex
+      let selected = this.state.companies[selectedIndex].nom;
 
       return (
-        <View style={style.container}>
-          <Image source={require('../assets/images/logoSMTP.png')}/>
-          <ButtonGroup
-            onPress={this.updateIndex}
-            selectedIndex={this.state.selectedIndex}
-            buttons={buttons}
-            containerStyle={{height: 50}}
-          />
-          <InputText style = { style.input } placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
-          <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
-          <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
-          <ValidateButton text={"valider"} onPress={this.handleValidate}/>
-        </View>
+          <ScrollView>
+            <View style={style.container}>
+              <Image source={require('../assets/images/logoSMTP.png')}/>
+              <ButtonGroup
+                  onPress={this.updateIndex}
+                  selectedIndex={this.state.selectedIndex}
+                  buttons={buttons}
+                  containerStyle={{height: 50}}
+              />
+              {this.state.selectedIndex != 2 &&
+              <AutoCompleteUsers style={Style.input} changePlace={(user) => this.setState({user})}
+                                 currentIndex={this.state.selectedIndex} user={this.state.user}
+                                 changeFirstField={txt => this.handleChangeFirstField(txt)}
+                                 changeSecondField={txt => this.handleChangeSecondField(txt)}/>
+              }
+              {this.state.selectedIndex == 2 &&
+                <InputText style={style.input} placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField} />
+              }
+              {this.state.selectedIndex == 2 &&
+              <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
+              }
+
+              <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
+              <ValidateButton text={"valider"} onPress={this.handleValidate}/>
+            </View>
+          </ScrollView>
       );
     }
   }
 }
+/*
+<InputText style = { style.input } placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField}/>
+          <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
+
+ */
