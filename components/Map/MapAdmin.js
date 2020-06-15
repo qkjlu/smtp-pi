@@ -79,7 +79,7 @@ export default class MapAdmin extends React.Component {
     }
 
     // handle when app is in foreground/background
-    // return in list of worksite.
+    // return in list of worksite if back to foreground
     handleAppStateChange = (nextAppState) => {
       console.log(nextAppState);
       if(nextAppState === "background"){

@@ -63,7 +63,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private JSONObject coordinates;
     private double remainingTime;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
-    private String myEtat = "déchargé";
+    private String myEtat;
     private double rayonChangementEtat = 40;
 
     private Socket mSocket;
@@ -89,6 +89,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
+        myEtat = i.getStringExtra("myEtat");
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
@@ -406,19 +407,17 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private Emitter.Listener onConnectToChantierSuccess = args -> {
         Log.d(TAG, "Connection to chantier successful");
         connectedToChantier = true;
-        JSONObject data = (JSONObject) args[0];
-        try {
-            String previousEtatBeforeDisconnect = data.getString("etat");
-            if(!previousEtatBeforeDisconnect.isEmpty()) {
-                myEtat = previousEtatBeforeDisconnect;
-                Log.d(TAG, "Etat changed to previous etat before disconnection : " + myEtat);
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
-            return;
-        }
+        Log.d(TAG, "Etat after connection : " + myEtat);
+        // JSONObject data = (JSONObject) args[0];
+        // try {
+        //     String previousEtatBeforeDisconnect = data.getString("etat");
+        //     if(!previousEtatBeforeDisconnect.isEmpty()) {
+        //         myEtat = previousEtatBeforeDisconnect;
+        //         Log.d(TAG, "Etat changed to previous etat before disconnection : " + myEtat);
+        //     }
+        // } catch (JSONException e) {
+        //     Log.e(TAG, e.getMessage());
+        //     return;
+        // }
     };
-
-
-
 }
