@@ -6,7 +6,7 @@ import { ButtonGroup } from 'react-native-elements';
 import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import {Image, ScrollView, Text, Image} from "react-native";
+import {Image, ScrollView, Text} from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import style from "../Style";
@@ -112,9 +112,7 @@ export default class Login extends React.Component{
       }
     }
   }
-
-
-
+  
   async storeDataSession(item, selectedValue){
     try {
       await AsyncStorage.setItem(item, selectedValue);

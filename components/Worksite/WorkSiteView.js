@@ -20,7 +20,6 @@ export default class ListWorkSite extends React.Component {
     }
 
     async componentDidMount() {
-        console.log(this.props.worksite)
         // get typeOfUser
         this.getUser().then( res => this.setState({typeUser : res }))
         const token = await AsyncStorage.getItem('token');

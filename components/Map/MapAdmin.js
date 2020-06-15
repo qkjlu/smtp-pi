@@ -11,7 +11,9 @@ import axios from 'axios';
 import CraneView from "../Crane/CraneView";
 import io from "socket.io-client";
 import KeepAwake from 'react-native-keep-awake';
-import Config from "react-native-config"; 
+import Config from "react-native-config";
+import * as RootNavigation from '../../navigation/RootNavigation.js';
+
 
 
 export default class MapAdmin extends React.Component {
@@ -43,6 +45,7 @@ export default class MapAdmin extends React.Component {
 
     // enable socket connection
     async enableConnection(){
+      console.log("launch enable !");
       const userId  = await AsyncStorage.getItem('userId');
       await this.socket.emit("chantier/connect", {
           "userId" : userId,
@@ -76,13 +79,15 @@ export default class MapAdmin extends React.Component {
     }
 
     // handle when app is in foreground/background
+    // return in list of worksite.
     handleAppStateChange = (nextAppState) => {
       console.log(nextAppState);
       if(nextAppState === "background"){
         this.closeConnection();
       }
       if (nextAppState === "active" ) {
-        this.enableConnection();
+        console.log(RootNavigation);
+        RootNavigation.navigate('WorkSiteManagment')
       }
       this.setState({appState: nextAppState});
     }
