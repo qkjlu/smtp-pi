@@ -5,8 +5,11 @@
     "ios": "react-native run-ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "android-dev": "ENVFILE=.env.dev react-native run-android",
-    "android-prod": "ENVFILE=.env.prod react-native run-android"
+    "android-dev-win": "set ENVFILE=.env.dev && react-native run-android",
+    "android-prod-win": "set ENVFILE=.env.prod && react-native run-android",
+    "android-dev-lin": "ENVFILE=.env.dev react-native run-android",
+    "android-prod-lin": "ENVFILE=.env.prod && react-native run-android",
+    "deploy": "cd android && set ENVFILE=.env.prod && gradlew clean && gradlew bundleRelease"
   },
   "jest": {
     "preset": "jest-expo"

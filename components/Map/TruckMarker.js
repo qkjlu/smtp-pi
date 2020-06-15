@@ -2,7 +2,7 @@ import React from "react";
 import {Callout, Marker} from 'react-native-maps'
 import {Text, View, StyleSheet,AsyncStorage} from "react-native";
 import axios from 'axios';
-import Config from "react-native-config"; 
+import Config from "react-native-config";
 
 
 export default class TruckMarker extends React.Component {
@@ -35,7 +35,7 @@ export default class TruckMarker extends React.Component {
     const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
-      url: Config.API_URL + this.props.user.userId,
+      url: Config.API_URL + "camionneurs/" +this.props.user.userId,
       headers: {'Authorization': 'Bearer ' + token},
     })
       .then( response => {

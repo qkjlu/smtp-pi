@@ -69,7 +69,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("https://smtp-pi.herokuapp.com/");
+            mSocket = IO.socket(BuildConfig.API_URL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

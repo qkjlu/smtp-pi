@@ -40,8 +40,7 @@ export default class Login extends React.Component{
   async componentDidMount(){
     await this.requestLocationPermission();
     await this.internetCheck();
-    console.log(Config.API_URL);
-    console.log(__DEV__);
+    console.log("config: " + Config.API_URL);
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
         if(response.status != 200){
