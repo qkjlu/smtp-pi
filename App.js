@@ -29,7 +29,7 @@ export default function App(props) {
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        SplashScreen.preventAutoHide();
+        //SplashScreen.preventAutoHide();
 
         // Load our initial navigation state
         setInitialNavigationState(await getInitialState());
@@ -44,7 +44,7 @@ export default function App(props) {
         console.warn(e);
       } finally {
         setLoadingComplete(true);
-        SplashScreen.hide();
+        //SplashScreen.hide();
       }
     }
 

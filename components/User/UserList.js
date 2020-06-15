@@ -145,7 +145,6 @@ export default class UserList extends React.Component{
   }
 
   async getCamionneurs(){
-
     const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
