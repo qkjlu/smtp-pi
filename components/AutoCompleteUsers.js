@@ -105,7 +105,7 @@ export default class AutoCompleteUsers extends React.Component {
                               unShowPreview={() => this.setState({showPreview:false})}
                               changePlace={() => this.props.changePlace(this.state.query)}
                               changeQuery={(query => this.setState({query}))}
-                              changeItem={() => this.props.setState({item : null})}
+                              changeItem={() => this.setState({item : null})}
                 />
             );
         }

@@ -85,7 +85,7 @@ export default class ListWorkSite extends React.Component {
                 <View>
                     <ScrollView>
                     <ButtonGroupAdmin onReload={this.reloadData}/>
-                    <Text style={style.getStartedText}>Liste des chantier:</Text>
+                    <Text style={style.getStartedText}>Liste des chantiers:</Text>
                     <Search/>
                         <FlatList
                             data={this.state.report}
