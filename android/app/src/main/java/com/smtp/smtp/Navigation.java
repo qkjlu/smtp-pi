@@ -14,6 +14,7 @@ import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.geojson.Point;
+
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
@@ -69,7 +70,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket(BuildConfig.API_URL);
+            mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

@@ -95,7 +95,7 @@ export default class UpdateUser extends React.Component {
 
   // API call for get and initialise list of company
   async getCompany(){
-    axios.get('entreprises')
+    axios.get(Config.API_URL+'entreprises')
       .then( response => {
         if(response.status != 200){
           console.log(response.status);

@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  AsyncStorage
+  AsyncStorage, ScrollView
 } from 'react-native';
 import InputText from '../InputText';
 import ValidateButton from '../ValidateButton';
@@ -160,26 +160,28 @@ export default class AddUser extends React.Component {
       var selected = this.state.companies[selectedIndex].nom;
 
       return (
-        <View style={styles.container}>
-          <Text style={styles.titleText} >Créer un utilisateur </Text>
-          <InputText placeholder="Nom" value={this.state.name} onChangeText={this.handleChangeName}/>
-          <InputText placeholder="Prenom" value={this.state.surname} onChangeText={this.handleChangeSurname}/>
-          <CustomPicker isVisible={this.state.printCompany} data={pickerData} titleContent="Entreprise:" selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
-          <View style={styles.addFirm}>
-            <Text>Entreprise non présente dans la liste ? Creer une entreprise:</Text>
-            <TouchableOpacity style={styles.bouton} onPress={() => this.setState({printCompany : true})}>
-              <Text style={{color: "white"}}>ajouter</Text>
-            </TouchableOpacity>
-          </View>
-          <AddCompany isVisible={!this.state.printCompany} value={this.state.company} onChangeText={this.handleChangeCompany}/>
-          <Text>Type:</Text>
-          <RadioForm
-            radio_props={radio_props}
-            initial={this.state.type}
-            onPress={(value) => {this.setState({type:value})}}
-          />
-        <ValidateButton text={"Ajouter"} onPress={this.handleValidate}/>
-        </View>
+          <ScrollView>
+            <View style={styles.container}>
+              <Text style={styles.titleText} >Créer un utilisateur </Text>
+              <InputText placeholder="Nom" value={this.state.name} onChangeText={this.handleChangeName}/>
+              <InputText placeholder="Prenom" value={this.state.surname} onChangeText={this.handleChangeSurname}/>
+              <CustomPicker isVisible={this.state.printCompany} data={pickerData} titleContent="Entreprise:" selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
+              <View style={styles.addFirm}>
+                <Text>Entreprise non présente dans la liste ? Creer une entreprise:</Text>
+                <TouchableOpacity style={styles.bouton} onPress={() => this.setState({printCompany : true})}>
+                  <Text style={{color: "white"}}>ajouter</Text>
+                </TouchableOpacity>
+              </View>
+              <AddCompany isVisible={!this.state.printCompany} value={this.state.company} onChangeText={this.handleChangeCompany}/>
+              <Text>Type:</Text>
+              <RadioForm
+                  radio_props={radio_props}
+                  initial={this.state.type}
+                  onPress={(value) => {this.setState({type:value})}}
+              />
+              <ValidateButton text={"Ajouter"} onPress={this.handleValidate}/>
+            </View>
+          </ScrollView>
       );
     }
 
