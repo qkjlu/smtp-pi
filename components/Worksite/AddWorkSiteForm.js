@@ -6,6 +6,8 @@ import AutoCompletePlaces from "../Place/AutoCompletePlaces";
 import AddPlaceForm from "../Place/AddPlaceForm";
 import style from "../../Style";
 import {MaterialIcons, Ionicons} from "@expo/vector-icons";
+import Config from "react-native-config";
+
 export default class AddWorkSiteForm extends React.Component {
 
     constructor() {
@@ -22,7 +24,7 @@ export default class AddWorkSiteForm extends React.Component {
     componentDidMount() {
         axios({
             method: 'get',
-            url:'https://smtp-pi.herokuapp.com/lieux',
+            url: Config.API_URL + 'lieux',
             headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}            })
             .then( response => {
                 this.setState({places: response.data});
@@ -46,7 +48,7 @@ export default class AddWorkSiteForm extends React.Component {
             };
             axios({
                 method: 'post',
-                url: 'https://smtp-pi.herokuapp.com/chantiers',
+                url: Config.API_URL+'chantiers',
                 data : data,
                 headers: {'Authorization': 'Bearer ' + token},
             })

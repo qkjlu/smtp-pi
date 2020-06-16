@@ -6,8 +6,9 @@ import ItemList from './ItemList.js';
 import axios from 'axios';
 import { Icon, Button } from 'react-native-elements'
 import { withNavigation } from "react-navigation";
+import {Alert} from "react-native";
 import style from '../../Style'
-
+import Config from "react-native-config";
 
 import {
   StyleSheet,
@@ -58,11 +59,39 @@ export default class UserList extends React.Component{
   }
 
   onPressDeleteCamionneur(user){
-    this.onPressDelete(user,"camionneurs")
+    Alert.alert(
+      'Supprimer un camionneur',
+      'Etes-vous sûr de vouloir supprimer ce camionneur ?',
+      [
+        {
+          text: 'OUI',
+          onPress: () => this.onPressDelete(user,"camionneurs")
+        },
+        {
+          text: 'Non',
+          style: 'cancel'
+        },
+      ],
+      { cancelable: false }
+    );
   }
 
   onPressDeleteGrutier(user){
-    this.onPressDelete(user,"grutiers")
+    Alert.alert(
+      'Supprimer un grutier',
+      'Etes-vous sûr de vouloir supprimer ce grutier ?',
+      [
+        {
+          text: 'OUI',
+          onPress: () => this.onPressDelete(user,"grutiers")
+        },
+        {
+          text: 'Non',
+          style: 'cancel'
+        },
+      ],
+      { cancelable: false }
+    );
   }
 
   onPressAdd(){
@@ -74,7 +103,7 @@ export default class UserList extends React.Component{
     var data = { "id" : user.id}
     axios({
       method: 'delete',
-      url: 'https://smtp-pi.herokuapp.com/' + type,
+      url: Config.API_URL + type,
       headers: {'Authorization': 'Bearer ' + token},
       data : data
     })
@@ -119,7 +148,7 @@ export default class UserList extends React.Component{
     const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
-      url: 'https://smtp-pi.herokuapp.com/camionneurs',
+      url: Config.API_URL +'camionneurs',
       headers: {'Authorization': 'Bearer ' + token},
     })
       .then( response => {
@@ -142,7 +171,7 @@ export default class UserList extends React.Component{
     const token  = await AsyncStorage.getItem('token');
     axios({
       method: 'get',
-      url: 'https://smtp-pi.herokuapp.com/grutiers',
+      url: Config.API_URL+'grutiers',
       headers: {'Authorization': 'Bearer ' + token},
     })
       .then( response => {
@@ -166,24 +195,26 @@ export default class UserList extends React.Component{
       return (<ActivityIndicator color="red" size="large"/>);
     } else {
       return(
-        <View>
+        <View style={styles.container}>
           <View style={{ alignItems:"center"}}>
             <Button title="Ajouter un utilisateur" buttonStyle={styles.addUser} onPress={this.onPressAdd}/>
           </View>
 
+          <View style={styles.truckList}>
             <Text style={style.getStartedText}>Liste des camionneurs:</Text>
             <FlatList
               data={this.state.camionneurs}
               renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditCamionneur} onPressDelete={this.onPressDeleteCamionneur}/>}
             />
+          </View>
 
+          <View style={styles.truckList}>
             <Text style={style.getStartedText}>Liste des grutiers:</Text>
             <FlatList
               data={this.state.grutiers}
               renderItem={({item}) => <ItemList user={item} onPressEdit={this.onPressEditGrutier} onPressDelete={this.onPressDeleteGrutier}/>}
             />
-
-
+          </View>
         </View>
       );
     }
@@ -196,6 +227,7 @@ const styles = StyleSheet.create({
   },
   truckList:{
     flex: 4,
+
   },
   addUser:{
     borderRadius:25,

@@ -1,7 +1,7 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, ListView, StyleSheet, PermissionsAndroid, Dimensions, AsyncStorage, Button} from "react-native";
+import {Text, View, FlatList, ListView, StyleSheet, PermissionsAndroid, Dimensions, AsyncStorage, Button, Alert} from "react-native";
 import { getDistance } from 'geolib';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
@@ -23,6 +23,8 @@ export default class MapTruck extends React.Component {
         this.getLocation = this.getLocation.bind(this);
         this.updateEtat = this.updateEtat.bind(this);
         this.rollBack = this.rollBack.bind(this);
+        this.askState = this.askState.bind(this);
+        this.startNavigation = this.startNavigation.bind(this);
         this.calculateFlightDistance = this.calculateFlightDistance.bind(this);
         this.state = {
             userId: null,
@@ -41,7 +43,6 @@ export default class MapTruck extends React.Component {
     }
 
     async componentDidMount(){
-        // const socket = await io("https://smtp-pi.herokuapp.com/");
         const userId  = await AsyncStorage.getItem('userId');
         this.setState({userId: userId})
         // await this.requestLocationPermission();
@@ -258,16 +259,39 @@ export default class MapTruck extends React.Component {
         this.setState({etat : this.state.previousEtat})
     }
 
+    askState(){
+      Alert.alert(
+        'Lancement de la navigation GPS',
+        'Dans quel état êtes vous ?',
+        [
+          {
+            text: 'Chargé',
+            onPress: () => this.startNavigation("chargé")
+          },
+          {
+            text: 'Déchargé',
+            onPress: () => this.startNavigation("déchargé")
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+
+    startNavigation(myEtat){
+      ActivityStarter.startNavigation(
+          [this.props.chargement.longitude, this.props.chargement.latitude],
+          [this.props.dechargement.longitude,this.props.dechargement.latitude],
+          this.state.userId,
+          this.props.worksite.id,
+          myEtat);
+    }
+
     render() {
         console.log(this.state.userId, this.props.worksite.id);
         return(
             <View>
                 <Button
-                    onPress={() => ActivityStarter.startNavigation(
-                        [this.props.chargement.longitude, this.props.chargement.latitude],
-                        [this.props.dechargement.longitude,this.props.dechargement.latitude],
-                        this.state.userId,
-                        this.props.worksite.id)}
+                    onPress={() => this.askState()}
                     title="Start navigation"
                 />
                 {/* <TimeBetween users = {this.state.users} myPos={this.state.myPos} etat={this.state.etat} estimatedTimeArrival={this.state.estimatedTimeArrival}/>

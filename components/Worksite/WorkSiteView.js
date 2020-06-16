@@ -5,6 +5,7 @@ import {Text, ActivityIndicator, View, AsyncStorage} from "react-native";
 import MapAdmin from "../Map/MapAdmin";
 import MapTruck from "../Map/MapTruck";
 import CraneView from "../Crane/CraneView";
+import Config from "react-native-config";
 
 export default class ListWorkSite extends React.Component {
     constructor(props) {
@@ -19,14 +20,13 @@ export default class ListWorkSite extends React.Component {
     }
 
     async componentDidMount() {
-        console.log(this.props.worksite)
         // get typeOfUser
         this.getUser().then( res => this.setState({typeUser : res }))
         const token = await AsyncStorage.getItem('token');
         //get chargement
         axios({
             method : 'get',
-            url :'https://smtp-pi.herokuapp.com/lieux/'+this.props.worksite.lieuChargementId,
+            url : Config.API_URL + 'lieux/'+this.props.worksite.lieuChargementId,
             headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {
@@ -45,7 +45,7 @@ export default class ListWorkSite extends React.Component {
         //get dechargement
         axios({
             method : 'get',
-            url :'https://smtp-pi.herokuapp.com/lieux/'+this.props.worksite.lieuDéchargementId,
+            url : Config.API_URL + 'lieux/'+this.props.worksite.lieuDéchargementId,
             headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {

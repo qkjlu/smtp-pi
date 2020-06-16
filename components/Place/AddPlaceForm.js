@@ -4,6 +4,7 @@ import ValidateButton from "../ValidateButton";
 import axios from 'axios'
 import style from './../../Style'
 import {MaterialIcons} from "@expo/vector-icons";
+import Config from "react-native-config";
 
 export default class AddWorkSiteForm extends React.Component {
 
@@ -45,7 +46,7 @@ export default class AddWorkSiteForm extends React.Component {
         console.log(this.state.lon+" => "+parseFloat(this.state.lon))
         axios({
             method: 'post',
-            url: 'https://smtp-pi.herokuapp.com/lieux',
+            url: Config.API_URL + 'lieux',
             data : data,
             headers: {'Authorization': 'Bearer ' + token},
         })

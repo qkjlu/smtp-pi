@@ -4,7 +4,12 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "web": "expo start --web",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "android-dev-win": "set ENVFILE=.env.dev && react-native run-android",
+    "android-prod-win": "set ENVFILE=.env.prod && react-native run-android",
+    "android-dev-lin": "ENVFILE=.env.dev react-native run-android",
+    "android-prod-lin": "ENVFILE=.env.prod && react-native run-android",
+    "deploy": "cd android && set ENVFILE=.env.prod && gradlew clean && gradlew bundleRelease"
   },
   "jest": {
     "preset": "jest-expo"
@@ -61,6 +66,7 @@
     "babel-preset-expo": "~8.1.0",
     "jest": "~25.2.6",
     "jest-expo": "~37.0.0",
+    "react-native-config": "^1.2.1",
     "react-test-renderer": "~16.9.0"
   },
   "private": true

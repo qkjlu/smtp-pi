@@ -15,6 +15,7 @@ import AutoCompletePlaces from "./Place/AutoCompletePlaces";
 import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
 var jwtDecode = require('jwt-decode');
+import Config from "react-native-config";
 
 export default class Login extends React.Component{
 
@@ -43,7 +44,8 @@ export default class Login extends React.Component{
   async componentDidMount(){
     await this.requestLocationPermission();
     await this.internetCheck();
-    await axios.get('https://smtp-pi.herokuapp.com/entreprises')
+    console.log("config: " + Config.API_URL);
+    await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
         if(response.status != 200){
           console.log(response.status);
@@ -64,8 +66,7 @@ export default class Login extends React.Component{
   async internetCheck(){
     NetInfo.fetch().then(state => {
       if (state.type === 'cellular' || state.type === 'wifi') {
-        console.log("send request");
-        axios.get('https://smtp-pi.herokuapp.com/entreprises',{timeout:5000})
+        axios.get(Config.API_URL + 'entreprises',{timeout:5000})
           .then( response => {
             console.log(response.status);
             }
@@ -111,9 +112,7 @@ export default class Login extends React.Component{
       }
     }
   }
-
-
-
+  
   async storeDataSession(item, selectedValue){
     try {
       await AsyncStorage.setItem(item, selectedValue);
@@ -143,8 +142,8 @@ export default class Login extends React.Component{
         "prenom": this.state.secondField,
         "entreprise" : this.state.pickerSelected
       };
-      console.log(data)
-      var url = "https://smtp-pi.herokuapp.com/";
+
+      var url = Config.API_URL;
       var typeUser;
 
       switch (this.state.selectedIndex) {
@@ -160,8 +159,8 @@ export default class Login extends React.Component{
           url += "admins";
           typeUser = "admin";
           data = {
-            "mail": this.state.firstField.trim(),
-            "password": this.state.secondField.trim()
+            "mail": this.state.firstField,
+            "password": this.state.secondField
           };
           break;
       }
@@ -203,11 +202,11 @@ export default class Login extends React.Component{
   }
 
   handleChangeFirstField(text){
-    this.setState({firstField : text})
+    this.setState({firstField : text.trim()})
   }
 
   handleChangeSecondField(text){
-    this.setState({secondField : text})
+    this.setState({secondField : text.trim()})
   }
 
   handleValidate(){

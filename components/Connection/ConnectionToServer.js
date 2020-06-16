@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import io from "socket.io-client";
+import Config from "react-native-config";
 
 export default class ConnectionToServer{
   constructor() {
@@ -14,7 +15,7 @@ export default class ConnectionToServer{
       this.listenCoordinates = this.listenCoordinates.bind(this);
       this.submitPosition = this.submitPosition.bind(this);
       this.requestLocationPermission = this.requestLocationPermission.bind(this);
-      this.socket = io("https://smtp-pi.herokuapp.com/");
+      this.socket = io(Config.API_URL);
   }
 
   async initConnection(userId,chantierId){
