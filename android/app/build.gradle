@@ -77,7 +77,10 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     entryFile: "index.js",
-    enableHermes: false
+    enableHermes: false,
+    debug: ".env.dev",
+    staging: ".env.prod",
+    release: ".env.prod",
 ]
 
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
@@ -138,8 +141,8 @@ android {
         applicationId 'com.smtp.smtp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
     }
     splits {
         abi {

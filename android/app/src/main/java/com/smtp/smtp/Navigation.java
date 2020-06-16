@@ -69,7 +69,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket(BuildConfig.API_URL);
+            mSocket = IO.socket("http://smtp-prod.eu-west-3.elasticbeanstalk.com/");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
