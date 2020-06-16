@@ -12,7 +12,7 @@ export default function TruckScreen({navigation,route}) {
             <HomeStack.Screen
                 name="WorkSiteManagment"
                 component={ListWorkSite}
-                options={() => ({headerTitle: 'Gestion des chantiers TRUCK',})}
+                options={() => ({headerTitle: 'Gestion des chantiers',})}
             />
             <HomeStack.Screen
                 name="TruckView"
