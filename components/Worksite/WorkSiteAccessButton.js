@@ -30,6 +30,15 @@ export default class WorkSiteAccessButton extends React.Component {
                 </View>
                 <View style={style.button} >
                     <Button
+                        icon={<Icon name='road' type='font-awesome' color="black"/>}
+                        onPress={() => { RootNavigation.navigate('Road', { worksite : this.props.worksite })}}
+                        title=""
+                        type="clear"
+                        accessibilityLabel="redirection vers la page du chantier"
+                    />
+                </View>
+                <View style={style.button} >
+                    <Button
                         icon={<Icon name='trash' type='font-awesome' color="red"/>}
                         onPress={() => { this.props.onDelete(this.props.worksite.id) }}
                         title=""
