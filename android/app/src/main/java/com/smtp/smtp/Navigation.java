@@ -76,7 +76,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     {
         try {
             // dev // mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
-            mSocket = IO.socket("http://smtp-prod.eu-west-3.elasticbeanstalk.com/");
+            mSocket = IO.socket(BuildConfig.API_URL);
+            Log.d(TAG, "url : " + BuildConfig.API_URL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -528,7 +529,7 @@ public class ListUser{
             senderId = data.getString("userId");
             Log.d(TAG, "New coordinates received");
             User sender = new User(senderId,senderETA,senderEtat);
-            if (myList.isContinedUser(senderId)){
+            if (myList.isContainedUser(senderId)){
                 myList.updateList(sender);
             }else{
                 myList.add(sender);

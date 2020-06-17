@@ -1,4 +1,5 @@
 apply plugin: "com.android.application"
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 import com.android.build.OutputFile
 
@@ -80,7 +81,7 @@ project.ext.react = [
     enableHermes: false,
     debug: ".env.dev",
     staging: ".env.prod",
-    release: ".env.prod",
+    release: ".env.dev",
 ]
 
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
