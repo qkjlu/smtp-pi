@@ -463,8 +463,8 @@ public class ListUser{
         if(myIndice > 0 && myList.list.size() > 1){
             User userAhed = myList.list.get(myIndice-1);
             timeDiffTruckAhead = remainingTime - userAhed.getETA();
-            double minutes =  Math.floor(timeDiffTruckAhead / 60);
-            double secondes = Math.floor(timeDiffTruckAhead % 60);
+            int minutes = (int) Math.floor(timeDiffTruckAhead / 60);
+            int secondes = (int) Math.floor(timeDiffTruckAhead % 60);
             if(minutes <= 1) {
                 timeDiffTextView.setText(secondes +" secondes d'écart avec le camion de devant");
             } else {
@@ -570,9 +570,9 @@ public class ListUser{
         // }
     };
 
-    private Emitter.Listener onUserDisconnected = args -> {
+    private Emitter.Listener onUserDisconnected = args -> runOnUiThread(() ->{
         JSONObject data = (JSONObject) args[0];
-        timeDiffTextView.setText("Recherche de camions..("+myEtat+")");
+        timeDiffTextView.setText("Il n'y a pas de camions devant vous");
         String senderId;
         try {
             senderId = data.getString("userId");
@@ -586,5 +586,5 @@ public class ListUser{
             Log.e(TAG, e.getMessage());
             return;
         }
-    };
+    });
 }
