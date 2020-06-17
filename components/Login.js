@@ -6,11 +6,10 @@ import { ButtonGroup } from 'react-native-elements';
 import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import {Image, ScrollView, Text} from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import style from "../Style";
-import  {View, ActivityIndicator, AsyncStorage} from 'react-native';
+import  {View, ActivityIndicator, AsyncStorage, Image, ScrollView, Text} from 'react-native';
 import AutoCompletePlaces from "./Place/AutoCompletePlaces";
 import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
@@ -42,9 +41,8 @@ export default class Login extends React.Component{
   }
 
   async componentDidMount(){
-    await this.requestLocationPermission();
+    //await this.requestLocationPermission();
     await this.internetCheck();
-    console.log("config: " + Config.API_URL);
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
         if(response.status != 200){
@@ -66,16 +64,15 @@ export default class Login extends React.Component{
   async internetCheck(){
     NetInfo.fetch().then(state => {
       if (state.type === 'cellular' || state.type === 'wifi') {
-        axios.get(Config.API_URL + 'entreprises',{timeout:5000})
+        axios.get(Config.API_URL + 'entreprises')
           .then( response => {
-            console.log(response.status);
+            console.log("internet check passed !");
             }
           ).catch(function (error) {
-            console.log(error);
-            alert("Erreur réseau ! Veuillez activez les données mobiles");
+            alert("Erreur réseau ! Vérifier que les données mobiles et la localisation sont activées");
           });
       }else{
-        alert("Erreur Réseau ! Veuillez activez les données mobiles");
+        alert("Erreur réseau ! Vérifier que les données mobiles et la localisation sont activées");
       }
     }).catch(function (error){
       alert("error")
@@ -112,7 +109,7 @@ export default class Login extends React.Component{
       }
     }
   }
-  
+
   async storeDataSession(item, selectedValue){
     try {
       await AsyncStorage.setItem(item, selectedValue);
@@ -253,6 +250,7 @@ export default class Login extends React.Component{
 
               <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
               <ValidateButton text={"valider"} onPress={this.handleValidate}/>
+              <Text>{Config.VERSION} version</Text>
             </View>
           </ScrollView>
       );

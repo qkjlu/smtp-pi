@@ -61,8 +61,6 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         }
     };
 
-
-
     private Point ORIGIN;
     private Point DESTINATION;
 
@@ -72,13 +70,13 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private double remainingTime;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
-    private double rayonChangementEtat = 40;
+    private double rayonChangementEtat = 100;
 
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
-            //mSocket = IO.socket("http://smtp-prod.eu-west-3.elasticbeanstalk.com/");
+            // dev // mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
+            mSocket = IO.socket(BuildConfig.API_URL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -233,7 +231,6 @@ public class ListUser{
         timeDiffTextView.setText("Il n'y a pas de camions devant vous");
         navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this);
-
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
