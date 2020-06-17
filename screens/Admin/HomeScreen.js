@@ -5,6 +5,7 @@ import WorkSiteScreen from "./WorkSiteScreen";
 import {createStackNavigator} from "@react-navigation/stack";
 import LogoutButton from "../../components/LogoutButton";
 import Button from "react-native-web/dist/exports/Button";
+import Road from "../../components/Road/Road";
 const HomeStack = createStackNavigator();
 export default function HomeScreen({navigation}) {
     return (
@@ -22,6 +23,11 @@ export default function HomeScreen({navigation}) {
             <HomeStack.Screen
                 name="WorkSite"
                 component={WorkSiteScreen}
+                options={({ route }) => ({headerTitle: route.params.worksite.nom})}
+            />
+            <HomeStack.Screen
+                name="Road"
+                component={Road}
                 options={({ route }) => ({headerTitle: route.params.worksite.nom})}
             />
         </HomeStack.Navigator>

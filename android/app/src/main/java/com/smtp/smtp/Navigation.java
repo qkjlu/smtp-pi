@@ -1,11 +1,14 @@
 package com.smtp.smtp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -30,6 +33,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import io.socket.client.IO;
@@ -70,12 +77,114 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
+            // dev // mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
+            mSocket = IO.socket("http://smtp-prod.eu-west-3.elasticbeanstalk.com/");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
     private boolean connectedToChantier = false;
+
+    public boolean isMyUserId(String userId){
+        return userId.equals(this.userId);
+    }
+
+    public class User implements Comparable<User> {
+        public String userId;
+        public Double ETA;
+        public String etat;
+
+        public User(String userId, Double ETA, String etat){
+            this.userId = userId;
+            this.ETA = ETA;
+            this.etat = etat;
+        }
+
+        public Double getETA() {
+            return ETA;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public String getEtat() {
+            return etat;
+        }
+
+        @Override
+        public int compareTo(User u) {
+            return Double.compare(u.getETA(), this.getETA());
+        }
+    }
+
+    private int myIndice;
+    private ListUser myList = new ListUser();
+
+public class ListUser{
+    public ArrayList<User> list = new ArrayList<>();
+
+    public boolean isAddable(User user){
+        return user.getETA().equals(myEtat);
+    }
+
+    public int add(User user){
+        if (isAddable(user)){
+            list.add(user);
+            Collections.sort(list);
+            System.out.println("list trié"+list.toString());
+            return 1;
+        }
+        else{
+            return -1;
+        }
+    }
+
+    public boolean isContainedUser(String userId){
+        boolean res = false;
+        for(int i=0; i < list.size(); i++){
+            if(list.get(i).getUserId().equals(userId)){
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    public void updateMyIndice(String userId){
+        for(int i=0; i < list.size(); i++){
+            if(isMyUserId(list.get(i).getUserId())){
+                myIndice = i;
+            }
+        }
+    }
+
+    public boolean sameEtat(User user){
+        return user.getEtat().equals(myEtat);
+    }
+    public void updateList(User user){
+        if(!sameEtat(user)){
+            myList.deleteUser(user.getUserId());
+        }else{
+            for(int i=0; i < list.size(); i++){
+                if(list.get(i).equals(user.getUserId())){
+                    list.get(i).ETA = user.getETA();
+                }
+            }
+        }
+        Collections.sort(list);
+    }
+
+    public void deleteUser(String userId){
+        int res = -1;
+        for(int i=0; i < list.size(); i++){
+            if(list.get(i).getUserId().equals(userId)){
+                res = i;
+            }
+        }
+        list.remove(res);
+        Collections.sort(list);
+    }
+}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +200,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
         myEtat = i.getStringExtra("myEtat");
+        myList.add(new User(userId,Double.POSITIVE_INFINITY,myEtat));
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
@@ -105,7 +215,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
-
+        mSocket.on("chantier/user/disconnected",onUserDisconnected);
         mSocket.connect();
         connectToChantier();
 
@@ -125,7 +235,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
         mSocket.off("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
-
+        mSocket.off("chantier/user/disconnected",onUserDisconnected);
         navigationView.onDestroy();
 
     }
@@ -226,7 +336,10 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
             return;
         }
 
-        if(connectedToChantier) { sendCoordinates(); }
+        if(connectedToChantier) {
+            sendCoordinates();
+            myList.updateList(new User(userId,remainingTime,myEtat));
+        }
     }
 
     private void fetchRoute(Point ORIGIN, Point DESTINATION) {
@@ -338,6 +451,23 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         }
     }
 
+    private void modifyTimeDiffTruckAheadIfNecessary2(double senderETA, String senderEtat){
+        if(myIndice > 0 && myList.list.size() > 1){
+            User userAhed = myList.list.get(myIndice-1);
+            timeDiffTruckAhead = remainingTime - userAhed.getETA();
+            double minutes =  Math.round(timeDiffTruckAhead / 60);
+            double secondes = Math.round(timeDiffTruckAhead - minutes * 60);
+            if(minutes <= 1) {
+                timeDiffTextView.setText(secondes +" secondes d'écart avec le camion de devant");
+            } else {
+                timeDiffTextView.setText(minutes + " mn "+ secondes +" d'écarts avec le camion de devant");
+            }
+            Log.d(TAG, "Time diff with truck ahead modified: " + timeDiffTruckAhead);
+        }else{
+            timeDiffTextView.setText("Il n'y a pas de camions devant vous");
+        }
+    }
+
     // Si l'envoyeur :
     // - a le même état que moi,
     // - une différence positive entre mon ETA et le sien,
@@ -394,10 +524,20 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         JSONObject data = (JSONObject) args[0];
         double senderETA;
         String senderEtat;
+        String senderId;
         try {
             senderETA = data.getDouble("ETA");
             senderEtat = data.getString("etat");
+            senderId = data.getString("userId");
             Log.d(TAG, "New coordinates received");
+            User sender = new User(senderId,senderETA,senderEtat);
+            if (myList.isContainedUser(senderId)){
+                myList.updateList(sender);
+            }else{
+                myList.add(sender);
+            }
+            myList.updateMyIndice(this.userId);
+            // TODO supprimer les utilisateurs qui n'ont pas le meme etat
             modifyTimeDiffTruckAheadIfNecessary(senderETA, senderEtat);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -420,5 +560,23 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         //     Log.e(TAG, e.getMessage());
         //     return;
         // }
+    };
+
+    private Emitter.Listener onUserDisconnected = args -> {
+        JSONObject data = (JSONObject) args[0];
+        timeDiffTextView.setText("Recherche de camions..("+myEtat+")");
+        String senderId;
+        try {
+            senderId = data.getString("userId");
+            if(myList.isContainedUser(senderId)){
+                myList.deleteUser(senderId);
+            }else{
+                Log.d(TAG, " impossible to delete : user not in the list ");
+            }
+
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            return;
+        }
     };
 }
