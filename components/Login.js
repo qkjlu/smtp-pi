@@ -180,7 +180,7 @@ export default class Login extends React.Component{
         }
       })
         .catch(function (error) {
-        console.log(error);
+        console.log(error.toString());
         alert("Champ incorrect !");
       });
     }

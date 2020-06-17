@@ -4,6 +4,7 @@ import Autocomplete from "react-native-autocomplete-input";
 import UserPreview from "./UserPreview";
 import Style from "../Style";
 import axios from "axios";
+import Config from "react-native-config";
 export default class AutoCompleteUsers extends React.Component {
 
     constructor (props) {
@@ -20,7 +21,7 @@ export default class AutoCompleteUsers extends React.Component {
     componentDidMount() {
         axios({
             method: 'get',
-            url: 'https://smtp-pi.herokuapp.com/camionneurs',
+            url: Config.API_URL+'camionneurs',
         })
             .then( response => {
                 if(response.status != 200){
