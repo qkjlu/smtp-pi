@@ -77,8 +77,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private Socket mSocket;
     {
         try {
-            // dev // mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
-            mSocket = IO.socket("http://smtp-prod.eu-west-3.elasticbeanstalk.com/");
+            mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
+            //mSocket = IO.socket("http://smtp-prod.eu-west-3.elasticbeanstalk.com/");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -89,7 +89,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         return userId.equals(this.userId);
     }
 
-    public class User implements Comparable<User> {
+    public class User {
         public String userId;
         public Double ETA;
         public String etat;
@@ -113,26 +113,40 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         }
 
         @Override
-        public int compareTo(User u) {
-            return Double.compare(u.getETA(), this.getETA());
+        public String toString() {
+            return "User{ moi ?" + isMyUserId(this.userId)  + ", ETA=" + ETA + ", etat='" + etat + '}';
         }
     }
 
     private int myIndice;
     private ListUser myList = new ListUser();
 
-public class ListUser{
-    public ArrayList<User> list = new ArrayList<>();
-
-    public boolean isAddable(User user){
-        return user.getETA().equals(myEtat);
+    public class EtaSorter implements Comparator<User> {
+        @Override
+        public int compare(User o1, User o2) {
+            return (int)(o1.getETA() - o2.getETA());
+        }
     }
 
-    public int add(User user){
-        if (isAddable(user)){
+public class ListUser{
+    public ArrayList<User> list;
+
+    public ListUser(){
+        this.list = new ArrayList<User>();
+    }
+    public boolean isAddable(User user){
+        Log.d(TAG, "isAddable :  "+ user.getEtat() + " mon etat "+ myEtat);
+        Log.d(TAG, "j'ajoute ce user à ma liste ? "+ user.getEtat().equals(myEtat));
+        return user.getEtat().equals(myEtat);
+    }
+
+    public int addList(User user){
+        Log.d(TAG, "Debut Add"+ list.toString());
+        if (isAddable(user) && !isContainedUser(user.getUserId())){
             list.add(user);
-            Collections.sort(list);
-            System.out.println("list trié"+list.toString());
+            Log.d(TAG, "Fin Add"+ list.toString());
+            Collections.sort(list, new EtaSorter());
+            Log.d(TAG, "Fin tri"+ list.toString());
             return 1;
         }
         else{
@@ -147,6 +161,7 @@ public class ListUser{
                 res = true;
             }
         }
+        Log.d(TAG, "isContained ? "+res);
         return res;
     }
 
@@ -154,6 +169,7 @@ public class ListUser{
         for(int i=0; i < list.size(); i++){
             if(isMyUserId(list.get(i).getUserId())){
                 myIndice = i;
+                Log.d(TAG, "changement indice : "+ myIndice);
             }
         }
     }
@@ -162,19 +178,23 @@ public class ListUser{
         return user.getEtat().equals(myEtat);
     }
     public void updateList(User user){
+        Log.d(TAG, "Debut update"+ list.toString());
         if(!sameEtat(user)){
-            myList.deleteUser(user.getUserId());
+            Log.d(TAG, "Ce user n'a pas le meme etat je le supprime");
+            this.deleteUser(user.getUserId());
         }else{
             for(int i=0; i < list.size(); i++){
-                if(list.get(i).equals(user.getUserId())){
+                if(list.get(i).getUserId().equals(user.getUserId())){
                     list.get(i).ETA = user.getETA();
                 }
             }
         }
-        Collections.sort(list);
+        Collections.sort(list, new EtaSorter());
+        Log.d(TAG, "Fin update"+ list.toString());
     }
 
     public void deleteUser(String userId){
+        Log.d(TAG, "Début delete"+ list.toString());
         int res = -1;
         for(int i=0; i < list.size(); i++){
             if(list.get(i).getUserId().equals(userId)){
@@ -182,7 +202,8 @@ public class ListUser{
             }
         }
         list.remove(res);
-        Collections.sort(list);
+        Collections.sort(list, new EtaSorter());
+        Log.d(TAG, "Fin delete"+ list.toString());
     }
 }
 
@@ -200,7 +221,8 @@ public class ListUser{
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
         myEtat = i.getStringExtra("myEtat");
-        myList.add(new User(userId,Double.POSITIVE_INFINITY,myEtat));
+        myList.addList(new User(userId,Double.POSITIVE_INFINITY,myEtat));
+        Log.d(TAG, "Je m'ajoute dans la liste " +myList.list.toString());
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
@@ -281,6 +303,7 @@ public class ListUser{
 
     @Override
     public void onCancelNavigation() {
+        disconnectFromChantier();
         this.finish();
     }
 
@@ -437,26 +460,11 @@ public class ListUser{
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary(double senderETA, String senderEtat){
-        if(senderIsClosestTruckAhead(senderETA, senderEtat)) {
-            timeDiffTruckAhead = remainingTime - senderETA;
-            long timeDiffInMinutes = Math.round(timeDiffTruckAhead/60);
-            if(timeDiffInMinutes <= 1) {
-                timeDiffTextView.setText(timeDiffInMinutes + " minute d'écart avec le camion de devant");
-            } else {
-                timeDiffTextView.setText(timeDiffInMinutes + " minutes d'écarts avec le camion de devant");
-            }
-            Log.d(TAG, "Time diff with truck ahead modified: " + timeDiffTruckAhead);
-        } else if(timeDiffTruckAhead == Double.POSITIVE_INFINITY) {
-            timeDiffTextView.setText("Il n'y a pas de camions devant vous");
-        }
-    }
-
-    private void modifyTimeDiffTruckAheadIfNecessary2(double senderETA, String senderEtat){
         if(myIndice > 0 && myList.list.size() > 1){
             User userAhed = myList.list.get(myIndice-1);
             timeDiffTruckAhead = remainingTime - userAhed.getETA();
-            double minutes =  Math.round(timeDiffTruckAhead / 60);
-            double secondes = Math.round(timeDiffTruckAhead - minutes * 60);
+            double minutes =  Math.floor(timeDiffTruckAhead / 60);
+            double secondes = Math.floor(timeDiffTruckAhead % 60);
             if(minutes <= 1) {
                 timeDiffTextView.setText(secondes +" secondes d'écart avec le camion de devant");
             } else {
@@ -534,7 +542,7 @@ public class ListUser{
             if (myList.isContainedUser(senderId)){
                 myList.updateList(sender);
             }else{
-                myList.add(sender);
+                myList.addList(sender);
             }
             myList.updateMyIndice(this.userId);
             // TODO supprimer les utilisateurs qui n'ont pas le meme etat
