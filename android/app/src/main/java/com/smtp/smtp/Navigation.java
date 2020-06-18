@@ -457,19 +457,24 @@ public class ListUser{
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary(double senderETA, String senderEtat){
-        if(myIndice > 0 && myList.list.size() > 1){
-            User userAhed = myList.list.get(myIndice-1);
-            timeDiffTruckAhead = remainingTime - userAhed.getETA();
-            double minutes =  Math.floor(timeDiffTruckAhead / 60);
-            double secondes = Math.floor(timeDiffTruckAhead % 60);
-            if(minutes <= 1) {
-                timeDiffTextView.setText(secondes +" secondes d'écart avec le camion de devant");
+        if(myEtat.equals("enChargement")){
+            timeDiffTextView.setText("En cours de chargement... Quittez la zone une fois chargé");
+        } else if(myEtat.equals("enDéchargement")) {
+            timeDiffTextView.setText("En cours de déchargement... Quittez la zone une fois déchargé");
+        } else if(myIndice > 0 && myList.list.size() > 1){
+            User userAhead = myList.list.get(myIndice-1);
+            timeDiffTruckAhead = remainingTime - userAhead.getETA();
+            int minutes = (int) Math.floor(timeDiffTruckAhead / 60);
+            int secondes = (int) Math.floor(timeDiffTruckAhead % 60);
+            if(minutes < 1) {
+                timeDiffTextView.setText(secondes + " secondes d'écart avec le camion de devant ("+ myEtat +")");
             } else {
-                timeDiffTextView.setText(minutes + " mn "+ secondes +" d'écarts avec le camion de devant");
+                timeDiffTextView.setText(minutes + " mn "+ secondes +" d'écart avec le camion de devant ("+ myEtat +")");
             }
             Log.d(TAG, "Time diff with truck ahead modified: " + timeDiffTruckAhead);
-        }else{
-            timeDiffTextView.setText("Il n'y a pas de camions devant vous");
+        } else{
+            timeDiffTextView.setText("Il n'y a pas de camions devant vous ("+myEtat+")");
+
         }
     }
 

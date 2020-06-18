@@ -39,7 +39,7 @@ export default class AutoCompleteUsers extends React.Component {
             })
         axios({
             method: 'get',
-            url: 'https://smtp-pi.herokuapp.com/grutiers',
+            url: Config.API_URL+'grutiers',
         })
             .then( response => {
                 if(response.status != 200){
