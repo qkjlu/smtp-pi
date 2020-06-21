@@ -4,10 +4,15 @@ import axios from 'axios'
 import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions} from "react-native";
 import {Button, Icon} from "react-native-elements";
 import * as RootNavigation from "../../navigation/RootNavigation";
+import ActivityStarter from "../../ActivityStarter";
 
 export default class Road extends React.Component {
     constructor(props) {
         super(props);
+    }
+
+    startNavigation(){
+        ActivityStarter.startRoad()
     }
 
     render() {
