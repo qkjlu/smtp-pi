@@ -40,4 +40,17 @@ class ActivityStarterModule extends ReactContextBaseJavaModule {
 
         reactContext.startActivity(intent);
     }
+
+    @ReactMethod
+    void editRoad(String chantierId, String typeRoute,  String nameChantier, String token) {
+
+        Intent intent = new Intent(reactContext, Navigation.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("chantierId", chantierId);
+        intent.putExtra("typeRoute", typeRoute);
+        intent.putExtra("nameChantier", nameChantier);
+        intent.putExtra("token", token);
+
+        reactContext.startActivity(intent);
+    }
 }

@@ -4,6 +4,7 @@ import axios from 'axios'
 import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions} from "react-native";
 import {Button, Icon} from "react-native-elements";
 import * as RootNavigation from "../../navigation/RootNavigation";
+import ActivityStarter from "../../ActivityStarter";
 
 export default class Road extends React.Component {
     constructor(props) {
@@ -22,7 +23,13 @@ export default class Road extends React.Component {
                                     <View style={style.button} >
                                         <Button
                                             icon={<Icon name='road' type='font-awesome' color="green"/>}
-                                            onPress={() => { RootNavigation.navigate('WorkSite', { worksite : this.props.worksite })}}
+                                            onPress={async () => { 
+                                                ActivityStarter.editRoad(
+                                                    this.props.worksite.id, 
+                                                    "aller", 
+                                                    this.props.worksite.nom, 
+                                                    await AsyncStorage.getItem('token')) 
+                                            }}
                                             title="aller"
                                             type="clear"
                                             accessibilityLabel="redirection vers la page du chantier"
@@ -40,7 +47,13 @@ export default class Road extends React.Component {
                                     <View style={style.button}>
                                         <Button
                                             icon={<Icon name='road' type='font-awesome' color="red"/>}
-                                            onPress={() => { RootNavigation.navigate('Road', { worksite : this.props.worksite })}}
+                                            onPress={async () => { 
+                                                ActivityStarter.editRoad(
+                                                    this.props.worksite.id,
+                                                    "aller", 
+                                                    this.props.worksite.nom
+                                                    await AsyncStorage.getItem('token'))
+                                                }}
                                             title="retour"
                                             type="clear"
                                             accessibilityLabel="redirection vers la page du chantier"

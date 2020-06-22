@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/fetch_solution_btn"
+        android:icon="@drawable/ic_cloud_download_black_24dp"
+        android:title="Enregistrer la route"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/reset_route_btn"
+        android:icon="@drawable/ic_cancel_black_24dp"
+        android:title="Remettre à zéro la route"
+        app:showAsAction="always" />
+
+</menu>
