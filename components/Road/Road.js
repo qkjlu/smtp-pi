@@ -32,7 +32,7 @@ export default class Road extends React.Component {
                                                     this.props.worksite.id, 
                                                     "aller", 
                                                     this.props.worksite.nom, 
-                                                    await AsyncStorage.getItem('token')) 
+                                                    await AsyncStorage.getItem('token'))
                                             }}
                                             title="aller"
                                             type="clear"
@@ -55,7 +55,7 @@ export default class Road extends React.Component {
                                                 ActivityStarter.editRoad(
                                                     this.props.worksite.id,
                                                     "aller", 
-                                                    this.props.worksite.nom
+                                                    this.props.worksite.nom,
                                                     await AsyncStorage.getItem('token'))
                                                 }}
                                             title="retour"

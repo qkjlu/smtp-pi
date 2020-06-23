@@ -11,6 +11,12 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
@@ -29,15 +35,19 @@ import com.mapbox.services.android.navigation.v5.offroute.OffRoute;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import io.socket.client.IO;
@@ -67,6 +77,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
     private String userId;
     private String chantierId;
+    private String typeRoute;
+    private String token;
     private JSONObject coordinates;
     private double remainingTime;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
@@ -76,6 +88,10 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private double rayonChangementEtat = 100;
 
     private Socket mSocket;
+
+    private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
+    private ArrayList<Point> roadPoint = new ArrayList();
+
     {
         try {
             // dev // mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
@@ -221,6 +237,8 @@ public class ListUser{
 
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
+        typeRoute = i.getStringExtra("typeRoute");
+        token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         myList.addList(new User(userId,Double.POSITIVE_INFINITY,myEtat));
         Log.d(TAG, "Je m'ajoute dans la liste " +myList.list.toString());
@@ -259,7 +277,6 @@ public class ListUser{
         mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.off("chantier/user/disconnected",onUserDisconnected);
         navigationView.onDestroy();
-
     }
 
     @Override
@@ -297,7 +314,7 @@ public class ListUser{
             this.finish();
             System.exit(0);
         } else {
-            fetchRoute(ORIGIN, DESTINATION);
+            fetchRoute();
         }
     }
 
@@ -320,8 +337,12 @@ public class ListUser{
     @Override
     public void onNavigationReady(boolean isRunning) {
         if (askLocationPermissionIfNeeded()) {
-            if(myEtat.equals("chargé") || myEtat.equals("enChargement")) { fetchRoute(ORIGIN, DESTINATION); }
-            if(myEtat.equals("déchargé") || myEtat.equals("enDéchargement")) { fetchRoute(DESTINATION, ORIGIN); }
+            if(myEtat.equals("chargé") || myEtat.equals("enChargement")) {
+                fetchRoute();
+            }
+            if(myEtat.equals("déchargé") || myEtat.equals("enDéchargement")) {
+                fetchRoute();
+            }
         }
     }
 
@@ -365,15 +386,44 @@ public class ListUser{
         }
     }
 
-    private void fetchRoute(Point ORIGIN, Point DESTINATION) {
+    public void prepareRoute(JSONArray array) throws JSONException {
+        // Ajoute chaque donnée à la liste de waypoint triable
+        ArrayList<Waypoint> waypoints = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject waypoint = array.getJSONObject(i);
+            waypoints.add(
+                    new Waypoint(
+                            waypoint.getDouble("longitude"),
+                            waypoint.getDouble("latitude"),
+                            waypoint.getInt("ordre")
+                    )
+            );
+        }
+        Collections.sort(waypoints);
+        ArrayList<Point> points = new ArrayList<>();
+        for (Waypoint waipoint : waypoints) {
+            points.add(waipoint.getPoint());
+        }
+        roadPoint = points;
+    }
+
+    private void fetchRoute(){
+        if(myEtat.equals("chargé") || myEtat.equals("enDéchargement")) { typeRoute = "aller"; }
+        if(myEtat.equals("déchargé") || myEtat.equals("enChargement")) { typeRoute = "retour"; }
+        initWaypoints();
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
                 .baseUrl(getString(R.string.base_url))
                 .user("gh")
-                .origin(ORIGIN)
-                .destination(DESTINATION)
+                .origin(roadPoint.get(0))
+                .destination(roadPoint.get(roadPoint.size()-1))
                 .profile("car");
-
+        // add waypoints without first and last point
+        if(roadPoint.size()>2){
+            for(int i = 1; i < roadPoint.size()-1; i++){
+                builder.addWaypoint(roadPoint.get(i));
+            }
+        }
         NavigationRoute navRoute = builder.build();
 
         navRoute.getRoute(
@@ -420,6 +470,41 @@ public class ListUser{
         return response.body() != null && !response.body().routes().isEmpty();
     }
 
+    public void initWaypoints(){
+        final String URL = BASE_URL + "chantiers/"+chantierId +"/route/"+typeRoute;
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        // prepare the Request
+        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, URL, null,
+                response -> {
+                    // display response
+                    try {
+                        prepareRoute(response);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("Response", response.toString());
+                },
+                new com.android.volley.Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Bearer " + token);
+                return params;
+            }
+        } ;
+
+        // add it to the RequestQueue
+        requestQueue.add(getRequest);
+    }
+
     private void changeEtape(){
         if(etapeIdPrecedente == null){
             etape = new Etape(UUID.fromString(chantierId),UUID.fromString(userId),myEtat, etapeIdPrecedente);
@@ -459,14 +544,14 @@ public class ListUser{
         return etatChanged;
     }
 
-    private boolean rerouteUserIfNecessary(boolean etatChanged){
+    private boolean rerouteUserIfNecessary(boolean etatChanged) {
         boolean userRerouted = false;
         if(etatChanged){
             if(myEtat.equals("chargé")) {
-                fetchRoute(ORIGIN, DESTINATION);
+                fetchRoute();
                 userRerouted = true;
             } else if( myEtat.equals("déchargé")) {
-                fetchRoute(DESTINATION, ORIGIN);
+                fetchRoute();
                 userRerouted = true;
             }
         }
