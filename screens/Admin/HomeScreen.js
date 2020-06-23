@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {StyleSheet} from 'react-native';
 import ListWorkSite from "../../components/Worksite/ListWorkSite";
+import WorkSiteSettings from "../../components/Worksite/WorkSiteSettings";
 import WorkSiteScreen from "./WorkSiteScreen";
 import {createStackNavigator} from "@react-navigation/stack";
 import LogoutButton from "../../components/LogoutButton";
@@ -28,6 +29,11 @@ export default function HomeScreen({navigation}) {
             <HomeStack.Screen
                 name="Road"
                 component={Road}
+                options={({ route }) => ({headerTitle: route.params.worksite.nom})}
+            />
+            <HomeStack.Screen
+                name="Settings"
+                component={WorkSiteSettings}
                 options={({ route }) => ({headerTitle: route.params.worksite.nom})}
             />
         </HomeStack.Navigator>
