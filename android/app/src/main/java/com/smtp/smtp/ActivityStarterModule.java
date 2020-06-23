@@ -42,25 +42,15 @@ class ActivityStarterModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    void startRoute(ReadableArray origin, ReadableArray destination, String userId, String chantierId, String myEtat) {
-        double[] originLnglat = new double[2];
-        double[] destinationLnglat = new double[2];
-
-        originLnglat[0] = origin.getDouble(0);
-        originLnglat[1] = origin.getDouble(1);
-
-        destinationLnglat[0] = destination.getDouble(0);
-        destinationLnglat[1] = destination.getDouble(1);
+    void editRoad(String chantierId, String typeRoute,  String nameChantier, String token) {
 
         Intent intent = new Intent(reactContext, Navigation.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("origin", originLnglat);
-        intent.putExtra("destination", destinationLnglat);
-        intent.putExtra("userId", userId);
         intent.putExtra("chantierId", chantierId);
-        intent.putExtra("myEtat", myEtat);
+        intent.putExtra("typeRoute", typeRoute);
+        intent.putExtra("nameChantier", nameChantier);
+        intent.putExtra("token", token);
 
         reactContext.startActivity(intent);
     }
-
 }

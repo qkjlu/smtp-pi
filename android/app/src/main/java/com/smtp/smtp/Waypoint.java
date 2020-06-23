@@ -1,6 +1,5 @@
 package com.smtp.smtp;
-
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class Waypoint implements Comparable {
     double longitude;

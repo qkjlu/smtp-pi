@@ -575,7 +575,7 @@ public class ListUser{
 
     private Emitter.Listener onUserDisconnected = args -> runOnUiThread(() -> {
         JSONObject data = (JSONObject) args[0];
-        timeDiffTextView.setText("Recherche de camions..("+myEtat+")");
+        timeDiffTextView.setText("Il n'y a pas de camions devant vous");
         String senderId;
         try {
             senderId = data.getString("userId");
@@ -589,5 +589,5 @@ public class ListUser{
             Log.e(TAG, e.getMessage());
             return;
         }
-    };
+    });
 }
