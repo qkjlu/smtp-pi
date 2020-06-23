@@ -51,7 +51,7 @@ export default class Road extends React.Component {
                                             onPress={async () => { 
                                                 ActivityStarter.editRoad(
                                                     this.worksite.id,
-                                                    "aller", 
+                                                    "retour", 
                                                     this.worksite.nom,
                                                     await AsyncStorage.getItem('token'))
                                                 }}

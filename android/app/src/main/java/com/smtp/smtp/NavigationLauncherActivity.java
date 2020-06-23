@@ -3,8 +3,13 @@ package com.smtp.smtp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,6 +48,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 
@@ -63,6 +69,9 @@ import retrofit2.Callback;
 
 public class NavigationLauncherActivity extends AppCompatActivity implements OnMapReadyCallback,
         MapboxMap.OnMapLongClickListener, MapboxMap.OnMarkerClickListener {
+
+
+    private static final int ONE_HUNDRED_MILLISECONDS = 100;
 
     private String nameChantier;
     private String typeRoute;
@@ -87,8 +96,9 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_navigation_launcher);
         Mapbox.getInstance(this.getApplicationContext(), getString(R.string.mapbox_access_token));
+        setContentView(R.layout.activity_navigation_launcher);
+
 
         Intent i = getIntent();
         idChantier = i.getStringExtra("chantierId");
@@ -98,34 +108,13 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
 
         routeInfo = findViewById(R.id.route_info);
         routeInfo.setText(nameChantier+ "\n" + "Route : " + typeRoute.substring(0, 1).toUpperCase() + typeRoute.substring(1));
+
+        mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("");
-        }
-    }
+        loading = findViewById(R.id.loading);
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.navigation_view_activity_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.fetch_solution_btn:
-                sendRouteToServer();
-                return true;
-            case R.id.reset_route_btn:
-                clearRoute();
-                mapboxMap.clear();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     public JSONObject prepareRouteForSending(){
@@ -213,7 +202,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         requestQueue.add(getRequest);
     }
 
-    private void sendRouteToServer() {
+    public void sendRouteToServer(View view) {
         if(mapboxMap.getMarkers().size() < 2){
             Snackbar.make(mapView, R.string.error_not_enough_waypoints, Snackbar.LENGTH_LONG ).show();
             return;
@@ -314,7 +303,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         mapView.onSaveInstanceState(outState);
     }
 
-    private void clearRoute() {
+    public void clearRoute(View view) {
+        mapboxMap.clear();
         if(mapboxMap.getMarkers().size() == 0){
             mapboxMap.clear();
         }
@@ -325,14 +315,17 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
-        this.mapboxMap.setOnMarkerClickListener(this);
-        this.mapboxMap.addOnMapLongClickListener(this);
-        initMapRoute();
-        initWaypoints();
+        this.mapboxMap.setStyle(Style.TRAFFIC_DAY, style -> {
+            this.mapboxMap.setOnMarkerClickListener(this);
+            this.mapboxMap.addOnMapLongClickListener(this);
+            initMapRoute();
+            initWaypoints();
+        });
+
     }
 
     private void initMapRoute() {
-        mapRoute = new NavigationMapRoute(mapView, mapboxMap);
+        mapRoute = new NavigationMapRoute(null, mapView, mapboxMap);
 
     }
 
@@ -439,7 +432,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         if(mapboxMap.getMarkers().size() > 1) {
             fetchRoute();
         } else {
-            clearRoute();
+            clearRoute(null);
         }
         Snackbar.make(mapView, "Marqueur : "+mapboxMap.getMarkers().size()+"/"+25, Snackbar.LENGTH_LONG).show();
         Log.i("MARKER", Long.toString(marker.getId()));
@@ -448,6 +441,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
 
     @Override
     public boolean onMapLongClick(@NonNull LatLng point) {
+        vibrate();
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(point);
         mapboxMap.addMarker(markerOptions);
@@ -459,4 +453,16 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         return true;
     }
 
+    @SuppressLint("MissingPermission")
+    private void vibrate() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(ONE_HUNDRED_MILLISECONDS, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            vibrator.vibrate(ONE_HUNDRED_MILLISECONDS);
+        }
+    }
 }
