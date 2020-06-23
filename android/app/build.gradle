@@ -204,7 +204,6 @@ dependencies {
     addUnimodulesDependencies()
 
     implementation 'com.android.volley:volley:1.1.1'
-
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.0'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation-ui:0.42.6'
 

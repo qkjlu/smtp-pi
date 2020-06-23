@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -70,6 +71,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private double remainingTime;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
+    private Etape etape = null;
+    private UUID etapeIdPrecedente = null;
     private double rayonChangementEtat = 100;
 
     private Socket mSocket;
@@ -417,22 +420,37 @@ public class ListUser{
         return response.body() != null && !response.body().routes().isEmpty();
     }
 
+    private void changeEtape(){
+        if(etapeIdPrecedente == null){
+            etape = new Etape(UUID.fromString(chantierId),UUID.fromString(userId),myEtat, etapeIdPrecedente);
+        }else{
+            // send existing etape
+            etape.sendEtape();
+            etape = new Etape(UUID.fromString(chantierId),UUID.fromString(userId),myEtat, etapeIdPrecedente);
+        }
+        etapeIdPrecedente = etape.getEtapeId();
+    }
+
     private boolean changeMyEtatIfNecessary(double distanceRemaining) {
         boolean etatChanged = false;
         String previousEtat = myEtat;
         if(distanceRemaining < rayonChangementEtat) {
             if(myEtat.equals("chargé")) {
                 myEtat = "enDéchargement";
+                changeEtape();
                 etatChanged = true;
             } else if (myEtat.equals("déchargé")){
                 myEtat = "enChargement";
+                changeEtape();
                 etatChanged = true;
             }
         } else {
             if(myEtat.equals("enChargement")){
+                changeEtape();
                 myEtat = "chargé";
                 etatChanged = true;
             } else if (myEtat.equals("enDéchargement")){
+                changeEtape();
                 myEtat = "déchargé";
                 etatChanged = true;
             }
@@ -571,7 +589,7 @@ public class ListUser{
         //     Log.e(TAG, e.getMessage());
         //     return;
         // }
-    };
+    });
 
     private Emitter.Listener onUserDisconnected = args -> runOnUiThread(() -> {
         JSONObject data = (JSONObject) args[0];
