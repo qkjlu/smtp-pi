@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_marginLeft="20px"
-        android:layout_marginTop="30px"
+        android:layout_marginTop="40px"
         android:textStyle="bold"
         />
     <ProgressBar
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|right"
         android:layout_marginRight="20px"
-        android:layout_marginTop="30px"
+        android:layout_marginTop="40px"
         android:text="Enregistrer"
         android:onClick="sendRouteToServer"
         style="?attr/materialButtonOutlinedStyle" />
@@ -45,9 +45,9 @@
         android:id="@+id/button_resetRoute"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|right"
+        android:layout_gravity="bottom|right"
         android:layout_marginRight="20px"
-        android:layout_marginTop="70px"
+        android:layout_marginBottom="30px"
         android:text="Réinitialiser"
         android:onClick="clearRoute"
         style="?attr/materialButtonOutlinedStyle" />
