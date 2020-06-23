@@ -78,9 +78,9 @@ export default class AddWorkSiteForm extends React.Component {
                         <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
                                    value={this.state.adress} placeholder={" libellé adresse"}/>
                         <TextInput style={style.textinput} onChangeText={(lon) => this.setState({lon})}
-                                   value={this.state.lon} placeholder={" Longitude"}/>
+                                   value={this.state.lon} placeholder={" Longitude : 3.820391"}/>
                         <TextInput style={style.textinput} onChangeText={(lat) => this.setState({lat})}
-                                   value={this.state.lat} placeholder={" Latitude"}/>
+                                   value={this.state.lat} placeholder={" Latitude : 43.618172"}/>
                         <ValidateButton text={"Ajouter le lieu"} onPress={() => this.postPlace()}/>
                         <Text style={style.getStartedText}> Création d'un lieu automatique en fonction d'une adresse :</Text>
                         <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}

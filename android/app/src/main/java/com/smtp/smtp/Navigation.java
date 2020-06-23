@@ -457,19 +457,25 @@ public class ListUser{
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary(double senderETA, String senderEtat){
-        if(myIndice > 0 && myList.list.size() > 1){
-            User userAhed = myList.list.get(myIndice-1);
-            timeDiffTruckAhead = remainingTime - userAhed.getETA();
+        if(myEtat.equals("enChargement")){
+            timeDiffTextView.setText("En cours de chargement... Quittez la zone une fois chargé");
+        } else if(myEtat.equals("enDéchargement")) {
+            timeDiffTextView.setText("En cours de déchargement... Quittez la zone une fois déchargé");
+        } else if(myIndice > 0 && myList.list.size() > 1){
+            User userAhead = myList.list.get(myIndice-1);
+            timeDiffTruckAhead = remainingTime - userAhead.getETA();
             int minutes = (int) Math.floor(timeDiffTruckAhead / 60);
             int secondes = (int) Math.floor(timeDiffTruckAhead % 60);
-            if(minutes <= 1) {
-                timeDiffTextView.setText(secondes +" secondes d'écart avec le camion de devant");
+            if(minutes < 1) {
+                timeDiffTextView.setText(secondes + " secondes d'écart avec le camion de devant ("+ myEtat +")");
+                timeDiffTextView.setText(secondes + " secondes d'écart avec le camion de devant ("+ myEtat +")");
             } else {
-                timeDiffTextView.setText(minutes + " mn "+ secondes +" d'écarts avec le camion de devant");
+                timeDiffTextView.setText(minutes + " mn "+ secondes +" d'écart avec le camion de devant ("+ myEtat +")");
             }
             Log.d(TAG, "Time diff with truck ahead modified: " + timeDiffTruckAhead);
-        }else{
-            timeDiffTextView.setText("Il n'y a pas de camions devant vous");
+        } else{
+            timeDiffTextView.setText("Il n'y a pas de camions devant vous ("+myEtat+")");
+
         }
     }
 
@@ -550,7 +556,7 @@ public class ListUser{
         }
     });
 
-    private Emitter.Listener onConnectToChantierSuccess = args -> {
+    private Emitter.Listener onConnectToChantierSuccess = args -> runOnUiThread(() -> {
         Log.d(TAG, "Connection to chantier successful");
         connectedToChantier = true;
         Log.d(TAG, "Etat after connection : " + myEtat);
@@ -565,9 +571,9 @@ public class ListUser{
         //     Log.e(TAG, e.getMessage());
         //     return;
         // }
-    };
+    });
 
-    private Emitter.Listener onUserDisconnected = args -> runOnUiThread(() ->{
+    private Emitter.Listener onUserDisconnected = args -> runOnUiThread(() -> {
         JSONObject data = (JSONObject) args[0];
         timeDiffTextView.setText("Il n'y a pas de camions devant vous");
         String senderId;
