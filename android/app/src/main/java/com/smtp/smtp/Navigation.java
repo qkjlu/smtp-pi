@@ -407,10 +407,16 @@ public class ListUser{
         roadPoint = points;
     }
 
-    private void fetchRoute(){
-        if(myEtat.equals("chargé") || myEtat.equals("enDéchargement")) { typeRoute = "aller"; }
-        if(myEtat.equals("déchargé") || myEtat.equals("enChargement")) { typeRoute = "retour"; }
+    private void fetchRoute() {
+        if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
+            typeRoute = "aller";
+        }
+        if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
+            typeRoute = "retour";
+        }
         initWaypoints();
+    }
+    private void buildRoute(){
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
                 .baseUrl(getString(R.string.base_url))
@@ -479,6 +485,7 @@ public class ListUser{
                     // display response
                     try {
                         prepareRoute(response);
+                        buildRoute();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -488,7 +495,7 @@ public class ListUser{
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
+                        Log.d("Error.Response", error.toString() + error.networkResponse);
                     }
                 }
         ) {
