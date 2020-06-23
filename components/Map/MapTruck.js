@@ -277,13 +277,15 @@ export default class MapTruck extends React.Component {
       );
     }
 
-    startNavigation(myEtat){
-      ActivityStarter.startNavigation(
-          [this.props.chargement.longitude, this.props.chargement.latitude],
-          [this.props.dechargement.longitude,this.props.dechargement.latitude],
-          this.state.userId,
-          this.props.worksite.id,
-          myEtat);
+    async startNavigation(myEtat) {
+        await ActivityStarter.startNavigation(
+            [this.props.chargement.longitude, this.props.chargement.latitude],
+            [this.props.dechargement.longitude, this.props.dechargement.latitude],
+            this.state.userId,
+            this.props.worksite.id,
+            myEtat,
+            await AsyncStorage.getItem('token')
+        );
     }
 
     render() {
