@@ -9,10 +9,7 @@ import ActivityStarter from "../../ActivityStarter";
 export default class Road extends React.Component {
     constructor(props) {
         super(props);
-    }
-
-    startNavigation(){
-        ActivityStarter.startRoad()
+        this.worksite = this.props.route.params.worksite;
     }
 
     render() {
@@ -29,9 +26,9 @@ export default class Road extends React.Component {
                                             icon={<Icon name='road' type='font-awesome' color="green"/>}
                                             onPress={async () => { 
                                                 ActivityStarter.editRoad(
-                                                    this.props.worksite.id, 
-                                                    "aller", 
-                                                    this.props.worksite.nom, 
+                                                    this.worksite.id, 
+                                                    "aller",
+                                                    this.worksite.nom, 
                                                     await AsyncStorage.getItem('token'))
                                             }}
                                             title="aller"
@@ -53,9 +50,9 @@ export default class Road extends React.Component {
                                             icon={<Icon name='road' type='font-awesome' color="red"/>}
                                             onPress={async () => { 
                                                 ActivityStarter.editRoad(
-                                                    this.props.worksite.id,
-                                                    "aller", 
-                                                    this.props.worksite.nom,
+                                                    this.worksite.id,
+                                                    "aller",
+                                                    this.worksite.nom,
                                                     await AsyncStorage.getItem('token'))
                                                 }}
                                             title="retour"
