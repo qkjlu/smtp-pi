@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- If you use the Mapbox Tilesource, you need to set uiLogo=true - see https://www.mapbox.com/help/how-attribution-works/ -->
+
+    <com.mapbox.mapboxsdk.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:mapbox_uiAttribution="true"
+        app:mapbox_uiAttributionMarginLeft="5dp"
+        app:mapbox_uiLogo="false" />
+    <TextView
+        android:id="@+id/route_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginLeft="20px"
+        android:layout_marginTop="30px"
+        android:textStyle="bold"
+        />
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="invisible" />
+
+    <Button xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/button_sendRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginRight="20px"
+        android:layout_marginTop="30px"
+        android:text="Enregistrer"
+        android:onClick="sendRouteToServer"
+        style="?attr/materialButtonOutlinedStyle" />
+
+    <Button xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/button_resetRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginRight="20px"
+        android:layout_marginTop="70px"
+        android:text="Réinitialiser"
+        android:onClick="clearRoute"
+        style="?attr/materialButtonOutlinedStyle" />
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
