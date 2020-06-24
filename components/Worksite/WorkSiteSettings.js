@@ -30,27 +30,19 @@ export default class WorkSiteSettings extends React.Component {
     let worksite = this.props.route.params.worksite;
     let chargement = await this.requestLieu(worksite.lieuChargementId);
     let dechargement = await this.requestLieu(worksite.lieuDéchargementId);
+    console.log("dechargement : " + chargement)
     this.adresseChargement = chargement.adresse;
     this.adresseDechargement = dechargement.adresse;
-    this.setState({chargementRayon : chargement.adresse})
-    this.setState({dechargementRayon : dechargement.adresse})
+    this.setState({chargementRayon : 50})
+    this.setState({dechargementRayon : 50})
     this.setState({loading : false});
-
-    //let dechargement = requestLieu(worksite.lieuDéchargementId,"dechargement");
-
-    // let dechargement = requestLieu(this.props.worksite.lieuChargementId);
-    // this.adresseChargement = chargement.adresse;
-    // this.dechargement = dechargement.adresse;
-    // this.setState({chargementRayon : this.props.worksite.});
-    // this.setState({dechargementRayon : this.props.worksite.})
-
-
   }
 
   async requestLieu(lieuID){
     const token = await AsyncStorage.getItem('token');
     //let url = Config.API_URL + 'chantiers/' + adresseID + '/lieu/' + type
-    let url = 'http://192.168.56.1:3000/lieux/' + lieuID;
+    let url = Config.API_URL + 'lieux/' + lieuID;
+    console.log(url);
     return await axios({
       method : 'get',
       url : url,
