@@ -7,6 +7,8 @@ import AddPlaceForm from "../Place/AddPlaceForm";
 import style from "../../Style";
 import {MaterialIcons, Ionicons} from "@expo/vector-icons";
 import Config from "react-native-config";
+import InputText from "../InputText";
+import ValidateButton from "../ValidateButton";
 
 export default class AddWorkSiteForm extends React.Component {
 
@@ -16,24 +18,20 @@ export default class AddWorkSiteForm extends React.Component {
             name: '',
             idPlace1: '',
             idPlace2: '',
-            chargementRayon : null,
-            dechargementRayon : null,
             places : [],
             showNewPlaceForm : false
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        const token  = await AsyncStorage.getItem('token');
         axios({
             method: 'get',
             url: Config.API_URL + 'lieux',
-            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}            })
-            .then( response => {
-                this.setState({places: response.data});
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+            headers: {'Authorization': 'Bearer ' + token}
+        })
+            .then( response => { this.setState({places: response.data});})
+            .catch((error) => { console.log(error); })
     }
 
     async formSubmit(){
@@ -71,14 +69,6 @@ export default class AddWorkSiteForm extends React.Component {
         }
     }
 
-    handleChargementText(text){
-      this.setState({chargementRayon : text});
-    }
-
-    handleDechargementText(text){
-      this.setState({dechargementRayon : text});
-    }
-
     render() {
             return (
                 <View style={{padding : 20}}>
@@ -102,14 +92,6 @@ export default class AddWorkSiteForm extends React.Component {
                     <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"} places={this.state.places}/>
 
                     <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"} places={this.state.places}/>
-
-                    <Text>Rayon de chargement:</Text>
-                    <InputText placeholder="chargement" />
-                    <ValidateButton text={"Modifier"} onPress={this.handleModifyChargement}/>
-                    <Text>Rayon de déchargement:</Text>
-                    <InputText placeholder="dechargement" />
-                    <ValidateButton text={"Modifier"} onPress={this.handleModifyDechargement}/>
-
                     </View>
                     <Button
                             buttonStyle={styles.button}

@@ -15,6 +15,7 @@ export default class AddWorkSiteForm extends React.Component {
             city: '',
             lon:'',
             lat:'',
+            rayon: '',
         }
     }
 
@@ -42,6 +43,7 @@ export default class AddWorkSiteForm extends React.Component {
             "adresse": this.state.adress,
             "longitude": parseFloat(this.state.lon),
             "latitude": parseFloat(this.state.lat),
+            "rayon" : parseInt(this.state.rayon),
         };
         console.log(this.state.lon+" => "+parseFloat(this.state.lon))
         axios({
@@ -77,17 +79,25 @@ export default class AddWorkSiteForm extends React.Component {
                         <Text style={style.getStartedText}> Création d'un lieu manuel en fonction des points GPS :</Text>
                         <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
                                    value={this.state.adress} placeholder={" libellé adresse"}/>
-                        <TextInput style={style.textinput} onChangeText={(lon) => this.setState({lon})}
-                                   value={this.state.lon} placeholder={" Longitude : 3.820391"}/>
                         <TextInput style={style.textinput} onChangeText={(lat) => this.setState({lat})}
                                    value={this.state.lat} placeholder={" Latitude : 43.618172"}/>
+                        <TextInput style={style.textinput} onChangeText={(lon) => this.setState({lon})}
+                                   value={this.state.lon} placeholder={" Longitude : 3.820391"}/>
+                        <TextInput style={style.textinput} onChangeText={(rayon) => this.setState({rayon})}
+                                   value={this.state.rayon} placeholder={" Rayon du lieu en mètre : exemple 50"}/>
                         <ValidateButton text={"Ajouter le lieu"} onPress={() => this.postPlace()}/>
-                        <Text style={style.getStartedText}> Création d'un lieu automatique en fonction d'une adresse :</Text>
-                        <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
-                                   value={this.state.adress} placeholder={" Adresse exemple : 570 Route De Ganges"}/>
-                        <TextInput style={style.textinput} onChangeText={(city) => this.setState({city})}
-                                   value={this.state.city} placeholder={" Ville"}/>
-                        <ValidateButton text={"Ajouter le lieu"} onPress={() => this.getLieu()}/>
+                        {/* CODE LIEU AUTOMATIQUE
+                            <Text style={style.getStartedText}> Création d'un lieu automatique en fonction d'une adresse :</Text>
+                            <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
+                            value={this.state.adress} placeholder={" Adresse exemple : 570 Route De Ganges"}/>
+                            <TextInput style={style.textinput} onChangeText={(city) => this.setState({city})}
+                            value={this.state.city} placeholder={" Ville"}/>
+                            <TextInput style={style.textinput} onChangeText={(rayon) => this.setState({rayon})}
+                            value={this.state.rayon} placeholder={" Rayon du lieu en mètre : exemple 50"}/>
+                            <ValidateButton text={"Ajouter le lieu"} onPress={() => this.getLieu()}/>
+                            */
+                        }
+
                     </View>
                 </Modal>
             );

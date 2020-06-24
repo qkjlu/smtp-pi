@@ -196,7 +196,7 @@ export default class MapAdmin extends React.Component {
                     >
                         <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
                         <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={200}/>
+                        <Circle key={"chargementCircle"} center={chargement} radius={100}/>
                         <Circle key={"dechargementCircle"} center={dechargement} radius={100}/>
                         {this.state.users.map(marker => {
                                 return (<TruckMarker user={marker} socket={this.socket}/>)
@@ -221,8 +221,8 @@ export default class MapAdmin extends React.Component {
                     >
                         <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
                         <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={40}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={40}/>
+                        <Circle key={"chargementCircle"} center={chargement} radius={100}/>
+                        <Circle key={"dechargementCircle"} center={dechargement} radius={100}/>
                         {this.state.users.map(marker => {
                                 return (<TruckMarker user={marker} socket={this.socket}/>)
                             }
