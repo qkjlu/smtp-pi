@@ -28,8 +28,14 @@ export default class WorkSiteSettings extends React.Component {
   // get adress of lieuChargement and lieuDéchargement
   async componentDidMount(){
     let worksite = this.props.route.params.worksite;
-    this.state.chargement = await this.requestLieu(worksite.lieuChargementId);
-    this.state.dechargement = await this.requestLieu(worksite.lieuDéchargementId);
+    let chargement = await this.requestLieu(worksite.lieuChargementId);
+    let dechargement = await this.requestLieu(worksite.lieuDéchargementId);
+    console.log("dechargement : " + chargement)
+    this.adresseChargement = chargement.adresse;
+    this.adresseDechargement = dechargement.adresse;
+    this.setState({chargementRayon : 50})
+    this.setState({dechargementRayon : 50})
+    this.setState({loading : false});
   }
 
   async requestLieu(lieuID){
