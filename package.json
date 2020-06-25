@@ -54,6 +54,7 @@
     "react-native-tab-view": "^2.14.0",
     "react-native-unimodules": "~0.9.0",
     "react-native-vector-icons": "latest",
+    "react-native-version-check": "^3.4.1",
     "react-native-web": "~0.11.7",
     "react-navigation": "^4.3.9",
     "socket.io-client": "2.1.1",

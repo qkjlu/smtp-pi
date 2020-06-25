@@ -18,8 +18,8 @@ export default class WorkSiteSettings extends React.Component {
     this.handleChargementText = this.handleChargementText.bind(this);
     this.handleDechargementText = this.handleDechargementText.bind(this);
     this.state = {
-        chargementRayon : null,
-        dechargementRayon: null,
+        chargement : null,
+        dechargement: null,
         loading : true
     }
   }
@@ -31,10 +31,8 @@ export default class WorkSiteSettings extends React.Component {
     let chargement = await this.requestLieu(worksite.lieuChargementId);
     let dechargement = await this.requestLieu(worksite.lieuDéchargementId);
     console.log("dechargement : " + chargement)
-    this.adresseChargement = chargement.adresse;
-    this.adresseDechargement = dechargement.adresse;
-    this.setState({chargementRayon : 50})
-    this.setState({dechargementRayon : 50})
+    this.setState({chargement : chargement})
+    this.setState({dechargement : dechargement})
     this.setState({loading : false});
   }
 
