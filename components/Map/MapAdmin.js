@@ -34,7 +34,7 @@ export default class MapAdmin extends React.Component {
             connected : false,
             users: [],
             etat : null,
-            appState: AppState.currentState
+            appState: AppState.currentState,
         };
     }
 
@@ -152,7 +152,7 @@ export default class MapAdmin extends React.Component {
                     return -1
                 }
                 console.log(response.status)
-                return response.data
+                return response.data.rayon
             })
             .catch(function (error) {
                 console.log(error);
@@ -181,6 +181,7 @@ export default class MapAdmin extends React.Component {
         const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
         const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
         console.log("typeOfUser : "+this.props.typeOfUser);
+        console.log("rayon : "+ this.props.chargement.rayon + " " + this.state.rayonDechargement);
         if(this.props.typeOfUser === "crane"){
             return(
                 <View>
@@ -196,8 +197,8 @@ export default class MapAdmin extends React.Component {
                     >
                         <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
                         <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={100}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={100}/>
+                        <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
+                        <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
                         {this.state.users.map(marker => {
                                 return (<TruckMarker user={marker} socket={this.socket}/>)
                             }
@@ -221,8 +222,8 @@ export default class MapAdmin extends React.Component {
                     >
                         <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
                         <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={100}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={100}/>
+                        <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
+                        <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
                         {this.state.users.map(marker => {
                                 return (<TruckMarker user={marker} socket={this.socket}/>)
                             }

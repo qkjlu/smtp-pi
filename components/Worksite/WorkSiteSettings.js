@@ -1,4 +1,4 @@
-import {AsyncStorage, View, Text, ActivityIndicator, TextInput} from "react-native";
+import {AsyncStorage, View, Text, ActivityIndicator, TextInput, ScrollView} from "react-native";
 import style from "../../Style";
 import React from "react";
 import ValidateButton from '../ValidateButton';
@@ -62,7 +62,7 @@ export default class WorkSiteSettings extends React.Component {
           "rayon" : parseInt(lieu.rayon),
       };
       axios({
-          method: 'patch',
+          method: 'put',
           url: Config.API_URL + 'lieux/'+ lieu.id,
           data : data,
           headers: {'Authorization': 'Bearer ' + token},
@@ -77,7 +77,7 @@ export default class WorkSiteSettings extends React.Component {
               return response.status;
           })
           .catch((error) => {
-              console.log(error);
+              console.log(error.toString());
           })
   }
 
@@ -89,56 +89,57 @@ export default class WorkSiteSettings extends React.Component {
         </View>
       )
     }else{
-       console.log("lieu "+ this.state.chargement.longitude);
       return(
         <View>
-            <Text> Modification Chargement :  </Text>
-            <Text> Nom du lieu  : {this.state.chargement.longitude}  </Text>
-            <TextInput style={style.textinput} onChangeText={ (adresse) => this.setState({ chargement:{
-                ...this.state.chargement,
-                    adresse: adresse,
-                }})} value={this.state.chargement.adresse} placeholder={" adresse "}/>
-            <Text> Latitude  :  </Text>
-            <TextInput style={style.textinput} onChangeText={ (latitude) => this.setState({ chargement:{
+            <ScrollView>
+                <Text> Modification Chargement :  </Text>
+                <Text> Nom du lieu  :   </Text>
+                <TextInput style={style.textinput} onChangeText={ (adresse) => this.setState({ chargement:{
                     ...this.state.chargement,
-                    latitude: latitude,
-                }})} value={this.state.chargement.latitude} placeholder={" latitude "}/>
-            <Text> Longitude  :  </Text>
-            <TextInput style={style.textinput} onChangeText={ (longitude) => this.setState({ chargement:{
+                        adresse: adresse,
+                    }})} value={this.state.chargement.adresse.toString()} placeholder={" adresse "}/>
+                <Text> Latitude  :  </Text>
+                <TextInput style={style.textinput} onChangeText={ (latitude) => this.setState({ chargement:{
+                        ...this.state.chargement,
+                        latitude: latitude,
+                    }})} value={this.state.chargement.latitude.toString()} placeholder={" latitude "}/>
+                <Text> Longitude  :  </Text>
+                <TextInput style={style.textinput} onChangeText={ (longitude) => this.setState({ chargement:{
+                        ...this.state.chargement,
+                        longitude: longitude,
+                    }})} value={this.state.chargement.longitude.toString()} placeholder={" longitude "}/>
+                <Text> Rayon : </Text>
+                <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ chargement:{
                     ...this.state.chargement,
-                    longitude: longitude,
-                }})} value={this.state.chargement.longitude} placeholder={" longitude "}/>
-            <Text> Rayon : </Text>
-            <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ chargement:{
-                ...this.state.chargement,
-                rayon: rayon,
-            }})} value={this.state.chargement.rayon} placeholder={" rayon de chargement"}/>
-
-            <ValidateButton text={"Modifier"} onPress={ () => this.updateLieu(this.state.chargement) }/>
-
-
-            <Text> Modification Déchargement :  </Text>
-            <Text> Nom du lieu  :  </Text>
-            <TextInput style={style.textinput} onChangeText={ (adresse) => this.setState({ dechargement:{
-                    ...this.state.dechargement,
-                    adresse: adresse,
-                }})} value={this.state.dechargement.adresse} placeholder={" adresse "}/>
-            <Text> Latitude  :  </Text>
-            <TextInput style={style.textinput} onChangeText={ (latitude) => this.setState({ dechargement:{
-                    ...this.state.dechargement,
-                    latitude: latitude,
-                }})} value={this.state.dechargement.latitude} placeholder={" latitude "}/>
-            <Text> Longitude  :  </Text>
-            <TextInput style={style.textinput} onChangeText={ (longitude) => this.setState({ dechargement:{
-                    ...this.state.dechargement,
-                    longitude: longitude,
-                }})} value={this.state.dechargement.longitude} placeholder={" longitude "}/>
-            <Text> Rayon : </Text>
-            <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ dechargement:{
-                    ...this.state.dechargement,
                     rayon: rayon,
-                }})} value={this.state.dechargement.rayon} placeholder={" rayon de déchargement"}/>
-            <ValidateButton text={"Modifier"} onPress={() => this.updateLieu(this.state.dechargement) }/>
+                }})} value={this.state.chargement.rayon.toString()} placeholder={" rayon de chargement"}/>
+
+                <ValidateButton text={"Modifier"} onPress={ () => this.updateLieu(this.state.chargement) }/>
+
+
+                <Text> Modification Déchargement :  </Text>
+                <Text> Nom du lieu  :  </Text>
+                <TextInput style={style.textinput} onChangeText={ (adresse) => this.setState({ dechargement:{
+                        ...this.state.dechargement,
+                        adresse: adresse,
+                    }})} value={this.state.dechargement.adresse.toString()} placeholder={" adresse "}/>
+                <Text> Latitude  :  </Text>
+                <TextInput style={style.textinput} onChangeText={ (latitude) => this.setState({ dechargement:{
+                        ...this.state.dechargement,
+                        latitude: latitude,
+                    }})} value={this.state.dechargement.latitude.toString()} placeholder={" latitude "}/>
+                <Text> Longitude  :  </Text>
+                <TextInput style={style.textinput} onChangeText={ (longitude) => this.setState({ dechargement:{
+                        ...this.state.dechargement,
+                        longitude: longitude,
+                    }})} value={this.state.dechargement.longitude.toString()} placeholder={" longitude "}/>
+                <Text> Rayon : </Text>
+                <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ dechargement:{
+                        ...this.state.dechargement,
+                        rayon: rayon,
+                    }})} value={this.state.dechargement.rayon.toString()} placeholder={" rayon de déchargement"}/>
+                <ValidateButton text={"Modifier"} onPress={() => this.updateLieu(this.state.dechargement) }/>
+            </ScrollView>
         </View>
       )
     }

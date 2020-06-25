@@ -8,8 +8,8 @@ import Config from "react-native-config";
 
 export default class AddWorkSiteForm extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             adress: '',
             city: '',
