@@ -84,7 +84,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
     private Etape etape = null;
-    private UUID etapeIdPrecedente = null;
+    private String etapeIdPrecedente = null;
     private double rayonChangementEtat = 100;
 
     private Socket mSocket;
@@ -514,11 +514,12 @@ public class ListUser{
 
     private void changeEtape(){
         if(etapeIdPrecedente == null){
-            etape = new Etape(UUID.fromString(chantierId),UUID.fromString(userId),myEtat, etapeIdPrecedente);
+            etape = new Etape(chantierId,userId,myEtat, etapeIdPrecedente, getApplicationContext());
         }else{
+            Log.i("Navigation", "Woohoo");
             // send existing etape
-            etape.sendEtape();
-            etape = new Etape(UUID.fromString(chantierId),UUID.fromString(userId),myEtat, etapeIdPrecedente);
+            etape.sendFinEtape();
+            etape = new Etape(chantierId,userId,myEtat, etapeIdPrecedente, getApplicationContext());
         }
         etapeIdPrecedente = etape.getEtapeId();
     }
