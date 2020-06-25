@@ -26,7 +26,7 @@ export default class ListWorkSite extends React.Component {
         var data = { "id" : id};
         axios({
             method : 'delete',
-            url : Config.API_URL + 'lieux',
+            url : Config.API_URL + 'lieux/'+id,
             headers: {'Authorization': 'Bearer ' + token},
             data: data
         })
