@@ -45,5 +45,4 @@ target 'SMTPV0' do
   use_native_modules!
   pod 'react-native-maps', :path => '../node_modules/react-native-maps'
 
-
 end

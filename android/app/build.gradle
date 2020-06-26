@@ -142,8 +142,8 @@ android {
         applicationId 'com.smtp.smtp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.0.7"
+        versionCode 7
+        versionName "1.0.6"
         resValue "string", "build_config_package", "com.smtp.smtp"
     }
     splits {
