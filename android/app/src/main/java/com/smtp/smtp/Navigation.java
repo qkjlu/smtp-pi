@@ -30,12 +30,17 @@ import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
+import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMap;
+import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
+import com.mapbox.services.android.navigation.v5.navigation.camera.Camera;
+import com.mapbox.services.android.navigation.v5.navigation.camera.RouteInformation;
 import com.mapbox.services.android.navigation.v5.offroute.OffRoute;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
@@ -46,14 +51,11 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -68,6 +70,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private DirectionsRoute route;
     private final boolean SHOULD_SIMULATE = false;
     private final int INITIAL_ZOOM = 22;
+    private final double INITIAL_TILT = 30;
     private static final String TAG = "Navigation";
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
@@ -96,6 +99,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
     private ArrayList<Point> roadPoint = new ArrayList();
+
 
     {
         try {
@@ -258,10 +262,6 @@ public class ListUser{
                 .build();
         navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this,initialPosition);
-
-        //navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers();
-        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),ORIGIN);
-        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),DESTINATION);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
@@ -465,7 +465,25 @@ public class ListUser{
                 .shouldSimulateRoute(SHOULD_SIMULATE)
                 .directionsRoute(route);
 
+        Camera camera = new Camera() {
+            @Override
+            public double tilt(RouteInformation routeInformation) {
+                return INITIAL_TILT;
+            }
+
+            @Override
+            public double zoom(RouteInformation routeInformation) {
+                return INITIAL_ZOOM;
+            }
+
+            @Override
+            public List<Point> overview(RouteInformation routeInformation) {
+                return null;
+            }
+        };
+
         navigationView.startNavigation(navViewBuilderOptions.build());
+        navigationView.retrieveMapboxNavigation().setCameraEngine(camera);
     }
 
     private boolean validRouteResponse(Response<DirectionsResponse> response) {
