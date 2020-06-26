@@ -15,6 +15,8 @@ import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
 var jwtDecode = require('jwt-decode');
 import Config from "react-native-config";
+import VersionCheck from 'react-native-version-check';
+import Setup from './Services/setup'
 
 export default class Login extends React.Component{
 
@@ -30,6 +32,7 @@ export default class Login extends React.Component{
     this.handleValidate = this.handleValidate.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
+    //this.setup = new Setup();
     this.state = {
       pickerSelected: null,
       companies : null,
@@ -41,6 +44,7 @@ export default class Login extends React.Component{
   }
 
   async componentDidMount(){
+    //await this.setup.initSetup();
     await this.requestLocationPermission();
     await this.internetCheck();
     await axios.get(Config.API_URL + 'entreprises')

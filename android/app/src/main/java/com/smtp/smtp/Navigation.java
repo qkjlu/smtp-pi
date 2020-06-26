@@ -99,7 +99,6 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
     {
         try {
-            // dev // mSocket = IO.socket("http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/");
             mSocket = IO.socket(BuildConfig.API_URL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -233,14 +232,12 @@ public class ListUser{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         Intent i = getIntent();
         double[] origin = i.getDoubleArrayExtra("origin");
         double[] destination = i.getDoubleArrayExtra("destination");
 
         ORIGIN = Point.fromLngLat(origin[0], origin[1]);
         DESTINATION = Point.fromLngLat(destination[0], destination[1]);
-
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
         typeRoute = i.getStringExtra("typeRoute");
@@ -261,6 +258,10 @@ public class ListUser{
                 .build();
         navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this,initialPosition);
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers();
+        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),ORIGIN);
+        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),DESTINATION);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
