@@ -17,6 +17,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
@@ -25,6 +28,8 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.geojson.Point;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
@@ -61,8 +66,8 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private NavigationView navigationView;
     private TextView timeDiffTextView;
     private DirectionsRoute route;
-    private PermissionsManager permissionsManager;
     private final boolean SHOULD_SIMULATE = false;
+    private final int INITIAL_ZOOM = 22;
     private static final String TAG = "Navigation";
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
@@ -224,6 +229,7 @@ public class ListUser{
     }
 }
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -241,7 +247,7 @@ public class ListUser{
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         myList.addList(new User(userId,Double.POSITIVE_INFINITY,myEtat));
-        Log.d(TAG, "Je m'ajoute dans la liste " +myList.list.toString());
+        Log.d(TAG, "Je m'ajoute dans la liste " + myList.list.toString());
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
@@ -249,9 +255,12 @@ public class ListUser{
         navigationView = findViewById(R.id.navigationView);
         timeDiffTextView = findViewById(R.id.timeDiffTextView);
 
-        timeDiffTextView.setText("Il n'y a pas de camions devant vous");
+        CameraPosition initialPosition = new CameraPosition.Builder()
+                .target(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .zoom(INITIAL_ZOOM)
+                .build();
         navigationView.onCreate(savedInstanceState);
-        navigationView.initialize(this);
+        navigationView.initialize(this,initialPosition);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
@@ -336,14 +345,8 @@ public class ListUser{
 
     @Override
     public void onNavigationReady(boolean isRunning) {
-        if (askLocationPermissionIfNeeded()) {
-            if(myEtat.equals("chargé") || myEtat.equals("enChargement")) {
-                fetchRoute();
-            }
-            if(myEtat.equals("déchargé") || myEtat.equals("enDéchargement")) {
-                fetchRoute();
-            }
-        }
+        fetchRoute();
+        modifyTimeDiffTruckAheadIfNecessary();
     }
 
     private float getDistanceFromDestination(Location location){
@@ -368,7 +371,10 @@ public class ListUser{
         coordinates = new JSONObject();
         remainingTime = routeProgress.durationRemaining();
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
-        rerouteUserIfNecessary(didEtatChanged);
+        if(rerouteUserIfNecessary(didEtatChanged)){
+            return;
+        }
+        modifyTimeDiffTruckAheadIfNecessary();
 
         Log.d(TAG, "Remaining time: " + remainingTime);
         Log.d(TAG, "Distance remaining: " + distanceFromDestination);
@@ -450,21 +456,10 @@ public class ListUser{
                 });
     }
 
-    private boolean askLocationPermissionIfNeeded() {
-        if (!PermissionsManager.areLocationPermissionsGranted(this)) {
-            permissionsManager = new PermissionsManager(this);
-            permissionsManager.requestLocationPermissions(this);
-            return PermissionsManager.areLocationPermissionsGranted(this);
-        } else {
-            return true;
-        }
-    }
-
     private void launchNavigation() {
         NavigationViewOptions.Builder navViewBuilderOptions = NavigationViewOptions.builder()
                 .navigationListener(this)
                 .progressChangeListener(this)
-                .shouldSimulateRoute(true)
                 .waynameChipEnabled(false)
                 .shouldSimulateRoute(SHOULD_SIMULATE)
                 .directionsRoute(route);
@@ -486,6 +481,7 @@ public class ListUser{
                     try {
                         prepareRoute(response);
                         buildRoute();
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -516,7 +512,7 @@ public class ListUser{
         if(etapeIdPrecedente == null){
             etape = new Etape(chantierId,userId,myEtat, etapeIdPrecedente, getApplicationContext());
         }else{
-            Log.i("Navigation", "Woohoo");
+
             // send existing etape
             etape.sendFinEtape();
             etape = new Etape(chantierId,userId,myEtat, etapeIdPrecedente, getApplicationContext());
@@ -539,12 +535,12 @@ public class ListUser{
             }
         } else {
             if(myEtat.equals("enChargement")){
-                changeEtape();
                 myEtat = "chargé";
+                changeEtape();
                 etatChanged = true;
             } else if (myEtat.equals("enDéchargement")){
-                changeEtape();
                 myEtat = "déchargé";
+                changeEtape();
                 etatChanged = true;
             }
         }
@@ -567,45 +563,25 @@ public class ListUser{
         return userRerouted;
     }
 
-    private void modifyTimeDiffTruckAheadIfNecessary(double senderETA, String senderEtat){
+    private void modifyTimeDiffTruckAheadIfNecessary(){
         if(myEtat.equals("enChargement")){
-            timeDiffTextView.setText("En cours de chargement... Quittez la zone une fois chargé");
+            timeDiffTextView.setText("Vous êtes en cours de chargement \nQuittez la zone une fois chargé");
         } else if(myEtat.equals("enDéchargement")) {
-            timeDiffTextView.setText("En cours de déchargement... Quittez la zone une fois déchargé");
-        } else if(myIndice > 0 && myList.list.size() > 1){
+            timeDiffTextView.setText("Vous êtes en cours de déchargement \nQuittez la zone une fois déchargé");
+        } else if(myIndice > 0 && myList.list.size() > 1) {
             User userAhead = myList.list.get(myIndice-1);
             timeDiffTruckAhead = remainingTime - userAhead.getETA();
             int minutes = (int) Math.floor(timeDiffTruckAhead / 60);
             int secondes = (int) Math.floor(timeDiffTruckAhead % 60);
             if(minutes < 1) {
-                timeDiffTextView.setText(secondes + " secondes d'écart avec le camion de devant ("+ myEtat +")");
-                timeDiffTextView.setText(secondes + " secondes d'écart avec le camion de devant ("+ myEtat +")");
+                timeDiffTextView.setText("Vous êtes " + myEtat + "\nVous avez " + secondes + " secondes d'écart avec le camion de devant");
             } else {
-                timeDiffTextView.setText(minutes + " mn "+ secondes +" d'écart avec le camion de devant ("+ myEtat +")");
+                timeDiffTextView.setText("Vous êtes " + myEtat + "\nVous avez " + minutes + " mn "+ secondes +" d'écart avec le camion de devant");
             }
             Log.d(TAG, "Time diff with truck ahead modified: " + timeDiffTruckAhead);
-        } else{
-            timeDiffTextView.setText("Il n'y a pas de camions devant vous ("+myEtat+")");
-
+        } else {
+            timeDiffTextView.setText("Vous êtes " + myEtat + " \nIl n'y a pas de camion devant vous");
         }
-    }
-
-    // Si l'envoyeur :
-    // - a le même état que moi,
-    // - une différence positive entre mon ETA et le sien,
-    // - une différence d'ETA inférieure à la différence d'ETA courante
-    // ===> Alors c'est le camion devant moi le plus proche
-    private boolean senderIsClosestTruckAhead(double senderETA, String senderEtat) {
-        double timeDiffWithSender = remainingTime - senderETA;
-        Log.d(TAG, "Checking if sender is closest truck ahead");
-        Log.d(TAG, "My ETA: " + remainingTime);
-        Log.d(TAG, "My etat: " + myEtat);
-        Log.d(TAG, "Sender ETA: " + senderETA);
-        Log.d(TAG, "Sender etat: " + senderEtat);
-        if (senderEtat.equals(myEtat) && timeDiffWithSender > 0 && timeDiffWithSender < timeDiffTruckAhead) {
-            return true;
-        }
-        return false;
     }
 
     private void sendCoordinates() {
@@ -659,8 +635,7 @@ public class ListUser{
                 myList.addList(sender);
             }
             myList.updateMyIndice(this.userId);
-            // TODO supprimer les utilisateurs qui n'ont pas le meme etat
-            modifyTimeDiffTruckAheadIfNecessary(senderETA, senderEtat);
+            modifyTimeDiffTruckAheadIfNecessary();
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
             return;
@@ -671,22 +646,10 @@ public class ListUser{
         Log.d(TAG, "Connection to chantier successful");
         connectedToChantier = true;
         Log.d(TAG, "Etat after connection : " + myEtat);
-        // JSONObject data = (JSONObject) args[0];
-        // try {
-        //     String previousEtatBeforeDisconnect = data.getString("etat");
-        //     if(!previousEtatBeforeDisconnect.isEmpty()) {
-        //         myEtat = previousEtatBeforeDisconnect;
-        //         Log.d(TAG, "Etat changed to previous etat before disconnection : " + myEtat);
-        //     }
-        // } catch (JSONException e) {
-        //     Log.e(TAG, e.getMessage());
-        //     return;
-        // }
     });
 
     private Emitter.Listener onUserDisconnected = args -> runOnUiThread(() -> {
         JSONObject data = (JSONObject) args[0];
-        timeDiffTextView.setText("Il n'y a pas de camions devant vous");
         String senderId;
         try {
             senderId = data.getString("userId");
@@ -700,5 +663,6 @@ public class ListUser{
             Log.e(TAG, e.getMessage());
             return;
         }
+        modifyTimeDiffTruckAheadIfNecessary();
     });
 }

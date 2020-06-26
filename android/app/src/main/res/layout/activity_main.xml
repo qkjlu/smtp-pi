@@ -15,11 +15,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_marginLeft="16dp"
-        android:background="@android:color/white"
+        android:layout_marginTop="140dp"
+        android:background="@color/mapbox_navigation_view_color_banner_background_dark"
         android:elevation="3dp"
         android:gravity="center"
         android:padding="6dp"
-        android:textColor="@android:color/black"
-        android:textSize="35sp" />
+        android:textColor="@android:color/white"
+        android:textSize="26sp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

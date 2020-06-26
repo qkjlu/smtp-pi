@@ -98,8 +98,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this.getApplicationContext(), getString(R.string.mapbox_access_token));
         setContentView(R.layout.activity_navigation_launcher);
-
-
+        
         Intent i = getIntent();
         idChantier = i.getStringExtra("chantierId");
         typeRoute = i.getStringExtra("typeRoute");

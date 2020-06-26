@@ -54,26 +54,21 @@ public class Etape extends AppCompatActivity {
     }
 
     public void sendDebutEtape(){
-        RequestQueue requestQueue;
-        // Instantiate the cache
-        Cache cache = new DiskBasedCache(ctx.getCacheDir(), 1024 * 1024); // 1MB cap
-        // Set up the network to use HttpURLConnection as the HTTP client.
-        Network network = new BasicNetwork(new HurlStack());
-        // Instantiate the RequestQueue with the cache and network.
-        requestQueue = new RequestQueue(cache, network);
-        // Start the queue
-        requestQueue.start();
         Map<String, Object> send = new HashMap<>();
+
         send.put("dateDebut",this.dateDebut);
         send.put("id",this.etapeId);
         send.put("ChantierId",this.chantierId);
         send.put("CamionneurId",this.camionneurId);
         send.put("type",this.type);
-        send.put("etapePrec",this.etapePrec);
+        send.put("etapePrecId",this.etapePrec);
         JSONObject etape = new JSONObject(send);
+
         final String requestBody =  etape.toString();
-        Log.i("Etape", requestBody);
         final String URL = BASE_URL+"etapes";
+
+        Log.d("Etape", requestBody);
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -114,24 +109,20 @@ public class Etape extends AppCompatActivity {
                 return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
             }
         };
-        requestQueue.add(stringRequest);
+        RequestManager.getInstance(ctx).addToRequestQueue(stringRequest);
     }
 
     public void sendFinEtape(){
-        Log.i("Navigation", "Wehe");
-        RequestQueue requestQueue;
-        // Instantiate the cache
-        Cache cache = new DiskBasedCache(ctx.getCacheDir(), 1024 * 1024); // 1MB cap
-        // Set up the network to use HttpURLConnection as the HTTP client.
-        Network network = new BasicNetwork(new HurlStack());
-        // Instantiate the RequestQueue with the cache and network.
-        requestQueue = new RequestQueue(cache, network);
-        // Start the queue
         Map<String, Object> send = new HashMap<>();
+
         send.put("dateFin",System.currentTimeMillis());
         JSONObject etape = new JSONObject(send);
+
         final String requestBody =  etape.toString();
         final String URL = BASE_URL+"etapes/"+etapeId;
+
+        Log.d("Etape", requestBody);
+
         StringRequest stringRequest = new StringRequest(Request.Method.PATCH, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -172,7 +163,7 @@ public class Etape extends AppCompatActivity {
                 return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
             }
         };
-        requestQueue.add(stringRequest);
+        RequestManager.getInstance(ctx).addToRequestQueue(stringRequest);;
     }
 
     public String getEtapeId() {
