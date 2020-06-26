@@ -2,6 +2,7 @@ package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,6 +29,10 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.geojson.Point;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
@@ -259,10 +264,6 @@ public class ListUser{
         navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this,initialPosition);
 
-        //navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers();
-        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),ORIGIN);
-        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),DESTINATION);
-
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.on("chantier/user/disconnected",onUserDisconnected);
@@ -348,6 +349,53 @@ public class ListUser{
     public void onNavigationReady(boolean isRunning) {
         fetchRoute();
         modifyTimeDiffTruckAheadIfNecessary();
+
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        Icon icon = iconFactory.fromResource(R.drawable.icon_chargement);
+        Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers();
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Chargement")
+                //.snippet("H St NW with 15th St NW")
+                .position(new LatLng(ORIGIN.latitude(),ORIGIN.longitude()))
+                .icon(icon)
+        );
+
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Déchargement")
+                //.snippet("H St NW with 15th St NW")
+                .position(new LatLng(DESTINATION.latitude(),DESTINATION.longitude()))
+                .icon(icon2)
+        );
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()),100,64));
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()),100,64));
+    }
+
+    private PolygonOptions generatePerimeter(LatLng centerCoordinates, int radiusInmeters, int numberOfSides) {
+        List<LatLng> positions = new ArrayList<>();
+        double distanceX = radiusInmeters * 1000 / (111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
+        double distanceY = radiusInmeters * 1000 / 110.574;
+
+        double slice = (2 * Math.PI) / numberOfSides;
+
+        double theta;
+        double x;
+        double y;
+        LatLng position;
+        for (int i = 0; i < numberOfSides; ++i) {
+            theta = i * slice;
+            x = distanceX * Math.cos(theta);
+            y = distanceY * Math.sin(theta);
+
+            position = new LatLng(centerCoordinates.getLatitude() + y,
+                    centerCoordinates.getLongitude() + x);
+            positions.add(position);
+        }
+        return new PolygonOptions()
+                .addAll(positions)
+                .fillColor(Color.BLUE)
+                .alpha(0.4f);
     }
 
     private float getDistanceFromDestination(Location location){
