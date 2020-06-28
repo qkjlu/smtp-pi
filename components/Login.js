@@ -32,7 +32,7 @@ export default class Login extends React.Component{
     this.handleValidate = this.handleValidate.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
-    //this.setup = new Setup();
+    this.setup = new Setup();
     this.state = {
       pickerSelected: null,
       companies : null,

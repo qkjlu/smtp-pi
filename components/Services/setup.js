@@ -20,15 +20,11 @@ export default class Setup{
   // request for get the latest version of the app by type
   // type is "beta" or "production"
   async getLatestVersion(type){
-    console.log("type:" + type);
-    const token = await AsyncStorage.getItem('token');
     let url = "http://192.168.56.1:3000/versions/type/" + type
     //let url = Config.API_URL + 'versions/type/' + type;
-    console.log(url);
     return await axios({
       method : 'get',
       url : url,
-      headers: {'Authorization': 'Bearer ' + token},
     })
     .then( response => {
         if(response.status != 200){
@@ -45,7 +41,7 @@ export default class Setup{
   }
 
   async compareVersion(v1,v2){
-    var updateNeeded = true
+    var updateNeeded = false
     for (var i = 0; i < v1.length; i++) {
       if(v1[i] > v2[i]){
         updateNeeded = true;
@@ -78,10 +74,6 @@ export default class Setup{
                 BackHandler.exitApp();
                 Linking.openURL('https://play.google.com/store/apps/details?id=com.smtp.smtp&hl=fr')
               }
-            },
-            {
-              text: 'Non',
-              onPress: () => {BackHandler.exitApp();}
             },
           ],
           { cancelable: false }
