@@ -1,6 +1,10 @@
 import Icon from "react-native-vector-icons/FontAwesome";
-import {Text, View} from "react-native";
+import {Text, View, AsyncStorage } from "react-native";
 import * as React from "react";
+import axios from 'axios';
+import Config from "react-native-config";
+
+
 
 export default class TruckArrivalTime extends React.Component{
 
@@ -14,6 +18,7 @@ export default class TruckArrivalTime extends React.Component{
 
     async componentDidMount(){
       //const socket = this.props.socket;
+      console.log(this.props.truck)
       this.getCamionneurInfo();
     }
 
@@ -49,10 +54,12 @@ export default class TruckArrivalTime extends React.Component{
           console.log("mn : "  + time );
           var seconds = time - minutes * 60;
             return(
-                <View style={{flexDirection:'row', paddingHorizontal : 5 }}>
-                    <Icon name="truck" size={40} color="gray" />
-                    <Text style={{paddingTop:8, fontSize:20}}> {minutes}mn{seconds} </Text>
-                    //<Text style={{paddingTop:8, fontSize:20}}> {this.state.prenom} </Text>
+                <View style={{flexDirection:'column', paddingHorizontal : 5 }}>
+                  <View style={{flexDirection:'row', paddingHorizontal : 5 }}>
+                      <Icon name="truck" style={{justifyContent:'center', alignItems: 'center'}} size={40} color="gray" />
+                      <Text style={{paddingTop:8, fontSize:20}}> {minutes}mn{seconds}</Text>
+                  </View>
+                  <Text style={{fontSize:20, textAlign: "center" }}>{this.state.prenom} </Text>
                 </View>
             );
         }
