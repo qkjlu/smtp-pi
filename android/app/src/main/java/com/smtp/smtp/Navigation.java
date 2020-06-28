@@ -2,6 +2,7 @@ package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -28,14 +30,23 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.geojson.Point;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
+import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMap;
+import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
+import com.mapbox.services.android.navigation.v5.navigation.camera.Camera;
+import com.mapbox.services.android.navigation.v5.navigation.camera.RouteInformation;
 import com.mapbox.services.android.navigation.v5.offroute.OffRoute;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
@@ -46,14 +57,11 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -68,6 +76,7 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private DirectionsRoute route;
     private final boolean SHOULD_SIMULATE = false;
     private final int INITIAL_ZOOM = 22;
+    private final double INITIAL_TILT = 30;
     private static final String TAG = "Navigation";
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
@@ -90,12 +99,14 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
     private String myEtat;
     private Etape etape = null;
     private String etapeIdPrecedente = null;
-    private double rayonChangementEtat = 100;
+    private int rayonChargement;
+    private int rayonDéchargement;
 
     private Socket mSocket;
 
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
     private ArrayList<Point> roadPoint = new ArrayList();
+
 
     {
         try {
@@ -156,18 +167,13 @@ public class ListUser{
         this.list = new ArrayList<User>();
     }
     public boolean isAddable(User user){
-        Log.d(TAG, "isAddable :  "+ user.getEtat() + " mon etat "+ myEtat);
-        Log.d(TAG, "j'ajoute ce user à ma liste ? "+ user.getEtat().equals(myEtat));
         return user.getEtat().equals(myEtat);
     }
 
     public int addList(User user){
-        Log.d(TAG, "Debut Add"+ list.toString());
         if (isAddable(user) && !isContainedUser(user.getUserId())){
             list.add(user);
-            Log.d(TAG, "Fin Add"+ list.toString());
             Collections.sort(list, new EtaSorter());
-            Log.d(TAG, "Fin tri"+ list.toString());
             return 1;
         }
         else{
@@ -182,7 +188,6 @@ public class ListUser{
                 res = true;
             }
         }
-        Log.d(TAG, "isContained ? "+res);
         return res;
     }
 
@@ -199,9 +204,7 @@ public class ListUser{
         return user.getEtat().equals(myEtat);
     }
     public void updateList(User user){
-        Log.d(TAG, "Debut update"+ list.toString());
         if(!sameEtat(user)){
-            Log.d(TAG, "Ce user n'a pas le meme etat je le supprime");
             this.deleteUser(user.getUserId());
         }else{
             for(int i=0; i < list.size(); i++){
@@ -211,11 +214,9 @@ public class ListUser{
             }
         }
         Collections.sort(list, new EtaSorter());
-        Log.d(TAG, "Fin update"+ list.toString());
     }
 
     public void deleteUser(String userId){
-        Log.d(TAG, "Début delete"+ list.toString());
         int res = -1;
         for(int i=0; i < list.size(); i++){
             if(list.get(i).getUserId().equals(userId)){
@@ -224,7 +225,6 @@ public class ListUser{
         }
         list.remove(res);
         Collections.sort(list, new EtaSorter());
-        Log.d(TAG, "Fin delete"+ list.toString());
     }
 }
 
@@ -244,7 +244,6 @@ public class ListUser{
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         myList.addList(new User(userId,Double.POSITIVE_INFINITY,myEtat));
-        Log.d(TAG, "Je m'ajoute dans la liste " + myList.list.toString());
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
@@ -258,10 +257,6 @@ public class ListUser{
                 .build();
         navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this,initialPosition);
-
-        //navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers();
-        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),ORIGIN);
-        navigationView.retrieveNavigationMapboxMap().addMarker(getApplicationContext(),DESTINATION);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
@@ -346,8 +341,90 @@ public class ListUser{
 
     @Override
     public void onNavigationReady(boolean isRunning) {
+        fetchRayon();
         fetchRoute();
         modifyTimeDiffTruckAheadIfNecessary();
+
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        Icon icon = iconFactory.fromResource(R.drawable.icon_chargement);
+        Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers();
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Chargement")
+                //.snippet("H St NW with 15th St NW")
+                .position(new LatLng(ORIGIN.latitude(),ORIGIN.longitude()))
+                .icon(icon)
+        );
+
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Déchargement")
+                //.snippet("H St NW with 15th St NW")
+                .position(new LatLng(DESTINATION.latitude(),DESTINATION.longitude()))
+                .icon(icon2)
+        );
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()),100,64));
+
+        //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()),100,64));
+    }
+
+    private PolygonOptions generatePerimeter(LatLng centerCoordinates, int radiusInmeters, int numberOfSides) {
+        List<LatLng> positions = new ArrayList<>();
+        double distanceX = radiusInmeters * 1000 / (111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
+        double distanceY = radiusInmeters * 1000 / 110.574;
+
+        double slice = (2 * Math.PI) / numberOfSides;
+
+        double theta;
+        double x;
+        double y;
+        LatLng position;
+        for (int i = 0; i < numberOfSides; ++i) {
+            theta = i * slice;
+            x = distanceX * Math.cos(theta);
+            y = distanceY * Math.sin(theta);
+
+            position = new LatLng(centerCoordinates.getLatitude() + y,
+                    centerCoordinates.getLongitude() + x);
+            positions.add(position);
+        }
+        return new PolygonOptions()
+                .addAll(positions)
+                .fillColor(Color.BLUE)
+                .alpha(0.4f);
+    }
+
+    private void fetchRayon() {
+        final String URL = BASE_URL + "chantiers/"+chantierId;
+        Log.d(TAG, URL);
+        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, URL, null,
+                response -> {
+                    try {
+                        rayonDéchargement = response.getJSONObject("lieuDéchargement").getInt("rayon");
+                        rayonChargement = response.getJSONObject("lieuChargement").getInt("rayon");
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d(TAG, response.toString());
+                },
+                new com.android.volley.Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d(TAG, error.toString() + error.networkResponse);
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Bearer " + token);
+                return params;
+            }
+        };
+
+        RequestManager.getInstance(this).getRequestQueue().add(getRequest);
     }
 
     private float getDistanceFromDestination(Location location){
@@ -376,9 +453,6 @@ public class ListUser{
             return;
         }
         modifyTimeDiffTruckAheadIfNecessary();
-
-        Log.d(TAG, "Remaining time: " + remainingTime);
-        Log.d(TAG, "Distance remaining: " + distanceFromDestination);
         try {
             coordinates.put("longitude", location.getLongitude());
             coordinates.put("latitude", location.getLatitude());
@@ -465,7 +539,25 @@ public class ListUser{
                 .shouldSimulateRoute(SHOULD_SIMULATE)
                 .directionsRoute(route);
 
+        Camera camera = new Camera() {
+            @Override
+            public double tilt(RouteInformation routeInformation) {
+                return INITIAL_TILT;
+            }
+
+            @Override
+            public double zoom(RouteInformation routeInformation) {
+                return INITIAL_ZOOM;
+            }
+
+            @Override
+            public List<Point> overview(RouteInformation routeInformation) {
+                return null;
+            }
+        };
+
         navigationView.startNavigation(navViewBuilderOptions.build());
+        navigationView.retrieveMapboxNavigation().setCameraEngine(camera);
     }
 
     private boolean validRouteResponse(Response<DirectionsResponse> response) {
@@ -486,13 +578,13 @@ public class ListUser{
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.d("Response", response.toString());
+                    Log.d(TAG, response.toString());
                 },
                 new com.android.volley.Response.ErrorListener()
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString() + error.networkResponse);
+                        Log.d(TAG, error.toString() + error.networkResponse);
                     }
                 }
         ) {
@@ -524,6 +616,12 @@ public class ListUser{
     private boolean changeMyEtatIfNecessary(double distanceRemaining) {
         boolean etatChanged = false;
         String previousEtat = myEtat;
+        int rayonChangementEtat = 0;
+        if(typeRoute.equals("aller")) {
+            rayonChangementEtat = rayonDéchargement;
+        } else if(typeRoute.equals("retour")){
+            rayonChangementEtat = rayonChargement;
+        }
         if(distanceRemaining < rayonChangementEtat) {
             if(myEtat.equals("chargé")) {
                 myEtat = "enDéchargement";
@@ -579,7 +677,6 @@ public class ListUser{
             } else {
                 timeDiffTextView.setText("Vous êtes " + myEtat + "\nVous avez " + minutes + " mn "+ secondes +" d'écart avec le camion de devant");
             }
-            Log.d(TAG, "Time diff with truck ahead modified: " + timeDiffTruckAhead);
         } else {
             timeDiffTextView.setText("Vous êtes " + myEtat + " \nIl n'y a pas de camion devant vous");
         }
@@ -596,7 +693,6 @@ public class ListUser{
             Log.e(TAG, e.getMessage());
             return;
         }
-        Log.d(TAG, "Sending coordinates");
         mSocket.emit("chantier/sendCoordinates", obj);
     }
 
@@ -628,7 +724,6 @@ public class ListUser{
             senderETA = data.getDouble("ETA");
             senderEtat = data.getString("etat");
             senderId = data.getString("userId");
-            Log.d(TAG, "New coordinates received");
             User sender = new User(senderId,senderETA,senderEtat);
             if (myList.isContainedUser(senderId)){
                 myList.updateList(sender);

@@ -72,12 +72,12 @@ public class Etape extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.i("VOLLEY", response);
+                Log.d("Etape", response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("VOLLEY", error.toString());
+                Log.e("Etape", error.toString());
             }
         }) {
             //This is for Headers If You Needed
@@ -126,12 +126,12 @@ public class Etape extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.PATCH, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.i("VOLLEY", response);
+                Log.d("Etape", response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("VOLLEY", error.toString());
+                Log.e("Etape", error.toString());
             }
         }) {
             //This is for Headers If You Needed
