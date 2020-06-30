@@ -86,7 +86,6 @@ export default class AutoCompleteUsers extends React.Component {
                     onChangeText={text => this.setState({ query: text })}
                     placeholder={placeHolderName}
                     style={{ paddingHorizontal : 150 , backgroundColor: "#FFF" }}
-                    containerStyle={{fontWeight : "bold"}}
                     renderItem={({ item }) => (
                         <TouchableOpacity onPress={() =>
                         {
