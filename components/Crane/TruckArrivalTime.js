@@ -1,5 +1,5 @@
 import Icon from "react-native-vector-icons/FontAwesome";
-import {Text, View, AsyncStorage } from "react-native";
+import {Text, View, AsyncStorage,ActivityIndicator } from "react-native";
 import * as React from "react";
 import axios from 'axios';
 import Config from "react-native-config";
@@ -45,11 +45,10 @@ export default class TruckArrivalTime extends React.Component{
 
     render() {
         console.log("truck array: "+ JSON.stringify(this.props.truck))
-
         if(this.props.truck === undefined){
-            return null
+            return (<ActivityIndicator color="red" size="large"/>);
         }else{
-          let time = Math.round(parseInt(this.props.truck.ETA));
+          let time = this.props.truck.ETA === undefined ?  0 : Math.round(parseInt(this.props.truck.ETA));
           let minutes =  Math.floor(time / 60);
           console.log("mn : "  + time );
           let seconds = time - minutes * 60;

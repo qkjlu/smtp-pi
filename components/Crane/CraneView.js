@@ -85,7 +85,7 @@ export default class CraneView extends React.Component {
                 <View style={{flexDirection:'row',  justifyContent:'center', alignItems: 'center' , backgroundColor : '#FFF' }}>
                     <Icon style={{paddingRight:5}} name="map-marker" size={45} color="green" />
                       {this.state.myTrucks.map(truck => {
-                              return (<TruckArrivalTime truck={truck}/>)
+                              return (<TruckArrivalTime key={truck.userId} truck={truck}/>)
                           }
                       )}
                 </View>

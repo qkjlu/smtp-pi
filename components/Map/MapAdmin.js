@@ -27,14 +27,20 @@ export default class MapAdmin extends React.Component {
         this.componentDidMount =this.componentDidMount.bind(this);
         this.succesConnection = this.succesConnection.bind(this);
         this.enableConnection = this.enableConnection.bind(this);
-
+        this.onRegionChangeComplete = this.onRegionChangeComplete.bind(this)
         this.socket = io(Config.API_URL);
         this.state = {
-            socket : null,
-            connected : false,
-            users: [],
-            etat : null,
-            appState: AppState.currentState,
+          socket : null,
+          currentRegion : {
+            latitude: this.props.chargement.latitude,
+            longitude: this.props.chargement.longitude,
+            latitudeDelta: 0.15,
+            longitudeDelta: 0.0421,
+          },
+          connected : false,
+          users: [],
+          etat : null,
+          appState: AppState.currentState,
         };
     }
 
@@ -68,9 +74,6 @@ export default class MapAdmin extends React.Component {
     async componentWillUnmount(){
       this.closeConnection();
       AppState.removeEventListener('change', this.handleAppStateChange);
-        // await this.socket.emit("chantier/disconnect","")
-        // console.log("Admin : Close connection to socket");
-        // this.socket.close();
     }
 
     // update map when an user connect or disconnect
@@ -80,14 +83,14 @@ export default class MapAdmin extends React.Component {
 
     // handle when app is in foreground/background
     // return in list of worksite if back to foreground
-    handleAppStateChange = (nextAppState) => {
-      console.log(nextAppState);
-      if(nextAppState === "background"){
-        this.closeConnection();
-      }
+    handleAppStateChange = async (nextAppState) => {
       if (nextAppState === "active" ) {
-        console.log(RootNavigation);
-        RootNavigation.navigate('WorkSiteManagment')
+        const userId  = await AsyncStorage.getItem('userId');
+        console.log(this.socket.connected);
+        await this.socket.emit("chantier/connect", {
+            "userId" : userId,
+            "chantierId" : this.props.worksite.id,
+        });
       }
       this.setState({appState: nextAppState});
     }
@@ -159,6 +162,10 @@ export default class MapAdmin extends React.Component {
             })
     }
 
+    onRegionChangeComplete(region){
+      this.setState({currentRegion : region})
+    }
+
     async handleCoordinates(data){
         //console.log("Admin: coordinates receive: " + JSON.stringify(data));
         // handle if receive probleme:
@@ -180,58 +187,26 @@ export default class MapAdmin extends React.Component {
         console.log("users:" + JSON.stringify(this.state.users));
         const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
         const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
-        console.log("typeOfUser : "+this.props.typeOfUser);
-        console.log("rayon : "+ this.props.chargement.rayon + " " + this.state.rayonDechargement);
-        if(this.props.typeOfUser === "crane"){
-            return(
-                <View>
-                  <KeepAwake/>
-                    <MapView
-                        style={styles.mapCrane}
-                        region={{
-                            latitude: this.props.chargement.latitude,
-                            longitude: this.props.chargement.longitude,
-                            latitudeDelta: 0.15,
-                            longitudeDelta: 0.0421,
-                        }}
-                    >
-                        <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
-                        <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
-                        {this.state.users.map(marker => {
-                                return (<TruckMarker user={marker} socket={this.socket}/>)
-                            }
-                        )}
-                    </MapView>
-                    <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/>
-                </View>
-            )
-        }else {
-            return (
-                <View style={{flex: 1}}>
-                  <KeepAwake />
-                    <MapView
-                        style={styles.map}
-                        region={{
-                            latitude: this.props.chargement.latitude,
-                            longitude: this.props.chargement.longitude,
-                            latitudeDelta: 0.15,
-                            longitudeDelta: 0.0421,
-                        }}
-                    >
-                        <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
-                        <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                        <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
-                        <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
-                        {this.state.users.map(marker => {
-                                return (<TruckMarker user={marker} socket={this.socket}/>)
-                            }
-                        )}
-                    </MapView>
-                </View>
-            )
-        }
+        return(
+            <View>
+              <KeepAwake />
+                <MapView
+                    style={styles.mapCrane}
+                    region={this.state.currentRegion}
+                    onRegionChangeComplete={this.onRegionChangeComplete}
+                >
+                    <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
+                    <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
+                    <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
+                    <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
+                    {this.state.users.map(marker => {
+                            return (<TruckMarker key={marker.userId} user={marker} socket={this.socket}/>)
+                        }
+                    )}
+                </MapView>
+                {this.props.typeOfUser === "crane" ? <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/> : null}
+            </View>
+        )
     }
 }
 
