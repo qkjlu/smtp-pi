@@ -402,7 +402,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     private void fetchRayon() {
         final String URL = BASE_URL + "chantiers/" + chantierId;
-        Log.d(TAG, URL);
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, URL, null,
                 response -> {
                     try {
@@ -459,6 +458,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     public void onProgressChange(Location location, RouteProgress routeProgress) {
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
+        this.location = location;
         remainingTime = routeProgress.durationRemaining();
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
@@ -585,6 +585,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         navigationView.startNavigation(navViewBuilderOptions.build());
         navigationView.retrieveMapboxNavigation().setCameraEngine(camera);
+        navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
     }
 
     private boolean validRouteResponse(Response<DirectionsResponse> response) {
