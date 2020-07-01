@@ -49,10 +49,10 @@ export default class TruckArrivalTime extends React.Component{
         if(this.props.truck === undefined){
             return null
         }else{
-          var time = Math.round(parseInt(this.props.truck.ETA));
-          var minutes =  Math.floor(time / 60);
+          let time = Math.round(parseInt(this.props.truck.ETA));
+          let minutes =  Math.floor(time / 60);
           console.log("mn : "  + time );
-          var seconds = time - minutes * 60;
+          let seconds = time - minutes * 60;
             return(
                 <View style={{flexDirection:'column', paddingHorizontal : 5 }}>
                   <View style={{flexDirection:'row', paddingHorizontal : 5 }}>

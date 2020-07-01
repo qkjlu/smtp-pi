@@ -15,8 +15,8 @@ export default class WorkSiteRow extends React.Component {
                 <View style={{flex : 6}}>
                     <Text style={{paddingTop:10}}> {this.props.worksite.nom} </Text>
                 </View>
-                <View style={{ flex: 6  }}>
-                    <WorkSiteAccessButton  worksite={this.props.worksite} onDelete={(id) => this.props.onDelete(id)}/>
+                <View style={{ flex: 6 , alignContent: "flex-end" }}>
+                    <WorkSiteAccessButton worksite={this.props.worksite} onDelete={(id) => this.props.onDelete(id)}/>
                 </View>
             </View>
         )

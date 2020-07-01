@@ -96,8 +96,8 @@ export default class MapAdmin extends React.Component {
     // delete in user array the user disconnecting
     handleDisconnection(data){
         console.log("Admin:" + data.userId + " disconnect");
-        var copy = this.state.users.slice();
-        var index = copy.findIndex(s => s.userId == data.userId);
+        let copy = this.state.users.slice();
+        let index = copy.findIndex(s => s.userId == data.userId);
         if (index > -1) {
             copy.splice(index, 1);
             this.setState({
@@ -113,9 +113,9 @@ export default class MapAdmin extends React.Component {
     async handleConnection(data){
         console.log("Admin: " + data.userId +" is connected")
         // check if the user connecting is an admin
-        var isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
+        let isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
         if(!isAdmin){
-            var copy = this.state.users.slice();
+            let copy = this.state.users.slice();
             copy.push(data);
             this.setState({
                 users : copy
@@ -125,12 +125,12 @@ export default class MapAdmin extends React.Component {
 
     async handleProbleme(userId,etat){
         // get Info of user
-        var userInfo = await this.getUserInfo("camionneurs",userId);
+        let userInfo = await this.getUserInfo("camionneurs",userId);
         if(userInfo == -1){
             userInfo = await this.getUserInfo("grutiers",userId);
         }
         console.log(userInfo);
-        var msg = userInfo.prenom + " " + userInfo.nom;
+        let msg = userInfo.prenom + " " + userInfo.nom;
         if(etat == "probleme"){
             msg = msg + " a un problème ! Veuillez le contactez au plus vite !"
         }else{
@@ -165,8 +165,8 @@ export default class MapAdmin extends React.Component {
         if(data.etat == "probleme" || data.etat == "urgence"){
             this.handleProbleme(data.userId,data.etat);
         }
-        var copy = this.state.users.slice();
-        var index = copy.findIndex(s => s.userId == data.userId);
+        let copy = this.state.users.slice();
+        let index = copy.findIndex(s => s.userId == data.userId);
         if( index != -1){
             copy[index] = data;
             this.setState({users : copy});
@@ -185,7 +185,7 @@ export default class MapAdmin extends React.Component {
         if(this.props.typeOfUser === "crane"){
             return(
                 <View>
-                  <KeepAwake />
+                  <KeepAwake/>
                     <MapView
                         style={styles.mapCrane}
                         region={{
