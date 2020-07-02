@@ -46,7 +46,7 @@ export default class Login extends React.Component{
   }
 
   async componentDidMount(){
-    //await this.setup.initSetup();
+    await this.setup.initSetup();
     await this.requestLocationPermission();
     await this.internetCheck();
     await axios.get(Config.API_URL + 'entreprises')

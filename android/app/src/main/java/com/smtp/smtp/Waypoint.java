@@ -16,11 +16,16 @@ public class Waypoint implements Comparable {
     Waypoint(double longitude, double latitude){
         this.longitude = longitude;
         this.latitude = latitude;
+        ordre = -1;
     }
 
     @Override
     public int compareTo(@NonNull Object o) {
         Waypoint waypoint = (Waypoint) o;
+        if(waypoint.ordre == -1){
+            Exception e = new Exception("A waypoint need an order to be compared");
+            throw new RuntimeException(e);
+        }
         if(this.ordre < waypoint.ordre) return -1;
         if(this.ordre > waypoint.ordre) return 1;
         return 0;
@@ -34,5 +39,11 @@ public class Waypoint implements Comparable {
 
     public Point getPoint(){
         return Point.fromLngLat(longitude,latitude);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "[Ordre: " + ordre + ", Lng: " + longitude + ", Lat: " + latitude + "]";
     }
 }

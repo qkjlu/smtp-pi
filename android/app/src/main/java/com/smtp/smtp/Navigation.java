@@ -2,13 +2,16 @@ package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 import android.view.View;
@@ -35,6 +38,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.api.directions.v5.MapboxDirections;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.geojson.Point;
@@ -60,6 +64,7 @@ import com.mapbox.services.android.navigation.v5.navigation.camera.RouteInformat
 import com.mapbox.services.android.navigation.v5.offroute.OffRoute;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
+import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgressState;
 import com.mapbox.services.android.navigation.v5.utils.RouteUtils;
 
 import org.json.JSONArray;
@@ -93,6 +98,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private final boolean SHOULD_SIMULATE = false;
     private final int INITIAL_ZOOM = 18;
     private final double INITIAL_TILT = 30;
+    private final int DISTANCE_TOLERANCE = 500;
     private static final String TAG = "Navigation";
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
@@ -535,12 +541,30 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
         modifyTimeDiffTruckAheadIfNecessary();
 
+        //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
             remainingWaypoints = routeProgress.remainingWaypoints();
             SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putInt("remainingWaypoints", remainingWaypoints);
             editor.apply();
+        }
+
+        //Remove waypoints from SharedPreferences if user has arrived
+        if(routeProgress.currentState() != null
+                && routeProgress.currentState().equals(RouteProgressState.ROUTE_ARRIVED)
+                && remainingWaypoints == 1){
+            Log.d(TAG, "Arrived!");
+            removeRemainingWaypointsFromSharedPreferences();
+        }
+
+        //For debug purpose
+        RouteUtils routeUtils = new RouteUtils();
+        List<Point> remaininPoints = routeUtils.calculateRemainingWaypoints(routeProgress);
+        Log.d(TAG, Integer.toString(remainingWaypoints));
+        for (Point p: remaininPoints
+             ) {
+            Log.d(TAG, p.toString());
         }
 
         coordinates = new JSONObject();
@@ -560,10 +584,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     public void prepareRoute(JSONArray array) throws JSONException {
         // Ajoute chaque donnée à la liste de waypoint
-        ArrayList<Waypoint> waypoints = new ArrayList<>();
+        List<Waypoint> initialWaypoints = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             JSONObject waypoint = array.getJSONObject(i);
-            waypoints.add(
+            initialWaypoints.add(
                     new Waypoint(
                             waypoint.getDouble("longitude"),
                             waypoint.getDouble("latitude"),
@@ -572,15 +596,38 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             );
         }
 
-        //filter = new WaypointFilter(waypoints, location, 500, )
+        filter = new WaypointFilter(
+                initialWaypoints,
+                location,
+                DISTANCE_TOLERANCE,
+                getRemainingWaypointsFromSharedPreferences(initialWaypoints)
+        );
 
+        initialWaypoints = filter.cleanWaypoints();
 
-        ArrayList<Point> points = new ArrayList<>();
-        for (Waypoint waypoint : waypoints) {
-            points.add(waypoint.getPoint());
+        Collections.sort(initialWaypoints);
+
+        for (Waypoint wp:
+             initialWaypoints) {
+            Log.d(TAG, "Cleaned waypoints: " + wp.toString());
         }
 
+        ArrayList<Point> points = new ArrayList<>();
+        points.add(Point.fromLngLat(location.getLongitude(), location.getLatitude()));
+        for (Waypoint waypoint : initialWaypoints) {
+            points.add(waypoint.getPoint());
+        }
         roadPoint = points;
+    }
+
+    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(List<Waypoint> initialWaypointList){
+        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
+        int nbRemainingWp = sharedPref.getInt("remainingWaypoints", -1);
+        if (nbRemainingWp == -1) {
+            return initialWaypointList;
+        }
+        List<Waypoint> res = initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size());
+        return res;
     }
 
     private void fetchRoute() {
@@ -594,13 +641,25 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
+        /*MapboxDirections.Builder b = MapboxDirections.builder()
+                .baseUrl("https://router.project-osrm.org/route/v1/")
+                .origin(roadPoint.get(0))
+                .destination(roadPoint.get(roadPoint.size() - 1));
+        if (roadPoint.size() > 2) {
+            for (int i = 1; i < roadPoint.size() - 1; i++) {
+                b.addWaypoint(roadPoint.get(i));
+            }
+        }*/
+
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
+                //.accessToken(getString(R.string.mapbox_access_token))
                 .baseUrl(getString(R.string.base_url))
+                //.baseUrl("https://router.project-osrm.org/route/v1/")
                 .user("gh")
                 .origin(roadPoint.get(0))
                 .destination(roadPoint.get(roadPoint.size() - 1))
-                .profile("car");
+                .profile("driving-traffic");
         // add waypoints without first and last point
         if (roadPoint.size() > 2) {
             for (int i = 1; i < roadPoint.size() - 1; i++) {
@@ -613,6 +672,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 new Callback<DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
+                        Log.d(TAG, call.request().url().toString());
+                        Log.d(TAG, response.message());
                         if (validRouteResponse(response)) {
                             route = response.body().routes().get(0);
                             launchNavigation();
@@ -635,6 +696,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 .waynameChipEnabled(false)
                 .shouldSimulateRoute(SHOULD_SIMULATE)
                 .directionsRoute(route);
+
         Camera camera = new Camera() {
             @Override
             public double tilt(RouteInformation routeInformation) {
@@ -746,18 +808,25 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private boolean rerouteUserIfNecessary(boolean etatChanged) {
         boolean userRerouted = false;
         if (etatChanged) {
-            if (myEtat.equals("chargé")) {
-                fetchRoute();
-                userRerouted = true;
-            } else if (myEtat.equals("déchargé")) {
-                fetchRoute();
+            if (myEtat.equals("chargé") || myEtat.equals("déchargé")) {
+                roadPoint.clear();
+                navigationView.stopNavigation();
+                navigationView.retrieveNavigationMapboxMap().clearMarkers();
+                Log.d(TAG, "User rerouted");
                 userRerouted = true;
             }
         }
         if (userRerouted) {
-            Log.d(TAG, "User rerouted");
+            fetchRoute();
         }
         return userRerouted;
+    }
+
+    private void removeRemainingWaypointsFromSharedPreferences() {
+        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.remove("remainingWaypoints");
+        editor.commit();
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary() {
