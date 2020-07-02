@@ -19,7 +19,6 @@ export default class WorkSiteSettings extends React.Component {
     }
   }
 
-
   // get adress of lieuChargement and lieuDéchargement
   async componentDidMount(){
     let worksite = this.props.route.params.worksite;
