@@ -303,7 +303,6 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     public void clearRoute(View view) {
-        mapboxMap.clear();
         if(mapboxMap.getMarkers().size() == 0){
             mapboxMap.clear();
         }
@@ -434,7 +433,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
             clearRoute(null);
         }
         Snackbar.make(mapView, "Marqueur : "+mapboxMap.getMarkers().size()+"/"+25, Snackbar.LENGTH_LONG).show();
-        Log.i("MARKER", Long.toString(marker.getId()));
+        Log.d("MARKER", Long.toString(marker.getId()));
         return false;
     }
 

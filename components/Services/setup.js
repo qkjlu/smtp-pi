@@ -20,8 +20,8 @@ export default class Setup{
   // request for get the latest version of the app by type
   // type is "beta" or "production"
   async getLatestVersion(type){
-    let url = "http://192.168.56.1:3000/versions/type/" + type
-    //let url = Config.API_URL + 'versions/type/' + type;
+    //let url = "http://192.168.56.1:3000/versions/type/" + type
+    let url = Config.API_URL + 'versions/type/' + type;
     return await axios({
       method : 'get',
       url : url,

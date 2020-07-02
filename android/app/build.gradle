@@ -135,15 +135,15 @@ android {
     }
 
     dexOptions {
-        javaMaxHeapSize "2g"
+        javaMaxHeapSize "4g"
     }
 
     defaultConfig {
         applicationId 'com.smtp.smtp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.0.10"
+        versionCode 11
+        versionName "1.0.11"
         resValue "string", "build_config_package", "com.smtp.smtp"
     }
     splits {
