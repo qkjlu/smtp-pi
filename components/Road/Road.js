@@ -1,11 +1,8 @@
 import React from "react";
 import style from "../../Style";
-import axios from 'axios'
-import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions} from "react-native";
-import {Button, Icon} from "react-native-elements";
-import * as RootNavigation from "../../navigation/RootNavigation";
+import {Text, View, ScrollView, AsyncStorage} from "react-native";
+import {Badge, Button, Icon} from "react-native-elements";
 import ActivityStarter from "../../ActivityStarter";
-import InputText from "../InputText";
 
 export default class Road extends React.Component {
     constructor(props) {
@@ -14,6 +11,10 @@ export default class Road extends React.Component {
     }
 
     render() {
+        const hasRouteAller = this.worksite.allerId !== null
+        const hasRouteRetour = this.worksite.retourId !== null
+        const success = <Badge status="success" containerStyle={{ position: 'absolute', top: 2, right: 1 }} />
+        const error = <Badge status="error" containerStyle={{ position: 'absolute', top: 2, right: 1 }} />
             return (
                     <ScrollView>
                         <View style = {style.worksite}>
@@ -36,6 +37,7 @@ export default class Road extends React.Component {
                                             type="clear"
                                             accessibilityLabel="redirection vers la page du chantier"
                                         />
+                                        {hasRouteAller ? success : error}
                                     </View>
                                 </View>
                             </View>
@@ -69,6 +71,7 @@ export default class Road extends React.Component {
                                             type="clear"
                                             accessibilityLabel="redirection vers la page du chantier"
                                         />
+                                        {hasRouteRetour ? success : error}
                                     </View>
                                 </View>
                             </View>

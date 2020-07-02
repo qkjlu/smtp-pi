@@ -574,7 +574,6 @@ public class ListUser{
                     try {
                         prepareRoute(response);
                         buildRoute();
-
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -603,7 +602,7 @@ public class ListUser{
 
     private void changeEtape(){
         if(etapeIdPrecedente == null){
-            etape = new Etape(chantierId,userId,myEtat, etapeIdPrecedente, getApplicationContext());
+            etape = new Etape(chantierId,userId,myEtat, null, getApplicationContext());
         }else{
 
             // send existing etape
