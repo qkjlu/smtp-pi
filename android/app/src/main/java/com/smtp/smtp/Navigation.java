@@ -102,11 +102,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
     };
 
-    private String previousEtat;
-    private Button buttonPause;
-    private Button buttonReprendre;
-    private boolean onPause = false;
-
     private Point ORIGIN;
     private Point DESTINATION;
 
@@ -126,12 +121,18 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private FusedLocationProviderClient fusedLocationClient;
     private Socket mSocket;
     private boolean connectedToChantier = false;
-    private static final String BASE_URL = BuildConfig.API_URL;;
+    private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
     private ArrayList<Point> roadPoint = new ArrayList();
     private Location location;
     private int remainingWaypoints = -1;
 
-    SendCoordinatesThread pausedThread;
+    // for paused button
+    private String previousEtat;
+    private Button buttonPause;
+    private Button buttonReprendre;
+    private boolean onPause = false;
+    private SendCoordinatesThread pausedThread;
+    Intent myIntent;
 
     // Connection to the socket server
     {
@@ -293,6 +294,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         buttonPause = findViewById(R.id.buttonPause);
         buttonReprendre = findViewById(R.id.buttonReprendre);
 
+
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         Task<Location> gettingLocation = fusedLocationClient.getLastLocation();
@@ -312,15 +314,15 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.connect();
         connectToChantier();
 
-        // initialize listener
-        addListenerOnButton();
-
         // create thread for send coordinates in pause
-        /*pausedThread = new SendCoordinatesThread(mSocket,userId,fusedLocationClient );
+        /*pausedThread = new SendCoordinatesThread(mSocket,userId);
         Thread thread =  new Thread(pausedThread,"pausedThreat");
         thread.start();
-        pausedThread.pause();*/
-
+        pausedThread.pause();
+        // initialize listener*/
+        addListenerOnButton();
+        //myIntent = new Intent(this, PauseService.class);
+        //startService(myIntent);
     }
 
     @Override
@@ -335,7 +337,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.off("chantier/user/disconnected", onUserDisconnected);
         navigationView.onDestroy();
-        pausedThread.stop();
     }
 
     @Override
@@ -418,9 +419,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 .icon(icon2)
         );
 
-        //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()),100,64));
-
-        //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()),100,64));
         //navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
     }
 
@@ -441,7 +439,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     previousEtat = myEtat;
                     myEtat = "pause";
                     onPause = true;
-                    pausedThread.reprendre();
+                    /*Intent intent = new Intent();
+                    intent.setAction(getPackageName() + ".START_PAUSE");
+                    sendBroadcast(intent);*/
+                    //pausedThread.reprendre();
+                    sendCoordinates();
                 }
             }
         });
@@ -457,37 +459,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
                     myEtat = previousEtat;
-                    pausedThread.pause();
+                    /*Intent intent = new Intent();
+                    intent.setAction(getPackageName() + ".STOP_PAUSE");
+                    sendBroadcast(intent);
+                    //pausedThread.pause();*/
                     launchNavigation();
                 }
             }
         });
-    }
-
-    private PolygonOptions generatePerimeter(LatLng centerCoordinates, int radiusInmeters, int numberOfSides) {
-        List<LatLng> positions = new ArrayList<>();
-        double distanceX = radiusInmeters * 1000 / (111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
-        double distanceY = radiusInmeters * 1000 / 110.574;
-
-        double slice = (2 * Math.PI) / numberOfSides;
-
-        double theta;
-        double x;
-        double y;
-        LatLng position;
-        for (int i = 0; i < numberOfSides; ++i) {
-            theta = i * slice;
-            x = distanceX * Math.cos(theta);
-            y = distanceY * Math.sin(theta);
-
-            position = new LatLng(centerCoordinates.getLatitude() + y,
-                    centerCoordinates.getLongitude() + x);
-            positions.add(position);
-        }
-        return new PolygonOptions()
-                .addAll(positions)
-                .fillColor(Color.BLUE)
-                .alpha(0.4f);
     }
 
     private void fetchRayon() {

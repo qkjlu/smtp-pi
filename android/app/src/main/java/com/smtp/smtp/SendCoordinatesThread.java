@@ -5,9 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.util.Log;
-
 import androidx.core.app.ActivityCompat;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.Task;
 
@@ -27,10 +25,9 @@ public class SendCoordinatesThread implements Runnable {
     private Location location;
     private JSONObject coordinates;
 
-    SendCoordinatesThread(Socket mSocket, String userId, FusedLocationProviderClient fusedLocationClient) {
-        this.mSocket = mSocket;
-        this.userId = userId;
-        this.fusedLocationClient = fusedLocationClient;
+    SendCoordinatesThread() {
+        /*this.mSocket = mSocket;
+        this.userId = userId;*/
     }
 
     @Override
@@ -55,8 +52,10 @@ public class SendCoordinatesThread implements Runnable {
                 }
             }
 
+            Log.d(TAG, "send coordinates :");
+
             // get location
-            Task<Location> gettingLocation = this.fusedLocationClient.getLastLocation();
+            /*Task<Location> gettingLocation = this.fusedLocationClient.getLastLocation();
             while(!gettingLocation.isSuccessful()) {}
             location = gettingLocation.getResult();
 
@@ -71,6 +70,8 @@ public class SendCoordinatesThread implements Runnable {
             } catch (JSONException | InterruptedException e) {
                 Log.e(TAG, e.getMessage());
             }
+
+             */
         }
     }
 
@@ -82,11 +83,13 @@ public class SendCoordinatesThread implements Runnable {
 
     // pause thread
     public void pause() {
+        Log.d(TAG, "thread paused");
         paused = true;
     }
 
     // resume thread
     public void reprendre() {
+        Log.d(TAG, "thread resume");
         synchronized (pauseLock) {
             paused = false;
             pauseLock.notifyAll();
