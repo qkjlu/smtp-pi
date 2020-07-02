@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Text, View, ScrollView } from 'react-native';
+import {Text, View, ScrollView, Dimensions, StyleSheet  } from 'react-native';
 import ValidateButton from "../ValidateButton";
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -82,16 +82,25 @@ export default class CraneView extends React.Component {
     render() {
         return (
             <View>
-                <View style={{flexDirection:'row',  justifyContent:'center', alignItems: 'center' , backgroundColor : '#FFF' }}>
+                <View style={styles.progressBar}>
                     <Icon style={{paddingRight:5}} name="map-marker" size={45} color="green" />
-                    <TruckArrivalTime truck={this.state.myTrucks[0]}/>
-                    <TruckArrivalTime truck={this.state.myTrucks[1]}/>
-                    <TruckArrivalTime truck={this.state.myTrucks[2]}/>
-                    <TruckArrivalTime truck={this.state.myTrucks[3]}/>
-                    <TruckArrivalTime truck={this.state.myTrucks[4]}/>
+                      {this.state.myTrucks.map(truck => {
+                              return (<TruckArrivalTime key={truck.userId} truck={truck}/>)
+                          }
+                      )}
                 </View>
                 {/*<StopButtons/>*/}
             </View>
         );
     }
 }
+
+const { width, height } = Dimensions.get('window');
+const styles = StyleSheet.create({
+    progressBar: {
+      flexDirection:'row',
+      justifyContent:'center',
+      alignItems: 'center' ,
+      backgroundColor : '#FFF',
+    },
+});

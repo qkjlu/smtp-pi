@@ -1,10 +1,10 @@
 import React from "react";
 import style from "../../Style";
 import axios from 'axios'
-import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions} from "react-native";
+import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions, Alert} from "react-native";
 import PlaceRow from "./PlaceRow";
 import Search from "../Search";
-import Config from "react-native-config"; 
+import Config from "react-native-config";
 
 export default class ListWorkSite extends React.Component {
     constructor(props) {
@@ -26,7 +26,7 @@ export default class ListWorkSite extends React.Component {
         var data = { "id" : id};
         axios({
             method : 'delete',
-            url : Config.API_URL + 'lieux',
+            url : Config.API_URL + 'lieux/'+id,
             headers: {'Authorization': 'Bearer ' + token},
             data: data
         })
@@ -49,6 +49,24 @@ export default class ListWorkSite extends React.Component {
             .catch((error) => {
                 console.log(error);
             })
+    }
+
+    onPressDeletePlace(id){
+      Alert.alert(
+        'Supprimer un lieu',
+        'Etes-vous sûr de vouloir supprimer ce lieu ?',
+        [
+          {
+            text: 'OUI',
+            onPress: () => this.deletePlace(id)
+          },
+          {
+            text: 'Non',
+            style: 'cancel'
+          },
+        ],
+        { cancelable: false }
+      );
     }
 
     async reloadData() {
@@ -89,7 +107,7 @@ export default class ListWorkSite extends React.Component {
                     <Search/>
                     <FlatList
                         data={this.state.report}
-                        renderItem={({item}) => <PlaceRow place={item} onDelete={(id) =>this.deletePlace(id)}/>}
+                        renderItem={({item}) => <PlaceRow place={item} onDelete={(id) =>this.onPressDeletePlace(id)}/>}
                     />
                     </ScrollView>
                 </View>

@@ -9,12 +9,16 @@ import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import style from "../Style";
-import  {View, ActivityIndicator, AsyncStorage, Image, ScrollView, Text} from 'react-native';
+import  {View, ActivityIndicator, AsyncStorage, ScrollView, Text} from 'react-native';
 import AutoCompletePlaces from "./Place/AutoCompletePlaces";
 import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
 var jwtDecode = require('jwt-decode');
 import Config from "react-native-config";
+import VersionCheck from 'react-native-version-check';
+import Setup from './Services/setup'
+import { Image } from 'react-native-elements';
+
 
 export default class Login extends React.Component{
 
@@ -30,6 +34,7 @@ export default class Login extends React.Component{
     this.handleValidate = this.handleValidate.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
+    this.setup = new Setup();
     this.state = {
       pickerSelected: null,
       companies : null,
@@ -41,7 +46,8 @@ export default class Login extends React.Component{
   }
 
   async componentDidMount(){
-    //await this.requestLocationPermission();
+    await this.setup.initSetup();
+    await this.requestLocationPermission();
     await this.internetCheck();
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
@@ -216,7 +222,18 @@ export default class Login extends React.Component{
     }else{
       let firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
       let secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";
-      const buttons = ['Camionneur', 'Grutier', 'Admin'];
+
+      const component1 = () => <Image source={require('./../assets/images/truck.png') }
+                                      style={{ width: 68, height: 68 }}
+                                />
+      const component2 = () => <Image source={require('./../assets/images/crane.png')}
+                                      style={{ width: 50, height: 50 }}
+                               />
+      const component3 = () => <Image source={require('./../assets/images/admin.png')}
+                                      style={{ width: 50, height: 44 }}
+                               />
+
+      const buttons = [{ element: component1 }, { element: component2 }, { element: component3 }];
 
       // set Data for picker
       let pickerData = this.state.companies.map(item => item.nom);
@@ -228,7 +245,9 @@ export default class Login extends React.Component{
       return (
           <ScrollView>
             <View style={style.container}>
-              <Image source={require('../assets/images/logoSMTP.png')}/>
+              <Image source={require('./../assets/images/logoSMTP.png')}
+                     style={{ width: 209, height: 209 }}
+              />
               <ButtonGroup
                   onPress={this.updateIndex}
                   selectedIndex={this.state.selectedIndex}

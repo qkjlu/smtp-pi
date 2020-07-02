@@ -47,15 +47,15 @@ export default class AddUser extends React.Component {
   }
 
   handleChangeName(text){
-    this.setState({name : text})
+    this.setState({name : text.trim()})
   }
 
   handleChangeSurname(text){
-    this.setState({surname : text})
+    this.setState({surname : text.trim()})
   }
 
   handleChangeCompany(text){
-    this.setState({company : text})
+    this.setState({company : text.trim()})
   }
 
   handleValidate(){

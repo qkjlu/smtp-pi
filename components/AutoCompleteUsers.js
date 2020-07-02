@@ -39,7 +39,7 @@ export default class AutoCompleteUsers extends React.Component {
             })
         axios({
             method: 'get',
-            url: 'https://smtp-pi.herokuapp.com/grutiers',
+            url: Config.API_URL+'grutiers',
         })
             .then( response => {
                 if(response.status != 200){
@@ -86,7 +86,6 @@ export default class AutoCompleteUsers extends React.Component {
                     onChangeText={text => this.setState({ query: text })}
                     placeholder={placeHolderName}
                     style={{ paddingHorizontal : 150 , backgroundColor: "#FFF" }}
-                    containerStyle={{fontWeight : "bold"}}
                     renderItem={({ item }) => (
                         <TouchableOpacity onPress={() =>
                         {

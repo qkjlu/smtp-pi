@@ -7,6 +7,8 @@ import AddPlaceForm from "../Place/AddPlaceForm";
 import style from "../../Style";
 import {MaterialIcons, Ionicons} from "@expo/vector-icons";
 import Config from "react-native-config";
+import InputText from "../InputText";
+import ValidateButton from "../ValidateButton";
 
 export default class AddWorkSiteForm extends React.Component {
 
@@ -21,17 +23,15 @@ export default class AddWorkSiteForm extends React.Component {
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        const token  = await AsyncStorage.getItem('token');
         axios({
             method: 'get',
             url: Config.API_URL + 'lieux',
-            headers: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJiYTg0YmM3LTlmNDMtNDAxZS04ZjAyLTQ3ZTAyZDc4NDQ2OCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTU4NzQxODQ0MX0.zRTuqPl0UbiwJn7zZSxErvBYhkhPibEZ51S4Aqgd6LI'}            })
-            .then( response => {
-                this.setState({places: response.data});
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+            headers: {'Authorization': 'Bearer ' + token}
+        })
+            .then( response => { this.setState({places: response.data});})
+            .catch((error) => { console.log(error); })
     }
 
     async formSubmit(){
@@ -56,6 +56,7 @@ export default class AddWorkSiteForm extends React.Component {
                     if(response.status != 201){
                         console.log(response.status);
                         alert(response.status);
+                        console.log(response.data);
                         return response.status;
                     }
                     console.log(response.status);
@@ -85,7 +86,7 @@ export default class AddWorkSiteForm extends React.Component {
                     </View>
                     <View style={{padding : 20}}>
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
-                               value={this.state.name} placeholder={" Nom du chantier"}/>
+                               value={this.state.name} placeholder={"Nom du chantier"}/>
 
                     <AddPlaceForm  style={{padding: 20}} show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />
 

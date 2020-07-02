@@ -281,3 +281,5 @@ buck-out/
 # Expo
 .expo/*
 web-build/
+android/java_pid13560.hprof
+android/java_pid22412.hprof

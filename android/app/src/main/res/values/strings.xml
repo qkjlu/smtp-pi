@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SMTP-V0</string>
+    <string name="app_name">SMTP</string>
     <string name="mapbox_access_token">pk.eyJ1IjoicWtsdSIsImEiOiJja2ExdHdxdDYwM3dvM2RvZzh6Ynd1Zmx2In0.0Vvg0D0b9cSi5-S4Dju-pQ</string>
     <string name="gh_key">3dcbb461-4602-4a26-85e4-d386678d019e</string>
     <string name="base_url" translatable="false">https://graphhopper.com/api/1/navigate/</string>
