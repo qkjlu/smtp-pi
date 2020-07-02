@@ -2,6 +2,7 @@ package com.smtp.smtp;
 import com.mapbox.geojson.Point;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class Waypoint implements Comparable {
     double longitude;
@@ -12,6 +13,11 @@ public class Waypoint implements Comparable {
         this.latitude = latitude;
         this.ordre = ordre;
     }
+    Waypoint(double longitude, double latitude){
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
     @Override
     public int compareTo(@NonNull Object o) {
         Waypoint waypoint = (Waypoint) o;
@@ -19,6 +25,13 @@ public class Waypoint implements Comparable {
         if(this.ordre > waypoint.ordre) return 1;
         return 0;
     }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        Waypoint wp = (Waypoint) obj;
+        return (wp.latitude == this.latitude && wp.longitude == this.longitude);
+    }
+
     public Point getPoint(){
         return Point.fromLngLat(longitude,latitude);
     }

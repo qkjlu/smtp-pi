@@ -28,11 +28,21 @@
     <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="YOUR-APP-URL-HERE"/>
     <meta-data android:name="expo.modules.updates.EXPO_SDK_VERSION" android:value="YOUR-APP-SDK-VERSION-HERE"/>
     <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBSKtox5IALf0hlbf62feJJPKLbS2QEXUM"/>
-    <activity android:name=".MainActivity" android:label="@string/app_name" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:screenOrientation="portrait">
+    <activity android:name=".MainActivity"
+        android:label="@string/app_name"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+        android:windowSoftInputMode="adjustResize"
+
+        android:theme="@style/Theme.App.SplashScreen"
+        android:screenOrientation="portrait"
+        android:alwaysRetainTaskState="true"
+        android:exported="true"
+        >
       <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -40,11 +50,10 @@
         <data android:scheme="myapp"/>
       </intent-filter>
     </activity>
-    <activity android:name=".Navigation" />
+    <activity android:name=".Navigation"
+        android:screenOrientation="portrait"/>
     <activity android:name=".NavigationLauncherActivity" />
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity"/>
-      <activity android:name=".NavigationLauncherActivity" />
-
-      <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+    <uses-library android:name="org.apache.http.legacy" android:required="false"/>
   </application>
 </manifest>
