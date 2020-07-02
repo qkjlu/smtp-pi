@@ -131,7 +131,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Location location;
     private int remainingWaypoints = -1;
 
-    private Thread pausedThread;
+    SendCoordinatesThread pausedThread;
 
     // Connection to the socket server
     {
@@ -316,7 +316,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         addListenerOnButton();
 
         // create thread for send coordinates in pause
-        pausedThread = new Thread(new SendCoordinatesThread(mSocket,userId));
+        /*pausedThread = new SendCoordinatesThread(mSocket,userId,fusedLocationClient );
+        Thread thread =  new Thread(pausedThread,"pausedThreat");
+        thread.start();
+        pausedThread.pause();*/
 
     }
 
@@ -332,6 +335,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.off("chantier/user/disconnected", onUserDisconnected);
         navigationView.onDestroy();
+        pausedThread.stop();
     }
 
     @Override
@@ -437,9 +441,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     previousEtat = myEtat;
                     myEtat = "pause";
                     onPause = true;
+                    pausedThread.reprendre();
                 }
-                sendCoordinates();
-                pausedThread.start();
             }
         });
 
@@ -454,9 +457,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
                     myEtat = previousEtat;
+                    pausedThread.pause();
                     launchNavigation();
                 }
-                sendCoordinates();
             }
         });
     }
