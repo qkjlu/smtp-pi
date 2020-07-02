@@ -7,6 +7,8 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -86,6 +88,11 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
         }
     };
 
+    private String previousEtat;
+    private Button buttonPause;
+    private Button buttonReprendre;
+    private boolean onPause = false;
+
     private Point ORIGIN;
     private Point DESTINATION;
 
@@ -104,9 +111,10 @@ public class Navigation extends AppCompatActivity implements PermissionsListener
 
     private Socket mSocket;
 
-    private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
+    private static final String BASE_URL = BuildConfig.API_URL;
     private ArrayList<Point> roadPoint = new ArrayList();
 
+    private Thread pausedThread;
 
     {
         try {
@@ -250,6 +258,8 @@ public class ListUser{
         setContentView(R.layout.activity_main);
         navigationView = findViewById(R.id.navigationView);
         timeDiffTextView = findViewById(R.id.timeDiffTextView);
+        buttonPause = findViewById(R.id.buttonPause);
+        buttonReprendre = findViewById(R.id.buttonReprendre);
 
         CameraPosition initialPosition = new CameraPosition.Builder()
                 .target(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
@@ -263,6 +273,12 @@ public class ListUser{
         mSocket.on("chantier/user/disconnected",onUserDisconnected);
         mSocket.connect();
         connectToChantier();
+
+        // initialize listener
+        addListenerOnButton();
+
+        // create thread for send coordinates in pause
+        pausedThread = new Thread(new SendCoordinatesThread(mSocket,userId));
 
     }
 
@@ -367,6 +383,47 @@ public class ListUser{
         //navigationView.retrieveNavigationMapboxMap().retrieveMap().addPolygon(generatePerimeter(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()),100,64));
     }
 
+    // listener for paused and reprendre buttons
+    private void addListenerOnButton() {
+
+        buttonPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                // pause is clicked
+                if (!onPause){
+                    navigationView.stopNavigation();
+                    timeDiffTextView.setVisibility(View.INVISIBLE);
+                    buttonPause.setVisibility(View.INVISIBLE);
+                    buttonPause.setEnabled(false);
+                    buttonReprendre.setVisibility(View.VISIBLE);
+                    buttonReprendre.setEnabled(true);
+                    previousEtat = myEtat;
+                    myEtat = "pause";
+                    onPause = true;
+                }
+                sendCoordinates();
+                pausedThread.start();
+            }
+        });
+
+        buttonReprendre.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(onPause){
+                    onPause = false;
+                    buttonReprendre.setEnabled(false);
+                    buttonReprendre.setVisibility(View.INVISIBLE);
+                    buttonPause.setEnabled(true);
+                    buttonPause.setVisibility(View.VISIBLE);
+                    timeDiffTextView.setVisibility(View.VISIBLE);
+                    myEtat = previousEtat;
+                    launchNavigation();
+                }
+                sendCoordinates();
+            }
+        });
+    }
+
     private PolygonOptions generatePerimeter(LatLng centerCoordinates, int radiusInmeters, int numberOfSides) {
         List<LatLng> positions = new ArrayList<>();
         double distanceX = radiusInmeters * 1000 / (111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
@@ -442,6 +499,7 @@ public class ListUser{
                 );
         return distanceFromDestination[0];
     }
+
     @Override
     public void onProgressChange(Location location, RouteProgress routeProgress) {
         boolean didEtatChanged;
@@ -497,6 +555,7 @@ public class ListUser{
         }
         initWaypoints();
     }
+
     private void buildRoute(){
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))

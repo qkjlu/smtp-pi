@@ -1,5 +1,5 @@
 import Icon from "react-native-vector-icons/FontAwesome";
-import {Text, View, AsyncStorage,ActivityIndicator } from "react-native";
+import {Text, View, AsyncStorage,ActivityIndicator} from "react-native";
 import * as React from "react";
 import axios from 'axios';
 import Config from "react-native-config";

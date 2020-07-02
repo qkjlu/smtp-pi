@@ -13,6 +13,8 @@ import io from "socket.io-client";
 import KeepAwake from 'react-native-keep-awake';
 import Config from "react-native-config";
 import * as RootNavigation from '../../navigation/RootNavigation.js';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+
 
 
 
@@ -188,10 +190,11 @@ export default class MapAdmin extends React.Component {
         const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
         const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
         return(
+          <View>
             <View>
               <KeepAwake />
                 <MapView
-                    style={styles.mapCrane}
+                    style={this.props.typeOfUser === "crane" ? styles.mapCrane : styles.map}
                     region={this.state.currentRegion}
                     onRegionChangeComplete={this.onRegionChangeComplete}
                 >
@@ -204,21 +207,25 @@ export default class MapAdmin extends React.Component {
                         }
                     )}
                 </MapView>
-                {this.props.typeOfUser === "crane" ? <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/> : null}
             </View>
+            <View style={styles.progressBar}>
+              {this.props.typeOfUser === "crane" ? <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/> : null}
+            </View>
+          </View>
         )
     }
 }
 
-const { width, height } = Dimensions.get('window');
-const reduceHeight =  height*0.79;
 const styles = StyleSheet.create({
     map: {
-        width : width,
-        height: height,
+        width : wp('100%'),
+        height: hp('100%'),
     },
     mapCrane: {
-        width : width,
-        height: reduceHeight,
+        width : wp('100%'),
+        height: hp('77%'),
     },
+    progressBar: {
+      height: hp('23%')
+    }
 });
