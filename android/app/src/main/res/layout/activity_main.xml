@@ -37,13 +37,14 @@
         android:id="@+id/timeDiffTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
+        android:layout_gravity="left|top"
         android:layout_marginTop="140dp"
         android:background="@color/mapbox_navigation_view_color_banner_background_dark"
         android:elevation="3dp"
         android:gravity="center"
         android:padding="6dp"
         android:textColor="@android:color/white"
-        android:textSize="26sp" />
+        android:textSize="20sp"
+        android:layout_marginLeft="1dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -27,6 +27,26 @@ export default {
         flexDirection : 'row',
         justifyContent : 'space-between',
     },
+
+    semaines : {
+        backgroundColor : '#FFFFFF',
+        borderWidth: 1,
+        borderBottomColor : '#202340',
+        marginHorizontal : 15,
+        paddingHorizontal : 20,
+        paddingVertical : 10,
+        flex : 1,
+        flexDirection : 'column',
+        justifyContent : 'space-between',
+    },
+
+    jours: {
+        marginVertical : 2,
+        fontSize: 15,
+        color: 'rgba(96,100,109, 1)',
+        textAlign: 'center',
+    },
+
     previewPlace : {
         backgroundColor : '#FFFFFF',
         borderBottomColor : '#202340',
@@ -47,6 +67,11 @@ export default {
         height : 40,
         paddingHorizontal : 4,
         flex :1
+    },
+    buttonIcon : {
+        height : 50,
+        paddingHorizontal : 4,
+        flex : 1
     },
     littleButton : {
         width: '10%',

@@ -17,6 +17,8 @@
   "dependencies": {
     "@babel/runtime": "^7.9.6",
     "@expo/vector-icons": "~10.0.6",
+    "@material-ui/core": "^4.10.2",
+    "@material-ui/icons": "^4.9.1",
     "@react-native-community/masked-view": "0.1.6",
     "@react-native-community/netinfo": "^5.9.2",
     "@react-navigation/bottom-tabs": "^5.4.4",
@@ -55,7 +57,7 @@
     "react-native-simple-radio-button": "^2.7.4",
     "react-native-tab-view": "^2.14.0",
     "react-native-unimodules": "~0.9.0",
-    "react-native-vector-icons": "latest",
+    "react-native-vector-icons": "^6.6.0",
     "react-native-version-check": "^3.4.1",
     "react-native-web": "~0.11.7",
     "react-navigation": "^4.3.9",
