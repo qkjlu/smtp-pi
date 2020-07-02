@@ -14,13 +14,13 @@ export default {
         padding : 10,
         borderColor: 'gray',
         borderWidth:1 ,
-        marginHorizontal : 15
+        marginHorizontal : 5
     },
     worksite : {
         backgroundColor : '#FFFFFF',
         borderWidth: 1,
         borderBottomColor : '#202340',
-        marginHorizontal : 15,
+        marginHorizontal : 5,
         paddingHorizontal : 20,
         paddingVertical : 10,
         flex : 1,
@@ -32,7 +32,7 @@ export default {
         backgroundColor : '#FFFFFF',
         borderWidth: 1,
         borderBottomColor : '#202340',
-        marginHorizontal : 15,
+        marginHorizontal : 5,
         paddingHorizontal : 20,
         paddingVertical : 10,
         flex : 1,

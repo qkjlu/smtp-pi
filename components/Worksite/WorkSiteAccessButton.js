@@ -2,7 +2,7 @@ import {Alert, AsyncStorage, View} from "react-native";
 import style from "../../Style";
 import React from "react";
 import * as RootNavigation from '../../navigation/RootNavigation.js';
-import {Icon, Button, Image} from 'react-native-elements'
+import {Icon, Button, Image, Badge} from 'react-native-elements'
 import ActivityStarter from "../../ActivityStarter";
 import axios from "axios";
 import Config from "react-native-config";
@@ -22,6 +22,10 @@ export default class WorkSiteAccessButton extends React.Component {
     }
 
     AdminAccess() {
+        const hasRoutes = this.props.worksite.allerId !== null && this.props.worksite.retourId !== null
+        const success = <Badge status="success" containerStyle={{ position: 'absolute', top: 2, right: 1 }} />
+        const error = <Badge status="error" containerStyle={{ position: 'absolute', top: 2, right: 1 }} />
+
         return (
             <View style={{flexDirection:"row", flex :6}}>
                 <View style={style.button} >
@@ -41,6 +45,7 @@ export default class WorkSiteAccessButton extends React.Component {
                         type="clear"
                         accessibilityLabel="redirection vers la page du chantier"
                     />
+                    {hasRoutes ? success : error}
                 </View>
                 <View style={style.button} >
                     <Button

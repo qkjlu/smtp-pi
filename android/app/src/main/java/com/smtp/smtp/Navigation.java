@@ -664,7 +664,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     try {
                         prepareRoute(response);
                         buildRoute();
-
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -690,11 +689,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         requestQueue.add(getRequest);
     }
 
-    private void changeEtape() {
-        if (etapeIdPrecedente == null) {
-            etape = new Etape(chantierId, userId, myEtat, etapeIdPrecedente, getApplicationContext());
-        } else {
-
+    private void changeEtape(){
+        if(etapeIdPrecedente == null){
+            etape = new Etape(chantierId,userId,myEtat, null, getApplicationContext());
+        }else{
             // send existing etape
             etape.sendFinEtape();
             etape = new Etape(chantierId, userId, myEtat, etapeIdPrecedente, getApplicationContext());
