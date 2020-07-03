@@ -535,18 +535,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 isOffRoute = false;
                 destination = DESTINATION;
             }
-        }else{
-            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
+        }else {
+            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")) {
                 destination = DESTINATION;
             }
-            if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
+            if (myEtat.equals("déchargé") || myEtat.equals("enChargement") || previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
                 destination = ORIGIN;
             }
-        if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")) {
-            destination = DESTINATION;
-        }
-        if (myEtat.equals("déchargé") || myEtat.equals("enChargement")|| previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
-            destination = ORIGIN;
         }
         if (destination == null) {
             throw new Error("getDistanceFromDestination: destination cannot be null");
