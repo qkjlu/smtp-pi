@@ -5,6 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:orientation="horizontal" />
+
     <Button
         android:id="@+id/buttonReprendre"
         android:layout_width="fill_parent"
@@ -18,13 +25,13 @@
 
     <Button
         android:id="@+id/buttonPause"
-        android:layout_width="224dp"
+        android:layout_width="109dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:gravity="center"
         android:background="@drawable/rounded_button"
-        android:textColor="#FFFFFF"
-        android:text="Pause" />
+        android:gravity="center"
+        android:text="Pause"
+        android:textColor="#FFFFFF" />
 
     <com.mapbox.services.android.navigation.ui.v5.NavigationView
         android:id="@+id/navigationView"

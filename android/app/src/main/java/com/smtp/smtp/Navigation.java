@@ -304,8 +304,16 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         Task<Location> gettingLocation = fusedLocationClient.getLastLocation();
-        while(!gettingLocation.isSuccessful()) {}
+        while(!gettingLocation.isSuccessful()) {
+            Log.d(TAG, "Dans la boucle -----------------------");
+        }
+
+        Log.d(TAG, "successful" + gettingLocation.isSuccessful());
         location = gettingLocation.getResult();
+        Log.d(TAG, "gettingLocation" + gettingLocation);
+        Log.d(TAG, "gettingLocation get result" + gettingLocation.getResult());
+
+
 
         CameraPosition initialPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))
@@ -436,7 +444,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             public void onClick(View arg0) {
                 // pause is clicked
                 if (!onPause){
-                    navigationView.stopNavigation();
+                    //navigationView.stopNavigation();
                     timeDiffTextView.setVisibility(View.INVISIBLE);
                     buttonPause.setVisibility(View.INVISIBLE);
                     buttonPause.setEnabled(false);
@@ -445,9 +453,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     previousEtat = myEtat;
                     myEtat = "pause";
                     onPause = true;
-                    /*Intent intent = new Intent();
+                    Intent intent = new Intent();
                     intent.setAction(getPackageName() + ".START_PAUSE");
-                    sendBroadcast(intent);*/
+                    sendBroadcast(intent);
                     //pausedThread.reprendre();
                     sendCoordinates();
                 }
@@ -465,11 +473,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
                     myEtat = previousEtat;
-                    /*Intent intent = new Intent();
+                    Intent intent = new Intent();
                     intent.setAction(getPackageName() + ".STOP_PAUSE");
                     sendBroadcast(intent);
-                    //pausedThread.pause();*/
-                    launchNavigation();
+                    //pausedThread.pause();
+                    //launchNavigation();
                 }
             }
         });
