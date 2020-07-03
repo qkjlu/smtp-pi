@@ -541,13 +541,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
         modifyTimeDiffTruckAheadIfNecessary();
 
+
         //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
             remainingWaypoints = routeProgress.remainingWaypoints();
-            SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putInt("remainingWaypoints", remainingWaypoints);
-            editor.apply();
+            registerRemainingWaypointInSharedPreferences();
         }
 
         //Remove waypoints from SharedPreferences if user has arrived
@@ -595,6 +593,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     )
             );
         }
+        Collections.sort(initialWaypoints);
 
         filter = new WaypointFilter(
                 initialWaypoints,
@@ -604,8 +603,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         );
 
         initialWaypoints = filter.cleanWaypoints();
-
-        Collections.sort(initialWaypoints);
 
         for (Waypoint wp:
              initialWaypoints) {
@@ -620,14 +617,34 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         roadPoint = points;
     }
 
-    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(List<Waypoint> initialWaypointList){
+    private void registerRemainingWaypointInSharedPreferences() {
+        Log.d(TAG, "Registering remaining points : " + remainingWaypoints + " in " + chantierId + typeRoute + "remainingWaypoints");
         SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
-        int nbRemainingWp = sharedPref.getInt("remainingWaypoints", -1);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(chantierId + typeRoute + "remainingWaypoints", remainingWaypoints);
+        editor.apply();
+    }
+
+    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(List<Waypoint> initialWaypointList){
+        Log.d(TAG, "Getting remaining points in " + chantierId + typeRoute + "remainingWaypoints");
+        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
+        int nbRemainingWp = sharedPref.getInt(chantierId + typeRoute + "remainingWaypoints", -1);
+        Log.d(TAG, "nbRemainingWaypoints:" + nbRemainingWp);
         if (nbRemainingWp == -1) {
             return initialWaypointList;
         }
-        List<Waypoint> res = initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size());
+
+        List<Waypoint> res = new ArrayList<>(initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size()));
+        Collections.sort(res);
         return res;
+    }
+
+    private void removeRemainingWaypointsFromSharedPreferences() {
+        Log.d(TAG, "Removing remaining points of : " + chantierId + typeRoute + "remainingWaypoints");
+        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.remove(chantierId + typeRoute + "remainingWaypoints");
+        editor.commit();
     }
 
     private void fetchRoute() {
@@ -820,13 +837,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             fetchRoute();
         }
         return userRerouted;
-    }
-
-    private void removeRemainingWaypointsFromSharedPreferences() {
-        SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.remove("remainingWaypoints");
-        editor.commit();
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary() {

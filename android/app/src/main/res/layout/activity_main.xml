@@ -14,6 +14,8 @@
         android:enabled="false"
         android:background="#50667f"
         android:text="Reprendre"
+        android:textColor="#FFFFFF"
+        android:textSize="40sp"
         android:visibility="invisible" />
 
     <Button
