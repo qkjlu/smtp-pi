@@ -290,6 +290,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         typeRoute = i.getStringExtra("typeRoute");
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
+        previousEtat = myEtat;
         myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
@@ -445,9 +446,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     previousEtat = myEtat;
                     myEtat = "pause";
                     onPause = true;
-                    /*Intent intent = new Intent();
-                    intent.setAction(getPackageName() + ".START_PAUSE");
-                    sendBroadcast(intent);*/
+                    //Intent intent = new Intent();
+                    //intent.setAction(getPackageName() + ".START_PAUSE");
+                    //sendBroadcast(intent);
                     //pausedThread.reprendre();
                     sendCoordinates();
                 }
@@ -465,11 +466,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
                     myEtat = previousEtat;
-                    /*Intent intent = new Intent();
-                    intent.setAction(getPackageName() + ".STOP_PAUSE");
-                    sendBroadcast(intent);
-                    //pausedThread.pause();*/
-                    launchNavigation();
+                    //Intent intent = new Intent();
+                    //intent.setAction(getPackageName() + ".STOP_PAUSE");
+                    //sendBroadcast(intent);
+                    //pausedThread.pause();
+                    //launchNavigation();
                 }
             }
         });
@@ -510,10 +511,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private float getDistanceFromDestination(Location location) {
         float[] distanceFromDestination = new float[3];
         Point destination = null;
-        if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
+        if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")) {
             destination = DESTINATION;
         }
-        if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
+        if (myEtat.equals("déchargé") || myEtat.equals("enChargement")|| previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
             destination = ORIGIN;
         }
         if (destination == null) {
