@@ -84,10 +84,12 @@ public class WaypointFilter {
 
         Log.d(TAG, "Remaining and "+ distanceTolerance+"m of me OR Ahead of me: ");
         union = union(A,B);
+        Collections.sort(union);
         for (Waypoint wp:
                 union) {
             Log.d(TAG, wp.toString());
         }
+
         return union;
     }
 
