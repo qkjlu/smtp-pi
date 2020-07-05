@@ -100,8 +100,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private final double INITIAL_TILT = 30;
     private final int DISTANCE_TOLERANCE = 500;
     private static final String TAG = "Navigation";
-	  private boolean isOffRoute = false;
-    private String preOffRoute = "";
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
         public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
@@ -453,17 +451,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setEnabled(false);
                     buttonReprendre.setVisibility(View.VISIBLE);
                     buttonReprendre.setEnabled(true);
-                    if(isOffRoute){
-                        previousEtat = preOffRoute;
-                    }else{
-                        previousEtat = myEtat;
-                    }
+                    previousEtat = myEtat;
                     myEtat = "pause";
                     onPause = true;
                     //Intent intent = new Intent();
                     //intent.setAction(getPackageName() + ".START_PAUSE");
                     //sendBroadcast(intent);
                     //pausedThread.reprendre();
+                    sendCoordinates();
                 }
             }
         });
@@ -524,35 +519,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private float getDistanceFromDestination(Location location) {
         float[] distanceFromDestination = new float[3];
         Point destination = null;
-		Log.d("offT", " myEtat "+ myEtat);
-        Log.d("offT", " isOfRoute "+ isOffRoute);
-        Log.d("offT", " preOffRoute "+ preOffRoute);
-        if(isOffRoute){
-            if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
-                destination = DESTINATION;
-            }
-            if(preOffRoute.equals("enDéchargement") || myEtat.equals("enDéchargement")){
-                myEtat = "enDéchargement";
-                preOffRoute = "";
-                isOffRoute = false;
-                destination = DESTINATION;
-            }
-            if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé") ) {
-                destination = ORIGIN;
-            }
-            if(preOffRoute.equals("enChargement") || myEtat.equals("enChargement")){
-                myEtat = "enChargement";
-                preOffRoute = "";
-                isOffRoute = false;
-                destination = DESTINATION;
-            }
-        }else{
-            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("enDéchargement") || previousEtat.equals("chargé")) {
-                destination = DESTINATION;
-            }
-            if (myEtat.equals("déchargé") || myEtat.equals("enChargement") || previousEtat.equals("enChargement") || previousEtat.equals("déchargé")) {
-                destination = ORIGIN;
-            }
+        if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")) {
+            destination = DESTINATION;
+        }
+        if (myEtat.equals("déchargé") || myEtat.equals("enChargement")|| previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
+            destination = ORIGIN;
         }
         if (destination == null) {
             throw new Error("getDistanceFromDestination: destination cannot be null");
@@ -567,39 +538,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         return distanceFromDestination[0];
     }
 
-	public void handleOffRoute(RouteProgress routeProgress){
-        Log.d("offR", " preOffRoute : " + preOffRoute);
-        Log.d("offR", " isOffRoute  : " + isOffRoute);
-        Log.d("offR", " routeProgress? : " + (routeProgress.currentState() != null));
-        Log.d("offR", " previousEtat : " + previousEtat);
-
-        if(myEtat.equals("enChargement") || myEtat.equals("enDéchargement") || myEtat.equals("pause") ){
-            preOffRoute = "";
-            isOffRoute = false;
-        }else{
-            // je suis sur la route et isOffRoute = true => je change isOfRoute en false
-            if(routeProgress.currentState() != null && isOffRoute) {
-                myEtat = preOffRoute;
-                preOffRoute = "";
-                isOffRoute = false;
-                Log.d("offR", " sortie de route " + isOffRoute);
-            }else{
-                // je ne suis pas sur la route
-                if(routeProgress.currentState() == null && !isOffRoute){
-                    preOffRoute = myEtat;
-                    myEtat = "offRoute";
-                    if(!preOffRoute.equals("")) {
-                        isOffRoute = true;
-                        Log.d("offR", " sortie de route " + isOffRoute);
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     public void onProgressChange(Location location, RouteProgress routeProgress) {
-		handleOffRoute(routeProgress);
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
@@ -865,11 +805,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             rayonChangementEtat = rayonChargement;
         }
         if (distanceRemaining < rayonChangementEtat) {
-            if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
+            if (myEtat.equals("chargé")) {
                 myEtat = "enDéchargement";
                 changeEtape();
                 etatChanged = true;
-            } else if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé")) {
+            } else if (myEtat.equals("déchargé")) {
                 myEtat = "enChargement";
                 changeEtape();
                 etatChanged = true;
