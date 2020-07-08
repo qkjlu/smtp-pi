@@ -538,11 +538,21 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 isOffRoute = false;
                 destination = DESTINATION;
             }
-        }else{
-            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("enDéchargement") || previousEtat.equals("chargé")) {
+        }else if(myEtat.equals("pause")) {
+            if(previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")){
                 destination = DESTINATION;
+            }else if (previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
+                destination = ORIGIN;
             }
-            if (myEtat.equals("déchargé") || myEtat.equals("enChargement") || previousEtat.equals("enChargement") || previousEtat.equals("déchargé")) {
+            /*else if(previousEtat.equals("offRoute") && (preOffRoute.equals("chargé") ||preOffRoute.equals("enChargement") )){
+                destination = DESTINATION;
+            }else if(previousEtat.equals("offRoute") && (preOffRoute.equals("déchargé") ||preOffRoute.equals("enDéchargement"))){
+                destination = ORIGIN;
+            }*/
+        }else{
+            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
+                destination = DESTINATION;
+            }else if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
                 destination = ORIGIN;
             }
         }
