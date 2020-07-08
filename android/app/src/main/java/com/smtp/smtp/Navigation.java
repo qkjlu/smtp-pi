@@ -90,7 +90,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @SuppressLint("MissingPermission")
-public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener {
+public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener, OnSuccessListener<Location> {
 
     private NavigationView navigationView;
     private TextView timeDiffTextView;
@@ -303,27 +303,28 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         timeDiffTextView = findViewById(R.id.timeDiffTextView);
         buttonPause = findViewById(R.id.buttonPause);
         buttonReprendre = findViewById(R.id.buttonReprendre);
-
+        navigationView.onCreate(savedInstanceState);
 
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        Task<Location> gettingLocation = fusedLocationClient.getLastLocation();
-        while(!gettingLocation.isSuccessful()) {
-            Log.d(TAG, "Dans la boucle -----------------------");
-        }
+        OnSuccessListener<Location> onSucessLocation = new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location loc) {
+                location = loc;
+            }
+        };
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this);
 
-        Log.d(TAG, "successful" + gettingLocation.isSuccessful());
-        location = gettingLocation.getResult();
-        Log.d(TAG, "gettingLocation" + gettingLocation);
-        Log.d(TAG, "gettingLocation get result" + gettingLocation.getResult());
+    }
 
-
+    @Override
+    public void onSuccess(Location loc) {
+        location = loc;
 
         CameraPosition initialPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))
                 .zoom(INITIAL_ZOOM)
                 .build();
-        navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this, initialPosition);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
@@ -342,7 +343,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         //myIntent = new Intent(this, PauseService.class);
         //startService(myIntent);
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
