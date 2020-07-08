@@ -308,8 +308,16 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         Task<Location> gettingLocation = fusedLocationClient.getLastLocation();
-        while(!gettingLocation.isSuccessful()) {}
+        while(!gettingLocation.isSuccessful()) {
+            Log.d(TAG, "Dans la boucle -----------------------");
+        }
+
+        Log.d(TAG, "successful" + gettingLocation.isSuccessful());
         location = gettingLocation.getResult();
+        Log.d(TAG, "gettingLocation" + gettingLocation);
+        Log.d(TAG, "gettingLocation get result" + gettingLocation.getResult());
+
+
 
         CameraPosition initialPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))
@@ -440,20 +448,23 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             public void onClick(View arg0) {
                 // pause is clicked
                 if (!onPause){
-                    navigationView.stopNavigation();
+                    //navigationView.stopNavigation();
                     timeDiffTextView.setVisibility(View.INVISIBLE);
                     buttonPause.setVisibility(View.INVISIBLE);
                     buttonPause.setEnabled(false);
                     buttonReprendre.setVisibility(View.VISIBLE);
                     buttonReprendre.setEnabled(true);
-                    previousEtat = myEtat;
+                    if(isOffRoute){
+                        previousEtat = preOffRoute;
+                    }else{
+                        previousEtat = myEtat;
+                    }
                     myEtat = "pause";
                     onPause = true;
                     //Intent intent = new Intent();
                     //intent.setAction(getPackageName() + ".START_PAUSE");
                     //sendBroadcast(intent);
                     //pausedThread.reprendre();
-                    sendCoordinates();
                 }
             }
         });
@@ -513,7 +524,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private float getDistanceFromDestination(Location location) {
         float[] distanceFromDestination = new float[3];
         Point destination = null;
-        Log.d("offT", " myEtat "+ myEtat);
+		Log.d("offT", " myEtat "+ myEtat);
         Log.d("offT", " isOfRoute "+ isOffRoute);
         Log.d("offT", " preOffRoute "+ preOffRoute);
         if(isOffRoute){
@@ -535,11 +546,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 isOffRoute = false;
                 destination = DESTINATION;
             }
-        }else {
-            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")) {
+        }else{
+            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("enDéchargement") || previousEtat.equals("chargé")) {
                 destination = DESTINATION;
             }
-            if (myEtat.equals("déchargé") || myEtat.equals("enChargement") || previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
+            if (myEtat.equals("déchargé") || myEtat.equals("enChargement") || previousEtat.equals("enChargement") || previousEtat.equals("déchargé")) {
                 destination = ORIGIN;
             }
         }
@@ -556,12 +567,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         return distanceFromDestination[0];
     }
 
-    public void handleOffRoute(RouteProgress routeProgress){
+	public void handleOffRoute(RouteProgress routeProgress){
         Log.d("offR", " preOffRoute : " + preOffRoute);
         Log.d("offR", " isOffRoute  : " + isOffRoute);
         Log.d("offR", " routeProgress? : " + (routeProgress.currentState() != null));
+        Log.d("offR", " previousEtat : " + previousEtat);
 
-        if(myEtat.equals("enChargement") || myEtat.equals("enDéchargement")){
+        if(myEtat.equals("enChargement") || myEtat.equals("enDéchargement") || myEtat.equals("pause") ){
             preOffRoute = "";
             isOffRoute = false;
         }else{
@@ -584,9 +596,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         }
     }
+
     @Override
     public void onProgressChange(Location location, RouteProgress routeProgress) {
-        handleOffRoute(routeProgress);
+		handleOffRoute(routeProgress);
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;

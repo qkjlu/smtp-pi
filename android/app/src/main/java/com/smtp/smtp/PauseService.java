@@ -53,6 +53,13 @@ public class PauseService extends Service {
     @Override
     public void onCreate(){
         super.onCreate();
+        //  register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(getPackageName() + ".PAUSE_NAVIGATION");
+        filter.addAction(getPackageName() + ".STOP_NAVIGATION");
+        broadCast = new PauseServiceBroadCast();
+        registerReceiver(broadCast,filter);
+        //launch thread
         pausedThread = new SendCoordinatesThread();
         thread =  new Thread(pausedThread,"pausedThreat");
         thread.start();
@@ -61,11 +68,7 @@ public class PauseService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         // create broadcast filter
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(getPackageName() + ".PAUSE_NAVIGATION");
-        filter.addAction(getPackageName() + ".STOP_NAVIGATION");
-        broadCast = new PauseServiceBroadCast();
-        registerReceiver(broadCast,filter);
+
         pausedThread.pause();
         return START_STICKY;
     }
