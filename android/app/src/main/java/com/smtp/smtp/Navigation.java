@@ -701,6 +701,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Log.d(TAG, "nbRemainingWaypoints:" + nbRemainingWp);
         if (nbRemainingWp == -1) {
             return initialWaypointList;
+        } else if (nbRemainingWp > initialWaypointList.size()) {
+            removeRemainingWaypointsFromSharedPreferences();
+            return initialWaypointList;
         }
 
         List<Waypoint> res = new ArrayList<>(initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size()));
