@@ -604,6 +604,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
         remainingTime = routeProgress.durationRemaining();
+
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
             return;
@@ -702,7 +703,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         if (nbRemainingWp == -1) {
             return initialWaypointList;
         }
-
         List<Waypoint> res = new ArrayList<>(initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size()));
         Collections.sort(res);
         return res;
@@ -864,31 +864,36 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         } else if (typeRoute.equals("retour")) {
             rayonChangementEtat = rayonChargement;
         }
+        Log.d("offD", "distance : "+distanceRemaining+", rayonChangementEtat : "+ rayonChangementEtat+ ", typeRoute : " + typeRoute + ", myEtat : "+ myEtat);
         if (distanceRemaining < rayonChangementEtat) {
             if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
                 myEtat = "enDéchargement";
                 changeEtape();
                 etatChanged = true;
+                return true;
             } else if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé")) {
                 myEtat = "enChargement";
                 changeEtape();
                 etatChanged = true;
+                return true;
             }
         } else {
             if (myEtat.equals("enChargement")) {
                 myEtat = "chargé";
                 changeEtape();
                 etatChanged = true;
+                return true;
             } else if (myEtat.equals("enDéchargement")) {
                 myEtat = "déchargé";
                 changeEtape();
                 etatChanged = true;
+                return true;
             }
         }
         if (etatChanged) {
             Log.d(TAG, "Etat changed: from " + previousEtat + " to " + myEtat);
         }
-        return etatChanged;
+        return false;
     }
 
     private boolean rerouteUserIfNecessary(boolean etatChanged) {
