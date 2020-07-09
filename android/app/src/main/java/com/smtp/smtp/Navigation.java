@@ -98,7 +98,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private final boolean SHOULD_SIMULATE = false;
     private final int INITIAL_ZOOM = 18;
     private final double INITIAL_TILT = 30;
-    private final int DISTANCE_TOLERANCE = 500;
+    private final int DISTANCE_TOLERANCE = 5000;
     private static final String TAG = "Navigation";
     private boolean isOffRoute = false;
     private String preOffRoute = "";
@@ -748,7 +748,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 .user("gh")
                 .origin(roadPoint.get(0))
                 .destination(roadPoint.get(roadPoint.size() - 1))
-                .profile("driving-traffic");
+                .profile("car");
         // add waypoints without first and last point
         if (roadPoint.size() > 2) {
             for (int i = 1; i < roadPoint.size() - 1; i++) {
