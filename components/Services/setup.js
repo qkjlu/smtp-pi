@@ -14,7 +14,7 @@ export default class Setup{
 
 
   async initSetup(){
-    this.checkUpdate()
+    await this.checkUpdate()
   }
 
   // request for get the latest version of the app by type
@@ -43,7 +43,9 @@ export default class Setup{
   async compareVersion(v1,v2){
     var updateNeeded = false
     for (var i = 0; i < v1.length; i++) {
-      if(v1[i] > v2[i]){
+      let numb1 = parseInt(v1[i]);
+      let numb2 = parseInt(v2[i]);
+      if(numb1 > numb2){
         updateNeeded = true;
       }
     }

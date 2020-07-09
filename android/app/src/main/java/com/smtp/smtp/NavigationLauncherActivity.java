@@ -11,8 +11,6 @@ import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -30,13 +28,14 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
-import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.core.constants.Constants;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -60,6 +59,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +83,6 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
 
     private NavigationMapRoute mapRoute;
     private MapboxMap mapboxMap;
-
 
     private final int[] padding = new int[]{50, 50, 50, 50};
 
@@ -152,18 +151,45 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                     )
             );
         }
-
+        Collections.sort(waypoints);
 
         // Ajoute les marker à la map
+        int i = 0;
         for (Waypoint w: waypoints ) {
+            i+=1;
             LatLng point = new LatLng(w.latitude, w.longitude);
             MarkerOptions markerOptions = new MarkerOptions()
-                    .position(point);
+                    .position(point)
+                    .icon(getMyIcon(i));
             mapboxMap.addMarker(markerOptions);
             Snackbar.make(mapView, "Marqueur : "+mapboxMap.getMarkers().size()+"/"+25, Snackbar.LENGTH_LONG).show();
         }
-
         fetchRoute();
+    }
+
+    public Icon getMyIcon(int i){
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        switch (i){
+            case 1 :
+                return iconFactory.fromResource(R.drawable.marker1);
+            case 2 :
+                return iconFactory.fromResource(R.drawable.marker2);
+            case 3 :
+                return iconFactory.fromResource(R.drawable.marker3);
+            case 4 :
+                return iconFactory.fromResource(R.drawable.marker4);
+            case 5 :
+                return iconFactory.fromResource(R.drawable.marker5);
+            case 6 :
+                return iconFactory.fromResource(R.drawable.marker6);
+            case 7 :
+                return iconFactory.fromResource(R.drawable.marker7);
+            case 8 :
+                return iconFactory.fromResource(R.drawable.marker8);
+            case 9 :
+                return iconFactory.fromResource(R.drawable.marker9);
+        }
+        return iconFactory.fromResource(R.drawable.marker9);
     }
 
     public void initWaypoints(){
@@ -318,13 +344,13 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
             this.mapboxMap.addOnMapLongClickListener(this);
             initMapRoute();
             initWaypoints();
+            boundCameraToRoute();
         });
 
     }
 
     private void initMapRoute() {
         mapRoute = new NavigationMapRoute(null, mapView, mapboxMap);
-
     }
 
     private void fetchRoute() {
@@ -355,7 +381,6 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 builder.destination(p);
             }
         }
-
         showLoading();
 
         builder.build().getRoute(new Callback<DirectionsResponse>() {
@@ -364,7 +389,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 if (validRouteResponse(response)) {
                     route = response.body().routes().get(0);
                     mapRoute.addRoutes(response.body().routes());
-                    boundCameraToRoute();
+                    //boundCameraToRoute();
                 } else {
                     Snackbar.make(mapView, R.string.error_calculating_route, Snackbar.LENGTH_LONG).show();
                 }
@@ -441,7 +466,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     public boolean onMapLongClick(@NonNull LatLng point) {
         vibrate();
         MarkerOptions markerOptions = new MarkerOptions()
-                .position(point);
+                .position(point)
+                .icon(getMyIcon(mapboxMap.getMarkers().size()+1));
         mapboxMap.addMarker(markerOptions);
         Snackbar.make(mapView, "Marqueur : "+mapboxMap.getMarkers().size()+"/"+25, Snackbar.LENGTH_LONG).show();
 
