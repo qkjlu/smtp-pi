@@ -90,7 +90,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @SuppressLint("MissingPermission")
-public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener {
+public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener, OnSuccessListener<Location> {
 
     private NavigationView navigationView;
     private TextView timeDiffTextView;
@@ -100,12 +100,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private final double INITIAL_TILT = 30;
     private final int DISTANCE_TOLERANCE = 500;
     private static final String TAG = "Navigation";
-	  private boolean isOffRoute = false;
+    private boolean isOffRoute = false;
     private String preOffRoute = "";
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
         public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
             // User will never be off-route
+
             return false;
         }
     };
@@ -302,27 +303,28 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         timeDiffTextView = findViewById(R.id.timeDiffTextView);
         buttonPause = findViewById(R.id.buttonPause);
         buttonReprendre = findViewById(R.id.buttonReprendre);
-
+        navigationView.onCreate(savedInstanceState);
 
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        Task<Location> gettingLocation = fusedLocationClient.getLastLocation();
-        while(!gettingLocation.isSuccessful()) {
-            Log.d(TAG, "Dans la boucle -----------------------");
-        }
+        OnSuccessListener<Location> onSucessLocation = new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location loc) {
+                location = loc;
+            }
+        };
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this);
 
-        Log.d(TAG, "successful" + gettingLocation.isSuccessful());
-        location = gettingLocation.getResult();
-        Log.d(TAG, "gettingLocation" + gettingLocation);
-        Log.d(TAG, "gettingLocation get result" + gettingLocation.getResult());
+    }
 
-
+    @Override
+    public void onSuccess(Location loc) {
+        location = loc;
 
         CameraPosition initialPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))
                 .zoom(INITIAL_ZOOM)
                 .build();
-        navigationView.onCreate(savedInstanceState);
         navigationView.initialize(this, initialPosition);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
@@ -341,7 +343,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         //myIntent = new Intent(this, PauseService.class);
         //startService(myIntent);
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -517,7 +518,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 return params;
             }
         };
-
         RequestManager.getInstance(this).getRequestQueue().add(getRequest);
     }
 
@@ -546,11 +546,21 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 isOffRoute = false;
                 destination = DESTINATION;
             }
-        }else{
-            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement") || previousEtat.equals("enDéchargement") || previousEtat.equals("chargé")) {
+        }else if(myEtat.equals("pause")) {
+            if(previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")){
                 destination = DESTINATION;
+            }else if (previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
+                destination = ORIGIN;
             }
-            if (myEtat.equals("déchargé") || myEtat.equals("enChargement") || previousEtat.equals("enChargement") || previousEtat.equals("déchargé")) {
+            /*else if(previousEtat.equals("offRoute") && (preOffRoute.equals("chargé") ||preOffRoute.equals("enChargement") )){
+                destination = DESTINATION;
+            }else if(previousEtat.equals("offRoute") && (preOffRoute.equals("déchargé") ||preOffRoute.equals("enDéchargement"))){
+                destination = ORIGIN;
+            }*/
+        }else{
+            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
+                destination = DESTINATION;
+            }else if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
                 destination = ORIGIN;
             }
         }
@@ -701,6 +711,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         int nbRemainingWp = sharedPref.getInt(chantierId + typeRoute + "remainingWaypoints", -1);
         Log.d(TAG, "nbRemainingWaypoints:" + nbRemainingWp);
         if (nbRemainingWp == -1) {
+            return initialWaypointList;
+        } else if (nbRemainingWp > initialWaypointList.size()) {
+            removeRemainingWaypointsFromSharedPreferences();
             return initialWaypointList;
         }
         List<Waypoint> res = new ArrayList<>(initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size()));
