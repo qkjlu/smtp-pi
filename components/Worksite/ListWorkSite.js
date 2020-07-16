@@ -20,7 +20,7 @@ export default class ListWorkSite extends React.Component {
     }
 
     async componentDidMount() {
-        this.reloadData();
+        await this.reloadData();
     }
 
     async handleDelete(id){

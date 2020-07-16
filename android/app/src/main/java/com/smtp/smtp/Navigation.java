@@ -135,6 +135,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Location location;
     private int remainingWaypoints = -1;
 
+    private int timeToSend = 3;
+    private int delay = timeToSend;
+
     // for paused button
     private String previousEtat;
     private Button buttonPause;
@@ -307,7 +310,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        OnSuccessListener<Location> onSucessLocation = new OnSuccessListener<Location>() {
+        OnSuccessListener<Location> onSuccessLocation = new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location loc) {
                 location = loc;
@@ -655,8 +658,21 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
 
         if (connectedToChantier) {
-            sendCoordinates();
+            if(timeToSend()){
+                sendCoordinates();
+            }
             myList.updateList(new User(userId, remainingTime, myEtat));
+        }
+    }
+
+    private boolean timeToSend() {
+        if (delay >= timeToSend) {
+            delay = 0;
+            return true;
+        }else{
+            Log.d("delay","delay : "+delay);
+            delay++;
+            return false;
         }
     }
 
@@ -933,7 +949,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             timeDiffTextView.setText("Vous êtes en cours de déchargement \nQuittez la zone une fois déchargé");
         } else if (myIndice > 0 && myList.list.size() > 1) {
             User userAhead = myList.list.get(myIndice - 1);
-            timeDiffTruckAhead = remainingTime - userAhead.getETA();
+            timeDiffTruckAhead = Math.abs(remainingTime - userAhead.getETA());
             int minutes = (int) Math.floor(timeDiffTruckAhead / 60);
             int secondes = (int) Math.floor(timeDiffTruckAhead % 60);
             if (minutes < 1) {
