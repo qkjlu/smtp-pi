@@ -121,6 +121,10 @@ export default class MapAdmin extends React.Component {
         let isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
         if(!isAdmin){
             let copy = this.state.users.slice();
+            let index = copy.findIndex(s => s.userId == data.userId);
+            if (index > -1) {
+                copy.splice(index, 1);
+            }
             copy.push(data);
             this.setState({
                 users : copy
