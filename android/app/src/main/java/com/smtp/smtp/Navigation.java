@@ -314,7 +314,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         };
         fusedLocationClient.getLastLocation().addOnSuccessListener(this);
-
     }
 
     @Override
@@ -389,7 +388,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "OnRestart");
-        //navigationView.onResume();
     }
 
     @Override
