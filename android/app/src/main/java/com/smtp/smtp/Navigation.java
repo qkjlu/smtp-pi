@@ -1,26 +1,18 @@
 package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
-import android.app.Application;
-import android.app.Service;
+import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Process;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.AuthFailureError;
@@ -31,32 +23,24 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.snackbar.Snackbar;
-import com.mapbox.android.core.permissions.PermissionsListener;
-import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.api.directions.v5.MapboxDirections;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.geojson.Point;
-
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
-import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMap;
-import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.mapbox.services.android.navigation.v5.navigation.camera.Camera;
@@ -76,11 +60,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -90,7 +71,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @SuppressLint("MissingPermission")
-public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener, OnSuccessListener<Location> {
+public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener{
 
     private NavigationView navigationView;
     private TextView timeDiffTextView;
@@ -131,7 +112,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Socket mSocket;
     private boolean connectedToChantier = false;
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
-    private ArrayList<Point> roadPoint = new ArrayList();
+    private List<Point> roadPoint = new ArrayList<>();
     private Location location;
     private int remainingWaypoints = -1;
 
@@ -143,12 +124,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Button buttonPause;
     private Button buttonReprendre;
     private boolean onPause = false;
-    private SendCoordinatesThread pausedThread;
-    Intent myIntent;
 
     // Connection to the socket server
     {
         try {
+            Log.i(TAG, "Instanciating a new socket");
             mSocket = IO.socket(BuildConfig.API_URL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -276,12 +256,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private ListUser myList = new ListUser();
     private int myIndice;
 
-
     @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "OnCreate");
+        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        Log.d(TAG, "LargeMemoryClass : " + am.getLargeMemoryClass());
 
         Thread.setDefaultUncaughtExceptionHandler(UEH);
 
@@ -308,26 +289,40 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         buttonReprendre = findViewById(R.id.buttonReprendre);
         navigationView.onCreate(savedInstanceState);
 
-        // Retrieving user location
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        OnSuccessListener<Location> onSuccessLocation = new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location loc) {
-                location = loc;
-            }
-        };
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this);
+        retrieveLocation();
+
     }
 
-    @Override
-    public void onSuccess(Location loc) {
-        location = loc;
+    private void retrieveLocation() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        LocationRequest locationRequest = LocationRequest.create();
+        // Location is requested every 0.5 seconds
+        locationRequest.setInterval(500);
+
+        LocationCallback locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if(locationResult == null){
+                    return;
+                }
+                onLocationRetrieved(locationResult.getLastLocation(), this);
+            }
+        };
+
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
+    private void onLocationRetrieved(Location l, LocationCallback locationCallback) {
+        location = l;
+        fusedLocationClient.removeLocationUpdates(locationCallback);
         CameraPosition initialPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))
                 .zoom(INITIAL_ZOOM)
                 .build();
-        navigationView.initialize(this, initialPosition);
+        navigationView.initialize(Navigation.this::onNavigationReady, initialPosition);
 
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
@@ -335,16 +330,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.connect();
         connectToChantier();
 
-        // create thread for send coordinates in pause
-        /*pausedThread = new SendCoordinatesThread(mSocket,userId);
-        Thread thread =  new Thread(pausedThread,"pausedThreat");
-        thread.start();
-        pausedThread.pause();
         // initialize listener*/
         addListenerOnButton();
-        //myIntent = new Intent(this, PauseService.class);
-        //startService(myIntent);
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -352,10 +341,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         disconnectFromChantier();
         mSocket.disconnect();
+        mSocket.off();
 
-        mSocket.off("chantier/user/sentCoordinates", onUserSentCoordinates);
-        mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
-        mSocket.off("chantier/user/disconnected", onUserDisconnected);
         navigationView.onDestroy();
     }
 
@@ -1009,7 +996,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             } else {
                 myList.addList(sender);
             }
-            myList.updateMyIndice(this.userId);
+            myList.updateMyIndice(Navigation.this.userId);
             modifyTimeDiffTruckAheadIfNecessary();
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -1040,4 +1027,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
         modifyTimeDiffTruckAheadIfNecessary();
     });
+
+
 }
