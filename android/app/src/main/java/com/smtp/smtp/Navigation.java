@@ -1,18 +1,25 @@
 package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -50,6 +57,7 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
 import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
@@ -145,6 +153,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private boolean onPause = false;
     private SendCoordinatesThread pausedThread;
     Intent myIntent;
+    private NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
 
     // Connection to the socket server
     {
@@ -307,7 +316,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         buttonPause = findViewById(R.id.buttonPause);
         buttonReprendre = findViewById(R.id.buttonReprendre);
         navigationView.onCreate(savedInstanceState);
-
+        
         // Retrieving user location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         OnSuccessListener<Location> onSuccessLocation = new OnSuccessListener<Location>() {
@@ -317,6 +326,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         };
         fusedLocationClient.getLastLocation().addOnSuccessListener(this);
+
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkStateReceiver, filter);
+        registerReceiver(broadcastReceiver, new IntentFilter("NO_INTERNET"));
+        navigationView.onStart();
 
     }
 
@@ -357,6 +372,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.off("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.off("chantier/user/disconnected", onUserDisconnected);
+
+        //unregister receiver;
+        unregisterReceiver(broadcastReceiver);
+        unregisterReceiver(networkStateReceiver);
+
         navigationView.onDestroy();
     }
 
@@ -385,7 +405,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     protected void onStart() {
         super.onStart();
         Log.d(TAG, "OnStart");
-        navigationView.onStart();
     }
 
     @Override
@@ -441,6 +460,31 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         );
 
         //navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
+    }
+
+
+    //brodcast Receiver for handle connection change
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            navigationView.stopNavigation();
+            showAlertDialog();
+        }
+    };
+
+    // Alert to show when internet is disabled
+    private void showAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Erreur Réseaux");
+        builder.setMessage("Pas de connexion internet")
+                .setCancelable(false);
+        builder.setPositiveButton("Quitter", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     // listener for paused and reprendre buttons

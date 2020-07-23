@@ -13,7 +13,7 @@ export default class ButtonGroupAdmin extends React.Component {
         this.updateIndex = this.updateIndex.bind(this);
         this.unShowForm = this.unShowForm.bind(this);
     }
-    
+
     componentDidMount() {
         this.getUser().then( res => this.setState({typeUser : res }))
     }

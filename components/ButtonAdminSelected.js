@@ -3,6 +3,11 @@ import AddWorkSiteForm from "./Worksite/AddWorkSiteForm";
 import ListPlace from "./Place/ListPlace";
 
 export default class ButtonAdminSelected extends React.Component {
+
+  constructor(props) {
+      super(props);
+  }
+
     render() {
         if(this.props.index == 0){
             return <AddWorkSiteForm onReload={this.props.onReload} unShowForm={this.props.unShowForm}/>;
