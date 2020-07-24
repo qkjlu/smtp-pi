@@ -120,7 +120,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
     private List<Point> roadPoint = new ArrayList<>();
     private Location location;
-    private Point realDestination = null;
     private int remainingWaypoints = -1;
 
     private int timeToSend = 3;
@@ -280,7 +279,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         ORIGIN = Point.fromLngLat(origin[0], origin[1]);
         DESTINATION = Point.fromLngLat(destination[0], destination[1]);
-        realDestination = DESTINATION;
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
         typeRoute = i.getStringExtra("typeRoute");
@@ -581,12 +579,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         if (destination == null) {
             throw new Error("getDistanceFromDestination: destination cannot be null");
         }
-        realDestination = destination;
         Location.distanceBetween(
                 location.getLatitude(),
                 location.getLongitude(),
-                realDestination.latitude(),
-                realDestination.longitude(),
+                destination.latitude(),
+                destination.longitude(),
                 distanceFromDestination
         );
         return distanceFromDestination[0];
@@ -722,7 +719,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         for (Waypoint waypoint : initialWaypoints) {
             points.add(waypoint.getPoint());
         }
-        points.add(realDestination);
         roadPoint = points;
     }
 
@@ -769,6 +765,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
+
+
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
                 .baseUrl(getString(R.string.base_url))
