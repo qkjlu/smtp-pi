@@ -2,8 +2,6 @@ package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Application;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,13 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Process;
-import android.provider.Settings;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -50,8 +43,6 @@ import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
@@ -139,8 +130,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Button buttonPause;
     private Button buttonReprendre;
     private boolean onPause = false;
-    private SendCoordinatesThread pausedThread;
-    Intent myIntent;
     private NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
 
     // Connection to the socket server
@@ -307,14 +296,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         buttonReprendre = findViewById(R.id.buttonReprendre);
         navigationView.onCreate(savedInstanceState);
 
-        retrieveLocation();
-
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkStateReceiver, filter);
         registerReceiver(broadcastReceiver, new IntentFilter("NO_INTERNET"));
-        navigationView.onStart();
 
+        retrieveLocation();
     }
 
     private void retrieveLocation() {
@@ -367,10 +354,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.disconnect();
         mSocket.off();
 
-        mSocket.off("chantier/user/sentCoordinates", onUserSentCoordinates);
-        mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
-        mSocket.off("chantier/user/disconnected", onUserDisconnected);
-
         //unregister receiver;
         unregisterReceiver(broadcastReceiver);
         unregisterReceiver(networkStateReceiver);
@@ -403,6 +386,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     protected void onStart() {
         super.onStart();
         Log.d(TAG, "OnStart");
+        navigationView.onStart();
     }
 
     @Override
@@ -456,7 +440,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 .icon(icon2)
         );
 
-        //navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
     }
 
 
@@ -492,7 +475,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             public void onClick(View arg0) {
                 // pause is clicked
                 if (!onPause){
-                    //navigationView.stopNavigation();
                     timeDiffTextView.setVisibility(View.INVISIBLE);
                     buttonPause.setVisibility(View.INVISIBLE);
                     buttonPause.setEnabled(false);
@@ -505,10 +487,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     }
                     myEtat = "pause";
                     onPause = true;
-                    //Intent intent = new Intent();
-                    //intent.setAction(getPackageName() + ".START_PAUSE");
-                    //sendBroadcast(intent);
-                    //pausedThread.reprendre();
                 }
             }
         });
@@ -524,11 +502,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
                     myEtat = previousEtat;
-                    //Intent intent = new Intent();
-                    //intent.setAction(getPackageName() + ".STOP_PAUSE");
-                    //sendBroadcast(intent);
-                    //pausedThread.pause();
-                    //launchNavigation();
                 }
             }
         });
@@ -596,11 +569,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }else if (previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
                 destination = ORIGIN;
             }
-            /*else if(previousEtat.equals("offRoute") && (preOffRoute.equals("chargé") ||preOffRoute.equals("enChargement") )){
-                destination = DESTINATION;
-            }else if(previousEtat.equals("offRoute") && (preOffRoute.equals("déchargé") ||preOffRoute.equals("enDéchargement"))){
-                destination = ORIGIN;
-            }*/
         }else{
             if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
                 destination = DESTINATION;
@@ -657,7 +625,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
-        remainingTime = routeProgress.durationRemaining();
+        this.remainingTime = routeProgress.durationRemaining() * 1.25;
 
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
@@ -797,19 +765,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
-        /*MapboxDirections.Builder b = MapboxDirections.builder()
-                .baseUrl("https://router.project-osrm.org/route/v1/")
-                .origin(roadPoint.get(0))
-                .destination(roadPoint.get(roadPoint.size() - 1));
-        if (roadPoint.size() > 2) {
-            for (int i = 1; i < roadPoint.size() - 1; i++) {
-                b.addWaypoint(roadPoint.get(i));
-            }
-        }*/
+
 
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
-                //.accessToken(getString(R.string.mapbox_access_token))
                 .baseUrl(getString(R.string.base_url))
                 //.baseUrl("https://router.project-osrm.org/route/v1/")
                 .user("gh")
@@ -1083,6 +1042,5 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
         modifyTimeDiffTruckAheadIfNecessary();
     });
-
 
 }
