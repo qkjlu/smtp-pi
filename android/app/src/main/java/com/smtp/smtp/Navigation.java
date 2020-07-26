@@ -333,6 +333,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.on("chantier/user/disconnected", onUserDisconnected);
+        mSocket.on("chantier/detournement",onDetournement);
         mSocket.connect();
         connectToChantier();
 
@@ -357,6 +358,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.off("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.off("chantier/user/disconnected", onUserDisconnected);
+        mSocket.off("chantier/detournement", onUserDisconnected);
         navigationView.onDestroy();
     }
 
@@ -1034,6 +1036,25 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 myList.deleteUser(senderId);
             } else {
                 Log.d(TAG, " impossible to delete : user not in the list ");
+            }
+
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            return;
+        }
+        modifyTimeDiffTruckAheadIfNecessary();
+    });
+
+    private Emitter.Listener onDetournement = args -> runOnUiThread(() -> {
+        JSONObject data = (JSONObject) args[0];
+        String userIdToMove;
+        try {
+            userIdToMove = data.getString("userId");
+            if (userIdToMove.equals(userId)) {
+                connectedToChantier = false;
+                mSocket.emit("chantier/disconnect");
+                chantierId = data.getString("userId");
+
             }
 
         } catch (JSONException e) {

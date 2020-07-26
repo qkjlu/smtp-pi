@@ -2,30 +2,20 @@ import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
 import {
-    Text,
     View,
-    FlatList,
-    Dimensions,
     StyleSheet,
-    PermissionsAndroid,
     AsyncStorage,
     AppState,
     ActivityIndicator
 } from "react-native";
 import TruckMarker from './TruckMarker';
 import {Marker, Circle} from "react-native-maps";
-import ConnectionToServer from '../Connection/ConnectionToServer';
-import * as Location from 'expo-location';
-import * as Permissions from 'expo-permissions';
 import axios from 'axios';
-import CraneView from "../Crane/CraneView";
 import io from "socket.io-client";
 import KeepAwake from 'react-native-keep-awake';
 import Config from "react-native-config";
-import * as RootNavigation from '../../navigation/RootNavigation.js';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import {getChantiers} from "../globalHelper/axios";
-import {get} from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import DetournementCard from "./DetournementCard";
 let func = require('../globalHelper/axios');
 
 
@@ -57,16 +47,15 @@ export default class MapTest extends React.Component {
             etat : null,
             appState: AppState.currentState,
             chantiers : [],
-            ready : false
+            ready : false,
+            showDetournementCard : false,
+            userDetournementCard : null,
         };
     }
 
     async componentDidMount(){
         this.setState({chantiers : await this.getChantiers()});
-        console.log("this.state.chantiers before = "+JSON.stringify(this.state.chantiers))
-        console.log("size "+ this.state.chantiers.length)
         await this.enableConnection();
-        console.log("this.state.chantiers edit = "+JSON.stringify(this.state.chantiers))
         AppState.addEventListener('change', this.handleAppStateChange);
     }
 
@@ -83,10 +72,7 @@ export default class MapTest extends React.Component {
                     alert(response.status);
                     return response.status;
                 }
-                console.log(response.status);
-                //console.log(response.data)
                 return response.data;
-
             })
             .catch(function (error) {
                 alert(error)
@@ -96,15 +82,14 @@ export default class MapTest extends React.Component {
 
     // enable socket connection
     async enableConnection(){
-        console.log("launch enable !");
         const userId  = await AsyncStorage.getItem('userId');
-        for (let i = 0; i < this.state.chantiers.length ; i++){
+        for (let i = 0; i < this.state.chantiers.length  ; i++){
             let chantiers = [...this.state.chantiers]
             let chantier =  {...chantiers[i]}
-            chantier.chargement = func(chantier.lieuChargementId)
-            chantier.dechargement = func(chantier.lieuDéchargementId)
+            console.log("chantier : " + chantier + " n° " + i)
+            chantier.chargement = await func(chantier.lieuChargementId)
+            chantier.dechargement = await func(chantier.lieuDéchargementId)
             chantiers[i] = chantier
-            console.log("MODIF CHANTIER ----- "+ JSON.stringify(chantier))
             this.setState({chantiers : chantiers})
             await this.socket.emit("chantier/connect", {
                 "userId" : userId,
@@ -116,7 +101,6 @@ export default class MapTest extends React.Component {
             await this.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
         }
         this.setState({ready : true})
-        console.log("this.state.chantiers = "+JSON.stringify(this.state.chantiers))
     }
 
     // close connection to socket
@@ -131,9 +115,12 @@ export default class MapTest extends React.Component {
         AppState.removeEventListener('change', this.handleAppStateChange);
     }
 
-    // update map when an user connect or disconnect
+    //update map when an user connect or disconnect
     shouldComponentUpdate(nextProps, nextState) {
-        return (nextState.users.length != this.state.users.length) || (nextState.chantiers.length != this.state.chantiers.length);
+        return (nextState.users.length !== this.state.users.length)
+            || (nextState.ready !== this.state.ready)
+            || (nextState.chantiers.length !== this.state.chantiers.length)
+            || (nextState.showDetournementCard !== this.state.showDetournementCard);
     }
 
     // handle when app is in foreground/background
@@ -170,9 +157,9 @@ export default class MapTest extends React.Component {
         console.log("Admin: ACK connection");
     }
 
-    async handleConnection(data){
-        console.log("Admin: " + data.userId +" is connected")
+    handleConnection(data){
         // check if the user connecting is an admin
+        console.log("data : "+ JSON.stringify(data))
         let isAdmin = Object.keys(data.coordinates).length === 0 && data.coordinates.constructor === Object;
         if(!isAdmin){
             let copy = this.state.users.slice();
@@ -244,46 +231,60 @@ export default class MapTest extends React.Component {
         }
     }
 
-    render() {
 
+    render() {
         if (!this.state.ready){
             return (<ActivityIndicator color="red" size="large"/>);
         }else {
-            console.log("chantiers : "+ JSON.stringify(this.state.chantiers))
-            console.log("chantiers[0] : "+ this.state.chantiers[0])
             return (
-                <View>
-                    <View>
-                        <KeepAwake/>
-                        <MapView
-                            style={styles.map}
-                            region={this.state.currentRegion}
-                            onRegionChangeComplete={this.onRegionChangeComplete}
-                        >
-                            {
-                                this.state.chantiers.map((chantier, index) => {
-                                    console.log("chantier ? : "+JSON.stringify(chantier))
-                                        return (
-                                                <Marker coordinate={chantier.chargement} title={"chargement"}
-                                                    pinColor={this.color[index]}/>,
-                                                <Marker coordinate={chantier.dechargement} title={"dechargement"}
-                                                        pinColor={this.color[index]}/>,
-                                                <Circle key={"chargementCircle"+index} center={chantier.chargement}
-                                                        radius={chantier.chargement.rayon}/>,
-                                                <Circle key={"dechargementCircle"+index} center={chantier.dechargement}
-                                                        radius={chantier.dechargement.rayon}/>
-                                        )
-                                    }
-                                )}
-
-                            {this.state.users.map(marker => {
-                                    return (
-                                        <TruckMarker key={marker.userId} user={marker} socket={this.socket}/>
-                                    )
-                                }
-                            )}
-                        </MapView>
-                    </View>
+                <View style={{flex : 1}}>
+                    <KeepAwake/>
+                    <MapView
+                        style={styles.map}
+                        region={this.state.currentRegion}
+                        onRegionChangeComplete={this.onRegionChangeComplete}
+                    >
+                        {this.state.chantiers.map((chantier, index) => {
+                                let chargement = {latitude : chantier.chargement.latitude, longitude : chantier.chargement.longitude};
+                                    return <Marker key={"chargementMarker"+ index} coordinate={chargement} title={"chargement "+chantier.nom} pinColor={this.color[index]}/>
+                                    })
+                        }
+                        {this.state.chantiers.map((chantier, index) => {
+                                    let dechargement = {latitude : chantier.dechargement.latitude, longitude : chantier.dechargement.longitude};
+                                    return <Marker key={"dechargementMarker"+ index} coordinate={dechargement} title={"dechargement "+chantier.nom} pinColor={this.color[index]}/>
+                                })
+                        }
+                        {this.state.chantiers.map((chantier, index) => {
+                            let chargement = {latitude : chantier.chargement.latitude, longitude : chantier.chargement.longitude};
+                            return <Circle key={"chargementCircle" + index} center={chargement} radius={chantier.chargement.rayon}/>
+                                })
+                        }
+                        {this.state.chantiers.map((chantier, index) => {
+                            let dechargement = {latitude : chantier.dechargement.latitude, longitude : chantier.dechargement.longitude};
+                            return <Circle key={"dechargementCircle" + index} center={dechargement} radius={chantier.dechargement.rayon}/>
+                            })
+                        }
+                        {this.state.users.map(marker => {
+                                return (
+                                    <TruckMarker key={marker.userId}
+                                                    user={marker}
+                                                    socket={this.socket}
+                                                    singleChantier = {false}
+                                                    editUser={ () => this.setState({userDetournementCard: marker})}
+                                                    toggleShow = { () => this.setState(prevState => ({showDetournementCard : !prevState.showDetournementCard})) }
+                                    />
+                                )
+                            })
+                        }
+                    </MapView>
+                    {(this.state.showDetournementCard && this.state.userDetournementCard !== null) &&
+                    <DetournementCard
+                        showDetournementCard={ this.state.showDetournementCard }
+                        user={ this.state.userDetournementCard }
+                        chantiers = { this.state.chantiers }
+                        toggleShow={() => this.setState(prevState => ({showDetournementCard: !prevState.showDetournementCard}))}
+                    />
+                    }
                 </View>
             )
         }
@@ -294,6 +295,7 @@ const styles = StyleSheet.create({
     map: {
         width : wp('100%'),
         height: hp('100%'),
+        flex : 1,
     },
     mapCrane: {
         width : wp('100%'),
