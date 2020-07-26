@@ -52,6 +52,11 @@ export default class Setup{
     return updateNeeded;
   }
 
+  async getCurrentVersion(){
+    let currentVersion = await VersionCheck.getCurrentVersion();
+    return currentVersion;
+  }
+
   // check if the current version of app is the latest.
   async checkUpdate(){
     try{

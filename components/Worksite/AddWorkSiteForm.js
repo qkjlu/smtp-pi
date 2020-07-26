@@ -9,11 +9,13 @@ import {MaterialIcons, Ionicons} from "@expo/vector-icons";
 import Config from "react-native-config";
 import InputText from "../InputText";
 import ValidateButton from "../ValidateButton";
+import * as RootNavigation from '../../navigation/RootNavigation.js';
 
 export default class AddWorkSiteForm extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
+        this.refresh = this.refresh.bind(this);
         this.state = {
             name: '',
             idPlace1: '',
@@ -24,14 +26,23 @@ export default class AddWorkSiteForm extends React.Component {
     }
 
     async componentDidMount() {
-        const token  = await AsyncStorage.getItem('token');
-        axios({
-            method: 'get',
-            url: Config.API_URL + 'lieux',
-            headers: {'Authorization': 'Bearer ' + token}
-        })
-            .then( response => { this.setState({places: response.data});})
-            .catch((error) => { console.log(error); })
+        await this.getPlaces();
+    }
+
+    //refresh the page when a place is added
+    async refresh(){
+      await this.getPlaces();
+    }
+
+    async getPlaces(){
+      const token  = await AsyncStorage.getItem('token');
+      axios({
+          method: 'get',
+          url: Config.API_URL + 'lieux',
+          headers: {'Authorization': 'Bearer ' + token}
+      })
+          .then( response => { this.setState({places: response.data});})
+          .catch((error) => { console.log(error); })
     }
 
     async formSubmit(){
@@ -70,6 +81,10 @@ export default class AddWorkSiteForm extends React.Component {
         }
     }
 
+    addPlace(){
+      RootNavigation.navigate("AddPlace");
+    }
+
     render() {
             return (
                 <View style={{padding : 20}}>
@@ -79,16 +94,24 @@ export default class AddWorkSiteForm extends React.Component {
                             <MaterialIcons
                                 name={'add'}
                                 size={24}
-                                onPress={() => this.setState({ showNewPlaceForm: !this.state.showNewPlaceForm }) }
+                                onPress={() =>  this.addPlace()}
                             />
                             <Text style={{fontWeight:"bold"}}> lieu </Text>
+                        </View>
+                        <View style={{flex:2, flexDirection:"row", paddingTop :5}}>
+                            <MaterialIcons
+                                name={'refresh'}
+                                size={24}
+                                onPress={() => this.refresh()}
+                            />
+                          <Text style={{fontWeight:"bold"}}>recharger</Text>
                         </View>
                     </View>
                     <View style={{padding : 20}}>
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
                                value={this.state.name} placeholder={"Nom du chantier"}/>
 
-                    <AddPlaceForm  style={{padding: 20}} show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />
+                             {/*<AddPlaceForm  style={{padding: 20}} show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />*/}
 
                     <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"} places={this.state.places}/>
 
