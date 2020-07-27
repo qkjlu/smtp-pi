@@ -80,13 +80,13 @@ export default class DetournementCard extends React.Component {
         let dechargementLat = this.state.pickerSelected.dechargement.latitude;
         let chantierId = this.state.pickerSelected.id;
         let userId = this.props.user.userId;
-        let etat = this.props.user.etat;
         let obj = {
             "chantierId" : chantierId,
             "userId" : userId,
-            "origin" : [chargementLat,chargementLong],
-            "destination" : [dechargementLat,dechargementLong],
-            "etat" : etat
+            "originLong" :chargementLong,
+            "originLat" : chargementLat,
+            "destinationLong" : dechargementLong,
+            "destinationLat" : dechargementLat,
         }
         await this.socket.emit("chantier/detournement",obj)
     }

@@ -427,7 +427,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     @Override
     public void onNavigationReady(boolean isRunning) {
         Log.d(TAG, "OnNavigationReady");
-
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers().clear();
         fetchRayon();
         fetchRoute();
         modifyTimeDiffTruckAheadIfNecessary();
@@ -1041,7 +1041,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             } else {
                 Log.d(TAG, " impossible to delete : user not in the list ");
             }
-
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
             return;
@@ -1049,6 +1048,39 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         modifyTimeDiffTruckAheadIfNecessary();
     });
 
+    private void rerouting(JSONObject data) throws JSONException {
+        navigationView.stopNavigation();
+        connectedToChantier = false;
+        mSocket.emit("chantier/disconnect");
+        chantierId = data.getString("chantierId");
+        Double originLong = data.getDouble("originLong");
+        Double originLat = data.getDouble("originLat");
+        Double destinationLong = data.getDouble("destinationLong");
+        Double destinationLat = data.getDouble("destinationLat");
+        ORIGIN = Point.fromLngLat(originLong,originLat);
+        DESTINATION = Point.fromLngLat(destinationLong,destinationLat);
+        myList = new ListUser();
+        myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
+        connectToChantier();
+        navigationView.retrieveNavigationMapboxMap().clearMarkers();
+        fetchRayon();
+        fetchRoute();
+        modifyTimeDiffTruckAheadIfNecessary();
+
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        Icon icon = iconFactory.fromResource(R.drawable.icon_chargement);
+        Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
+
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Chargement")
+                .position(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .icon(icon)
+        );
+
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Déchargement")
+                .position(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()))
+                .icon(icon2)
+        );
+    }
 
     private Emitter.Listener onDetournement = args -> runOnUiThread(() -> {
         JSONObject data = (JSONObject) args[0];
@@ -1056,10 +1088,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         try {
             userIdToMove = data.getString("userId");
             if (userIdToMove.equals(userId)) {
-                connectedToChantier = false;
-                mSocket.emit("chantier/disconnect");
-                chantierId = data.getString("userId");
-
+                rerouting(data);
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
