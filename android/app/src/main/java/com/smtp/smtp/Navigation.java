@@ -62,8 +62,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 
 import io.socket.client.IO;
+import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import retrofit2.Call;
@@ -263,6 +266,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Log.d(TAG, "OnCreate");
         ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         Log.d(TAG, "LargeMemoryClass : " + am.getLargeMemoryClass());
+
+        AndroidLoggingHandler.reset(new AndroidLoggingHandler());
+        java.util.logging.Logger.getLogger(Socket.class.getName()).setLevel(Level.FINEST);
+        java.util.logging.Logger.getLogger(io.socket.engineio.client.Socket.class.getName()).setLevel(Level.FINEST);
+        java.util.logging.Logger.getLogger(Manager.class.getName()).setLevel(Level.FINEST);
 
         Thread.setDefaultUncaughtExceptionHandler(UEH);
 
@@ -511,55 +519,50 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     private float getDistanceFromDestination(Location location) {
         float[] distanceFromDestination = new float[3];
-        Point destination = null;
+        //Point destination = null;
 		Log.d("offT", " myEtat "+ myEtat);
         Log.d("offT", " isOfRoute "+ isOffRoute);
         Log.d("offT", " preOffRoute "+ preOffRoute);
         if(isOffRoute){
             if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
-                destination = DESTINATION;
+                //destination = DESTINATION;
             }
             if(preOffRoute.equals("enDéchargement") || myEtat.equals("enDéchargement")){
                 myEtat = "enDéchargement";
                 preOffRoute = "";
                 isOffRoute = false;
-                destination = DESTINATION;
+                //destination = DESTINATION;
             }
             if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé") ) {
-                destination = ORIGIN;
+                //destination = ORIGIN;
             }
             if(preOffRoute.equals("enChargement") || myEtat.equals("enChargement")){
                 myEtat = "enChargement";
                 preOffRoute = "";
                 isOffRoute = false;
-                destination = DESTINATION;
+                //destination = DESTINATION;
             }
         }else if(myEtat.equals("pause")) {
             if(previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")){
-                destination = DESTINATION;
+                //destination = DESTINATION;
             }else if (previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
-                destination = ORIGIN;
+                //destination = ORIGIN;
             }
-            /*else if(previousEtat.equals("offRoute") && (preOffRoute.equals("chargé") ||preOffRoute.equals("enChargement") )){
-                destination = DESTINATION;
-            }else if(previousEtat.equals("offRoute") && (preOffRoute.equals("déchargé") ||preOffRoute.equals("enDéchargement"))){
-                destination = ORIGIN;
-            }*/
         }else{
             if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
-                destination = DESTINATION;
+                //destination = DESTINATION;
             }else if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
-                destination = ORIGIN;
+                //destination = ORIGIN;
             }
         }
-        if (destination == null) {
-            throw new Error("getDistanceFromDestination: destination cannot be null");
-        }
+       // if (destination == null) {
+            //throw new Error("getDistanceFromDestination: destination cannot be null");
+        //}
         Location.distanceBetween(
                 location.getLatitude(),
                 location.getLongitude(),
-                destination.latitude(),
-                destination.longitude(),
+                DESTINATION.latitude(),
+                DESTINATION.longitude(),
                 distanceFromDestination
         );
         return distanceFromDestination[0];
@@ -695,6 +698,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         for (Waypoint waypoint : initialWaypoints) {
             points.add(waypoint.getPoint());
         }
+        points.add(DESTINATION);
         roadPoint = points;
     }
 
@@ -922,6 +926,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         }
         if (userRerouted) {
+            Point tmp = ORIGIN;
+            ORIGIN = DESTINATION;
+            DESTINATION = tmp;
             fetchRoute();
         }
         return userRerouted;
