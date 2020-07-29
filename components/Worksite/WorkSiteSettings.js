@@ -4,12 +4,14 @@ import React from "react";
 import ValidateButton from '../ValidateButton';
 import axios from 'axios';
 import Config from "react-native-config";
-
+import {Button} from 'react-native-elements'
+import * as RootNavigation from '../../navigation/RootNavigation.js';
 
 export default class WorkSiteSettings extends React.Component {
   constructor(props) {
     super(props);
     this.requestLieu = this.requestLieu.bind(this);
+    this.setGPSLocationPage = this.setGPSLocationPage.bind(this);
     this.state = {
         chargement : null,
         dechargement : null,
@@ -52,6 +54,31 @@ export default class WorkSiteSettings extends React.Component {
       });
   }
 
+  // update state after update GPS location of a place
+  componentDidUpdate(prevProps){
+    console.log(prevProps.route.params);
+    if(this.props.route.params.marker !== undefined){
+      if(this.props.route.params.type === "chargement"){
+        if(this.state.chargement.latitude !== this.props.route.params?.marker.coordinate.latitude){
+          // copy object to avoid immutability
+          let copy = Object.assign({}, this.state.chargement);
+          copy.latitude = this.props.route.params?.marker.coordinate.latitude;
+          copy.longitude = this.props.route.params?.marker.coordinate.longitude;
+          this.setState({
+            chargement :copy
+          })
+        }
+      }else{
+        let copy = Object.assign({}, this.state.dechargement);
+        copy.latitude = this.props.route.params?.marker.coordinate.latitude;
+        copy.longitude = this.props.route.params?.marker.coordinate.longitude;
+        this.setState({
+          dechargement :copy
+        })
+      }
+    }
+  }
+
   async updateLieu(lieu){
       let token  = await AsyncStorage.getItem('token');
       let data = {
@@ -73,11 +100,18 @@ export default class WorkSiteSettings extends React.Component {
                   return response.status;
               }
               console.log(response.status);
+              alert("Le lieu a bien été modifié");
               return response.status;
           })
           .catch((error) => {
               console.log(error.toString());
           })
+  }
+
+  setGPSLocationPage(type){
+    let lat = type === "chargement" ? this.state.chargement.latitude : this.state.dechargement.latitude;
+    let lon = type === "chargement" ? this.state.chargement.longitude : this.state.dechargement.longitude;
+    RootNavigation.navigate("setGPSLocation", {longitude:lon, latitude: lat, origin : "Settings", type: type });
   }
 
   render(){
@@ -97,24 +131,18 @@ export default class WorkSiteSettings extends React.Component {
                     ...this.state.chargement,
                         adresse: adresse,
                     }})} value={this.state.chargement.adresse.toString()} placeholder={" adresse "}/>
-                <Text> Latitude  :  </Text>
-                <TextInput style={style.textinput} onChangeText={ (latitude) => this.setState({ chargement:{
-                        ...this.state.chargement,
-                        latitude: latitude,
-                    }})} value={this.state.chargement.latitude.toString()} placeholder={" latitude "}/>
-                <Text> Longitude  :  </Text>
-                <TextInput style={style.textinput} onChangeText={ (longitude) => this.setState({ chargement:{
-                        ...this.state.chargement,
-                        longitude: longitude,
-                    }})} value={this.state.chargement.longitude.toString()} placeholder={" longitude "}/>
                 <Text> Rayon : </Text>
                 <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ chargement:{
                     ...this.state.chargement,
                     rayon: rayon,
                 }})} value={this.state.chargement.rayon.toString()} placeholder={" rayon de chargement"}/>
 
-                <ValidateButton text={"Modifier"} onPress={ () => this.updateLieu(this.state.chargement) }/>
+                <Button
+                  onPress={() => this.setGPSLocationPage("chargement")}
+                  title={"Modifier les coordonnées"}
+                />
 
+                <ValidateButton text={"Modifier"} onPress={ () => this.updateLieu(this.state.chargement) }/>
 
                 <Text> Modification Déchargement :  </Text>
                 <Text> Nom du lieu  :  </Text>
@@ -122,21 +150,16 @@ export default class WorkSiteSettings extends React.Component {
                         ...this.state.dechargement,
                         adresse: adresse,
                     }})} value={this.state.dechargement.adresse.toString()} placeholder={" adresse "}/>
-                <Text> Latitude  :  </Text>
-                <TextInput style={style.textinput} onChangeText={ (latitude) => this.setState({ dechargement:{
-                        ...this.state.dechargement,
-                        latitude: latitude,
-                    }})} value={this.state.dechargement.latitude.toString()} placeholder={" latitude "}/>
-                <Text> Longitude  :  </Text>
-                <TextInput style={style.textinput} onChangeText={ (longitude) => this.setState({ dechargement:{
-                        ...this.state.dechargement,
-                        longitude: longitude,
-                    }})} value={this.state.dechargement.longitude.toString()} placeholder={" longitude "}/>
+
                 <Text> Rayon : </Text>
                 <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ dechargement:{
                         ...this.state.dechargement,
                         rayon: rayon,
                     }})} value={this.state.dechargement.rayon.toString()} placeholder={" rayon de déchargement"}/>
+                <Button
+                  onPress={() => this.setGPSLocationPage("dechargement")}
+                  title={"Modifier les coordonnées"}
+                />
                 <ValidateButton text={"Modifier"} onPress={() => this.updateLieu(this.state.dechargement) }/>
             </ScrollView>
         </View>

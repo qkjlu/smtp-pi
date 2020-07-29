@@ -83,11 +83,13 @@ export default class CraneView extends React.Component {
         return (
             <View>
                 <View style={styles.progressBar}>
+                  <ScrollView horizontal={true}>
                     <Icon style={{paddingRight:5}} name="map-marker" size={45} color="green" />
                       {this.state.myTrucks.map(truck => {
                               return (<TruckArrivalTime key={truck.userId} truck={truck}/>)
                           }
                       )}
+                  </ScrollView>
                 </View>
                 {/*<StopButtons/>*/}
             </View>

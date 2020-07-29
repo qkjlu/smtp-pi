@@ -1,10 +1,16 @@
 package com.smtp.smtp;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -127,6 +133,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Button buttonPause;
     private Button buttonReprendre;
     private boolean onPause = false;
+    private NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
 
     // Connection to the socket server
     {
@@ -297,8 +304,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         buttonReprendre = findViewById(R.id.buttonReprendre);
         navigationView.onCreate(savedInstanceState);
 
-        retrieveLocation();
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkStateReceiver, filter);
+        registerReceiver(broadcastReceiver, new IntentFilter("NO_INTERNET"));
 
+        retrieveLocation();
     }
 
     private void retrieveLocation() {
@@ -335,6 +346,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         mSocket.on("chantier/user/sentCoordinates", onUserSentCoordinates);
         mSocket.on("chantier/connect/success", onConnectToChantierSuccess);
         mSocket.on("chantier/user/disconnected", onUserDisconnected);
+        mSocket.on("chantier/detournement",onDetournement);
         mSocket.connect();
         connectToChantier();
 
@@ -350,6 +362,15 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         disconnectFromChantier();
         mSocket.disconnect();
         mSocket.off();
+
+        //unregister receiver;
+        unregisterReceiver(broadcastReceiver);
+        unregisterReceiver(networkStateReceiver);
+
+        mSocket.off("chantier/user/sentCoordinates", onUserSentCoordinates);
+        mSocket.off("chantier/connect/success", onConnectToChantierSuccess);
+        mSocket.off("chantier/user/disconnected", onUserDisconnected);
+        mSocket.off("chantier/detournement", onUserDisconnected);
 
         navigationView.onDestroy();
     }
@@ -414,7 +435,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     @Override
     public void onNavigationReady(boolean isRunning) {
         Log.d(TAG, "OnNavigationReady");
-
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers().clear();
         fetchRayon();
         fetchRoute();
         modifyTimeDiffTruckAheadIfNecessary();
@@ -433,7 +454,31 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 .icon(icon2)
         );
 
-        //navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
+    }
+
+
+    //brodcast Receiver for handle connection change
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            navigationView.stopNavigation();
+            showAlertDialog();
+        }
+    };
+
+    // Alert to show when internet is disabled
+    private void showAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Erreur Réseaux");
+        builder.setMessage("Pas de connexion internet")
+                .setCancelable(false);
+        builder.setPositiveButton("Quitter", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     // listener for paused and reprendre buttons
@@ -444,7 +489,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             public void onClick(View arg0) {
                 // pause is clicked
                 if (!onPause){
-                    //navigationView.stopNavigation();
                     timeDiffTextView.setVisibility(View.INVISIBLE);
                     buttonPause.setVisibility(View.INVISIBLE);
                     buttonPause.setEnabled(false);
@@ -457,10 +501,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     }
                     myEtat = "pause";
                     onPause = true;
-                    //Intent intent = new Intent();
-                    //intent.setAction(getPackageName() + ".START_PAUSE");
-                    //sendBroadcast(intent);
-                    //pausedThread.reprendre();
                 }
             }
         });
@@ -476,11 +516,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
                     myEtat = previousEtat;
-                    //Intent intent = new Intent();
-                    //intent.setAction(getPackageName() + ".STOP_PAUSE");
-                    //sendBroadcast(intent);
-                    //pausedThread.pause();
-                    //launchNavigation();
                 }
             }
         });
@@ -604,7 +639,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
-        remainingTime = routeProgress.durationRemaining();
+        this.remainingTime = routeProgress.durationRemaining() * 1.25;
 
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
@@ -745,19 +780,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
-        /*MapboxDirections.Builder b = MapboxDirections.builder()
-                .baseUrl("https://router.project-osrm.org/route/v1/")
-                .origin(roadPoint.get(0))
-                .destination(roadPoint.get(roadPoint.size() - 1));
-        if (roadPoint.size() > 2) {
-            for (int i = 1; i < roadPoint.size() - 1; i++) {
-                b.addWaypoint(roadPoint.get(i));
-            }
-        }*/
+
 
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
-                //.accessToken(getString(R.string.mapbox_access_token))
                 .baseUrl(getString(R.string.base_url))
                 //.baseUrl("https://router.project-osrm.org/route/v1/")
                 .user("gh")
@@ -1027,7 +1053,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             } else {
                 Log.d(TAG, " impossible to delete : user not in the list ");
             }
-
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
             return;
@@ -1035,5 +1060,52 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         modifyTimeDiffTruckAheadIfNecessary();
     });
 
+    private void rerouting(JSONObject data) throws JSONException {
+        navigationView.stopNavigation();
+        connectedToChantier = false;
+        mSocket.emit("chantier/disconnect");
+        chantierId = data.getString("chantierId");
+        Double originLong = data.getDouble("originLong");
+        Double originLat = data.getDouble("originLat");
+        Double destinationLong = data.getDouble("destinationLong");
+        Double destinationLat = data.getDouble("destinationLat");
+        ORIGIN = Point.fromLngLat(originLong,originLat);
+        DESTINATION = Point.fromLngLat(destinationLong,destinationLat);
+        myList = new ListUser();
+        myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
+        connectToChantier();
+        navigationView.retrieveNavigationMapboxMap().clearMarkers();
+        fetchRayon();
+        fetchRoute();
+        modifyTimeDiffTruckAheadIfNecessary();
 
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        Icon icon = iconFactory.fromResource(R.drawable.icon_chargement);
+        Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
+
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Chargement")
+                .position(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .icon(icon)
+        );
+
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Déchargement")
+                .position(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()))
+                .icon(icon2)
+        );
+    }
+
+    private Emitter.Listener onDetournement = args -> runOnUiThread(() -> {
+        JSONObject data = (JSONObject) args[0];
+        String userIdToMove;
+        try {
+            userIdToMove = data.getString("userId");
+            if (userIdToMove.equals(userId)) {
+                rerouting(data);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            return;
+        }
+        modifyTimeDiffTruckAheadIfNecessary();
+    });
 }

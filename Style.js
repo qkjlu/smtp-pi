@@ -1,3 +1,8 @@
+import { Dimensions} from "react-native";
+
+const { width, height } = Dimensions.get("window");
+const CARD_HEIGHT = 220;
+const CARD_WIDTH = width * 0.8;
 
 export default {
     container:{
@@ -113,4 +118,64 @@ export default {
         marginBottom: 15,
     },
 
+    // Marker Custom
+    bubble : {
+        flexDirection : 'column',
+        alignSelf: "flex-start",
+        backgroundColor : '#fff',
+        borderColor: "#cccccc",
+        width: 150,
+    },
+
+    arrow: {
+        backgroundColor: "transparent",
+        borderColor : "transparent",
+        borderTopColor : "#fff",
+        borderWidth: 16,
+        alignSelf: 'center',
+        marginTop : -32,
+    },
+
+    arrowBorder: {
+        backgroundColor: "transparent",
+        borderColor : "transparent",
+        borderTopColor : "#007a87",
+        borderWidth: 16,
+        alignSelf: 'center',
+        marginTop : -0.5,
+    },
+
+    name : {
+        fontSize: 16,
+        marginBottom: 5,
+    },
+
+    card: {
+        flexDirection : "row",
+        position : "absolute",
+        backgroundColor: "#FFF",
+        borderRadius : 5,
+        marginHorizontal: 10,
+        shadowColor: "#000",
+        shadowRadius: 5,
+        shadowOpacity: 0.3,
+        bottom: 5,
+        left: width*0.07,
+        right: 0,
+        height: CARD_HEIGHT,
+        width: CARD_WIDTH,
+        overflow: "hidden",
+    },
+    textContent: {
+        flex: 2,
+        padding: 10,
+    },
+    cardTitle: {
+        fontSize: 12,
+        fontWeight: "bold",
+    },
+    cardDescription: {
+        fontSize: 12,
+        color: "#444",
+    },
 }

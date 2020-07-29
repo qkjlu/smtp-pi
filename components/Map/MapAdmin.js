@@ -4,7 +4,6 @@ import { UrlTile} from 'react-native-maps'
 import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid,AsyncStorage, AppState} from "react-native";
 import TruckMarker from './TruckMarker';
 import {Marker, Circle} from "react-native-maps";
-import ConnectionToServer from '../Connection/ConnectionToServer';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import axios from 'axios';
@@ -207,7 +206,7 @@ export default class MapAdmin extends React.Component {
                     <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
                     <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
                     {this.state.users.map(marker => {
-                            return (<TruckMarker key={marker.userId} user={marker} socket={this.socket}/>)
+                            return (<TruckMarker key={marker.userId} user={marker} singleChantier = {true} socket={this.socket}/>)
                         }
                     )}
                 </MapView>

@@ -356,7 +356,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
-        this.mapboxMap.setStyle(Style.SATELLITE_STREETS, style -> {
+        this.mapboxMap.setStyle(Style.TRAFFIC_DAY, style -> {
             this.mapboxMap.setOnMarkerClickListener(this);
             this.mapboxMap.addOnMapLongClickListener(this);
             initMapRoute();

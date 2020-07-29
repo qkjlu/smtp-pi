@@ -1,9 +1,9 @@
 import React from "react";
 import {Callout, Marker} from 'react-native-maps'
-import {Text, View, StyleSheet,AsyncStorage} from "react-native";
+import {Text, View, StyleSheet, AsyncStorage, Button} from "react-native";
 import axios from 'axios';
 import Config from "react-native-config";
-
+import Style from "../../Style";
 
 export default class TruckMarker extends React.Component {
   constructor(props) {
@@ -11,6 +11,7 @@ export default class TruckMarker extends React.Component {
       this.handleCoordinates = this.handleCoordinates.bind(this);
       this.getCamionneurInfo = this.getCamionneurInfo.bind(this);
       this.colorForThisEtat = this.colorForThisEtat.bind(this);
+      this.detournement = this.detournement.bind(this);
       this.state = {
         socket : this.props.socket,
         latitude : this.props.user.coordinates.latitude,
@@ -18,12 +19,13 @@ export default class TruckMarker extends React.Component {
         nom: "",
         prenom : "",
         etat : this.props.user.etat,
+        chantier : "",
       }
   }
 
   async componentDidMount(){
-    //const socket = this.props.socket;
-    this.getCamionneurInfo();
+    await this.getCamionneurInfo();
+    this.setState({chantier : await this.getChantier(this.props.user.chantierId)})
     await this.state.socket.on("chantier/user/sentCoordinates", this.handleCoordinates);
   }
 
@@ -52,6 +54,28 @@ export default class TruckMarker extends React.Component {
         console.log(error);
       })
   }
+
+    async getChantier(chantierId){
+        const token = await AsyncStorage.getItem('token');
+        let url = Config.API_URL+ "chantiers/"+ chantierId;
+        return await axios({
+            method : 'get',
+            url : url,
+            headers: {'Authorization': 'Bearer ' + token},
+        })
+            .then( response => {
+                if(response.status != 200){
+                    alert(response.status);
+                    return response.status;
+                }
+                console.log(response.status);
+                return response.data;
+            })
+            .catch(function (error) {
+                alert(error)
+                console.log(error);
+            });
+    }
 
   async handleCoordinates(data){
       console.log("Marker: coordinates receive: " + JSON.stringify(data));
@@ -85,18 +109,51 @@ export default class TruckMarker extends React.Component {
       }
   }
 
+  async detournement() {
+        await this.props.editUser();
+        this.props.toggleShow()
+  }
   render() {
-    return(
-      <Marker
-          key = {this.props.user.userId + this.state.etat}
-          coordinate={{
-              latitude: this.state.latitude,
-              longitude: this.state.longitude,
-          }}
-          title={this.state.prenom + ' ' + this.state.nom }
-          pinColor={this.colorForThisEtat(this.state.etat)}
-          description={this.state.etat}
-      />
-  )
+      if(this.props.singleChantier){
+          return(
+              <Marker
+                  key = {this.props.user.userId + this.state.etat}
+                  coordinate={{
+                      latitude: this.state.latitude,
+                      longitude: this.state.longitude,
+                  }}
+                  pinColor={this.colorForThisEtat(this.state.etat)}
+                  title={this.state.prenom + ' ' + this.state.nom }
+                  description={this.state.etat}
+              >
+              </Marker>
+          )
+      }else{
+          return(
+              <Marker
+                  key = {this.props.user.userId + this.state.etat}
+                  coordinate={{
+                      latitude: this.state.latitude,
+                      longitude: this.state.longitude,
+                  }}
+                  pinColor={this.colorForThisEtat(this.state.etat)}
+                  onCalloutPress={this.detournement}
+              >
+                  <Callout>
+                      <View style={{ borderRadius: 10 }}>
+                          <View style={Style.bubble}>
+                              <Text> {this.state.prenom + ' ' + this.state.nom } </Text>
+                              <Text> {"Etat : " + this.state.etat }  </Text>
+                              <Text> {"Chantier : "+ this.state.chantier.nom} </Text>
+                          </View>
+                          <Button title={"Détourner"} onPress={null}/>
+                          <View style={Style.arrowBorder}></View>
+                          <View style={Style.arrow}></View>
+                      </View>
+                  </Callout>
+              </Marker>
+          )
+      }
+
   }
 }

@@ -5,18 +5,34 @@ import axios from 'axios'
 import style from './../../Style'
 import {MaterialIcons} from "@expo/vector-icons";
 import Config from "react-native-config";
+import {Button} from 'react-native-elements'
+import * as RootNavigation from '../../navigation/RootNavigation.js';
+
 
 export default class AddWorkSiteForm extends React.Component {
 
     constructor(props) {
         super(props);
+        this.setLocation = this.setLocation.bind(this);
+        this.setGPSLocationPage = this.setGPSLocationPage.bind(this);
         this.state = {
             adress: '',
             city: '',
-            lon:'',
-            lat:'',
+            lon: 3.87671,
+            lat: 43.610769,
             rayon: '',
+
         }
+    }
+
+    componentDidUpdate(prevProps){
+      console.log(prevProps.route.params);
+      if(prevProps.route.params?.marker.coordinate.longitude !== this.props.route.params?.marker.coordinate.longitude){
+        this.setState({
+          lon : this.props.route.params?.marker.coordinate.longitude,
+          lat : this.props.route.params?.marker.coordinate.latitude
+        })
+      }
     }
 
     getLieu(){
@@ -58,7 +74,9 @@ export default class AddWorkSiteForm extends React.Component {
                     alert(response.status);
                     return response.status;
                 }
-                this.props.toggleShow();
+                //this.props.toggleShow();
+                alert("le lieu a bien été crée");
+
                 console.log(response.status);
                 return response.status;
             })
@@ -67,24 +85,33 @@ export default class AddWorkSiteForm extends React.Component {
             })
     }
 
+    setGPSLocationPage(){
+      RootNavigation.navigate("setGPSLocation", {longitude:this.state.lon, latitude: this.state.lat, origin:"AddPlace", type: "add" });
+    }
+
+    setLocation(marker){
+      this.setState({
+        lat : marker.coordinate.latitude,
+        lon: marker.coordinate.longitude
+      })
+    }
+
+
     render() {
         return(
-                <Modal visible={this.props.show}>
                     <View style={style.container}>
-                        <MaterialIcons
-                            name={'close'}
-                            size={24}
-                            onPress={() => this.props.toggleShow()}
-                        />
+
                         <Text style={style.getStartedText}> Création d'un lieu manuel en fonction des points GPS :</Text>
                         <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
                                    value={this.state.adress} placeholder={" libellé adresse"}/>
-                        <TextInput style={style.textinput} onChangeText={(lat) => this.setState({lat})}
-                                   value={this.state.lat} placeholder={" Latitude : 43.618172"}/>
-                        <TextInput style={style.textinput} onChangeText={(lon) => this.setState({lon})}
-                                   value={this.state.lon} placeholder={" Longitude : 3.820391"}/>
                         <TextInput style={style.textinput} onChangeText={(rayon) => this.setState({rayon})}
                                    value={this.state.rayon} placeholder={" Rayon du lieu en mètre : exemple 50"}/>
+
+                        <Button
+                          onPress={() => this.setGPSLocationPage()}
+                          title={"Placer le lieu"}
+                        />
+
                         <ValidateButton text={"Ajouter le lieu"} onPress={() => this.postPlace()}/>
                         {/* CODE LIEU AUTOMATIQUE
                             <Text style={style.getStartedText}> Création d'un lieu automatique en fonction d'une adresse :</Text>
@@ -99,7 +126,6 @@ export default class AddWorkSiteForm extends React.Component {
                         }
 
                     </View>
-                </Modal>
             );
     }
 }
