@@ -192,7 +192,7 @@ export default class MapTest extends React.Component {
 
     async getUserInfo(typeUser,userId){
         const token  = await AsyncStorage.getItem('token');
-        return axios({
+        return await axios({
             method: 'get',
             url: Config.API_URL + typeUser + '/' + userId,
             headers: {'Authorization': 'Bearer ' + token},
@@ -240,6 +240,9 @@ export default class MapTest extends React.Component {
                 <View style={{flex : 1}}>
                     <KeepAwake/>
                     <MapView
+                        onPress={() => {
+                            if(this.state.showDetournementCard) this.setState({showDetournementCard : false})
+                        }}
                         style={styles.map}
                         region={this.state.currentRegion}
                         onRegionChangeComplete={this.onRegionChangeComplete}
@@ -264,14 +267,20 @@ export default class MapTest extends React.Component {
                             return <Circle key={"dechargementCircle" + index} center={dechargement} radius={chantier.dechargement.rayon}/>
                             })
                         }
-                        {this.state.users.map(marker => {
+                        {this.state.users.length > 0 && this.state.users.map(marker => {
                                 return (
                                     <TruckMarker key={marker.userId}
                                                     user={marker}
                                                     socket={this.socket}
                                                     singleChantier = {false}
                                                     editUser={ () => this.setState({userDetournementCard: marker})}
-                                                    toggleShow = { () => this.setState(prevState => ({showDetournementCard : !prevState.showDetournementCard})) }
+                                                    toggleShow = { () => {
+                                                        this.setState(prevState => ({showDetournementCard : !prevState.showDetournementCard}));
+                                                    } }
+                                                     show = { () => {
+                                                         this.setState(prevState => ({showDetournementCard : false}));
+                                                         this.setState(prevState => ({showDetournementCard : true}));
+                                                     } }
                                     />
                                 )
                             })
@@ -283,7 +292,12 @@ export default class MapTest extends React.Component {
                         showDetournementCard={ this.state.showDetournementCard }
                         user={ this.state.userDetournementCard }
                         chantiers = { this.state.chantiers }
-                        toggleShow={() => this.setState(prevState => ({showDetournementCard: !prevState.showDetournementCard}))}
+                        toggleShow={() => {
+                            this.setState(prevState => ({showDetournementCard: !prevState.showDetournementCard}))
+                        }}
+                        validate = {() => {
+                            this.setState({users: []})
+                        }}
                     />
                     }
                 </View>

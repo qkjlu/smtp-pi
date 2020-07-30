@@ -35,7 +35,7 @@ export default class TruckMarker extends React.Component {
 
   async getCamionneurInfo(){
     const token  = await AsyncStorage.getItem('token');
-    axios({
+    await axios({
       method: 'get',
       url: Config.API_URL + "camionneurs/" +this.props.user.userId,
       headers: {'Authorization': 'Bearer ' + token},
@@ -69,6 +69,7 @@ export default class TruckMarker extends React.Component {
                     return response.status;
                 }
                 console.log(response.status);
+                console.log("rdata:" + JSON.stringify(response.data));
                 return response.data;
             })
             .catch(function (error) {
@@ -111,7 +112,7 @@ export default class TruckMarker extends React.Component {
 
   async detournement() {
         await this.props.editUser();
-        this.props.toggleShow()
+        this.props.show()
   }
   render() {
       if(this.props.singleChantier){
@@ -125,8 +126,7 @@ export default class TruckMarker extends React.Component {
                   pinColor={this.colorForThisEtat(this.state.etat)}
                   title={this.state.prenom + ' ' + this.state.nom }
                   description={this.state.etat}
-              >
-              </Marker>
+              />
           )
       }else{
           return(
@@ -138,20 +138,8 @@ export default class TruckMarker extends React.Component {
                   }}
                   pinColor={this.colorForThisEtat(this.state.etat)}
                   onCalloutPress={this.detournement}
-              >
-                  <Callout>
-                      <View style={{ borderRadius: 10 }}>
-                          <View style={Style.bubble}>
-                              <Text> {this.state.prenom + ' ' + this.state.nom } </Text>
-                              <Text> {"Etat : " + this.state.etat }  </Text>
-                              <Text> {"Chantier : "+ this.state.chantier.nom} </Text>
-                          </View>
-                          <Button title={"Détourner"} onPress={null}/>
-                          <View style={Style.arrowBorder}></View>
-                          <View style={Style.arrow}></View>
-                      </View>
-                  </Callout>
-              </Marker>
+                  onPress={this.detournement}
+              />
           )
       }
 

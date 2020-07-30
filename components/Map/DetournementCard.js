@@ -90,12 +90,14 @@ export default class DetournementCard extends React.Component {
         }
          console.log("sendDetournement "+JSON.stringify(obj))
         this.props.socket.emit("chantier/detournement",obj)
+         //this.props.toggleShow();
+         this.props.validate();
     }
 
 
     async getCamionneurInfo(){
         const token  = await AsyncStorage.getItem('token');
-        axios({
+        await axios({
             method: 'get',
             url: Config.API_URL + "camionneurs/" +this.props.user.userId,
             headers: {'Authorization': 'Bearer ' + token},
@@ -122,7 +124,7 @@ export default class DetournementCard extends React.Component {
             return(
                 <View style={Style.card}>
                     <View style={Style.textContent}>
-                        <Text numberOfLines={1} style={Style.cardTitle}>{ this.state.prenom + " " + this.state.nom } </Text>
+                        <Text numberOfLines={1} style={Style.cardTitle}>{ this.state.prenom + " " + this.state.nom  +" ("+ this.props.user.etat +") "} </Text>
                         <Text numberOfLines={1} style={Style.cardDescription}>{ this.state.chantier ? this.state.chantier.nom : "null" }</Text>
                         <CustomPicker titleContent="Nouveau chantier :" data={pickerData}
                                       selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
