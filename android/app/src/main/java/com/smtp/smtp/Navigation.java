@@ -1075,6 +1075,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
         connectToChantier();
         navigationView.retrieveNavigationMapboxMap().clearMarkers();
+        navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers().clear();
         fetchRayon();
         fetchRoute();
         modifyTimeDiffTruckAheadIfNecessary();
@@ -1095,7 +1096,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private Emitter.Listener onDetournement = args -> runOnUiThread(() -> {
+        Log.e("Detournement", "onDetournement");
         JSONObject data = (JSONObject) args[0];
+        Log.e("Detournement", "data "+ data.toString());
         String userIdToMove;
         try {
             userIdToMove = data.getString("userId");

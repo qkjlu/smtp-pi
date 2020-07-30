@@ -118,6 +118,23 @@ export default {
         marginBottom: 15,
     },
 
+    cardFuel: {
+        flexDirection : "row",
+        position : "absolute",
+        backgroundColor: "#FFF",
+        borderRadius : 5,
+        marginHorizontal: 10,
+        shadowColor: "#000",
+        shadowRadius: 5,
+        shadowOpacity: 0.3,
+        bottom: 300,
+        left: width*0.07,
+        right: 0,
+        height: CARD_HEIGHT*1.45,
+        width: CARD_WIDTH,
+        overflow: "hidden",
+    },
+
     // Marker Custom
     bubble : {
         flexDirection : 'column',
@@ -176,6 +193,7 @@ export default {
     },
     cardDescription: {
         fontSize: 12,
+        paddingVertical:5,
         color: "#444",
     },
 }

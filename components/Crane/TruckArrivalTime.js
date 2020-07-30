@@ -54,11 +54,13 @@ export default class TruckArrivalTime extends React.Component{
           let seconds = time - minutes * 60;
             return(
                 <View style={{flexDirection:'column', paddingHorizontal : 5 }}>
-                  <View style={{flexDirection:'row', paddingHorizontal : 5 }}>
-                      <Icon name="truck" style={{justifyContent:'center', alignItems: 'center'}} size={40} color="gray" />
-                      <Text style={{paddingTop:8, fontSize:20}}> {minutes}mn{seconds}</Text>
+                  <View style={{flexDirection:'row'}}>
+                      <Icon name="truck" style={{justifyContent:'center', alignItems: 'center',paddingTop:14}} size={30} color="gray" />
+                      <View style={{flexDirection:'column',alignItems: 'center',justifyContent:'center'}}>
+                          <Text style={{paddingTop:8, fontSize:20 , fontWeight:"bold"}}> {minutes}mn{seconds}</Text>
+                          <Text style={{fontSize:17, textAlign: "center" }}>{this.state.prenom} </Text>
+                      </View>
                   </View>
-                  <Text style={{fontSize:20, textAlign: "center" }}>{this.state.prenom} </Text>
                 </View>
             );
         }
