@@ -1,20 +1,28 @@
 import React from "react";
 import MapView from 'react-native-maps'
 import { UrlTile} from 'react-native-maps'
-import {Text, View, FlatList, Dimensions, StyleSheet,PermissionsAndroid,AsyncStorage, AppState} from "react-native";
+import {
+    Text,
+    View,
+    FlatList,
+    Dimensions,
+    StyleSheet,
+    PermissionsAndroid,
+    AsyncStorage,
+    AppState,
+    TouchableOpacity, Button, TextInput
+} from "react-native";
 import TruckMarker from './TruckMarker';
 import {Marker, Circle} from "react-native-maps";
-import * as Location from 'expo-location';
-import * as Permissions from 'expo-permissions';
 import axios from 'axios';
 import CraneView from "../Crane/CraneView";
 import io from "socket.io-client";
 import KeepAwake from 'react-native-keep-awake';
 import Config from "react-native-config";
-import * as RootNavigation from '../../navigation/RootNavigation.js';
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import Icon from "react-native-vector-icons/FontAwesome5";
+import FuelForm from "../FuelForm";
 
-
+const { width, height } = Dimensions.get("window");
 
 
 export default class MapAdmin extends React.Component {
@@ -29,9 +37,11 @@ export default class MapAdmin extends React.Component {
         this.succesConnection = this.succesConnection.bind(this);
         this.enableConnection = this.enableConnection.bind(this);
         this.onRegionChangeComplete = this.onRegionChangeComplete.bind(this)
+        this.changeShowFuelForm = this.changeShowFuelForm.bind(this)
         this.socket = io(Config.API_URL);
         this.state = {
           socket : null,
+          showFuelForm : false,
           currentRegion : {
             latitude: this.props.chargement.latitude,
             longitude: this.props.chargement.longitude,
@@ -79,7 +89,8 @@ export default class MapAdmin extends React.Component {
 
     // update map when an user connect or disconnect
     shouldComponentUpdate(nextProps, nextState) {
-        return nextState.users.length != this.state.users.length;
+        return nextState.users.length !== this.state.users.length
+        || nextState.showFuelForm !== this.state.showFuelForm
     }
 
     // handle when app is in foreground/background
@@ -167,6 +178,11 @@ export default class MapAdmin extends React.Component {
             })
     }
 
+    changeShowFuelForm(){
+        this.setState({showFuelForm: !this.state.showFuelForm})
+        console.log("showFuelForm : " + this.state.showFuelForm)
+    }
+
     onRegionChangeComplete(region){
       this.setState({currentRegion : region})
     }
@@ -192,28 +208,49 @@ export default class MapAdmin extends React.Component {
         console.log("users:" + JSON.stringify(this.state.users));
         const chargement = {latitude : this.props.chargement.latitude, longitude : this.props.chargement.longitude};
         const dechargement = {latitude : this.props.dechargement.latitude, longitude : this.props.dechargement.longitude};
+        console.log("showFuelForm " + this.state.showFuelForm)
         return(
-          <View>
-            <View>
-              <KeepAwake />
-                <MapView
-                    style={this.props.typeOfUser === "crane" ? styles.mapCrane : styles.map}
-                    region={this.state.currentRegion}
-                    onRegionChangeComplete={this.onRegionChangeComplete}
-                >
-                    <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
-                    <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
-                    <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
-                    <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
-                    {this.state.users.map(marker => {
-                            return (<TruckMarker key={marker.userId} user={marker} singleChantier = {true} socket={this.socket}/>)
-                        }
-                    )}
-                </MapView>
-            </View>
-            <View style={styles.progressBar}>
-              {this.props.typeOfUser === "crane" ? <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/> : null}
-            </View>
+            <View style={{flex : 1}}>
+                      <KeepAwake/>
+                        <MapView
+                            style={this.props.typeOfUser === "crane" ? styles.mapCrane : styles.map}
+                            region={this.state.currentRegion}
+                            onRegionChangeComplete={this.onRegionChangeComplete}
+                        >
+                            <Marker coordinate={chargement} title={"chargement"} pinColor={"#000eff"}/>
+                            <Marker coordinate={dechargement} title={"dechargement"} pinColor={"#000eff"}/>
+                            <Circle key={"chargementCircle"} center={chargement} radius={this.props.chargement.rayon}/>
+                            <Circle key={"dechargementCircle"} center={dechargement} radius={this.props.dechargement.rayon}/>
+                            {this.state.users.map(marker => {
+                                    return (<TruckMarker key={marker.userId} user={marker} singleChantier = {true} socket={this.socket}/>)
+                                }
+                            )}
+                        </MapView>
+                <View>
+                    {(this.state.showFuelForm ) &&
+                       <FuelForm  toggleShow={this.changeShowFuelForm} />
+                    }
+                    {this.props.typeOfUser === "crane" ?
+                        <TouchableOpacity
+                            style={{
+                                borderWidth:1,
+                                borderColor:'#01a699',
+                                position : "absolute",
+                                bottom: 200,
+                                right: 0,
+                                alignItems:'center',
+                                justifyContent:'center',
+                                width:50,
+                                height:50,
+                                backgroundColor:'#fff',
+                                borderRadius:50,
+                            }}
+                            onPress={this.changeShowFuelForm}
+                        >
+                            <Icon name={"gas-pump"}  size={25} color="#01a699" />
+                        </TouchableOpacity>: null}
+                </View>
+                    {this.props.typeOfUser === "crane" ? <CraneView auChargement={this.props.auChargement} users={this.state.users} socket={this.socket}/> : null}
           </View>
         )
     }
@@ -221,14 +258,11 @@ export default class MapAdmin extends React.Component {
 
 const styles = StyleSheet.create({
     map: {
-        width : wp('100%'),
-        height: hp('100%'),
+        width : width,
+        height: height,
     },
     mapCrane: {
-        width : wp('100%'),
-        height: hp('77%'),
+        width : width,
+        height: height,
     },
-    progressBar: {
-      height: hp('23%')
-    }
 });

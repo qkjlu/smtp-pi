@@ -279,6 +279,7 @@ export default class MapTest extends React.Component {
                     </MapView>
                     {(this.state.showDetournementCard && this.state.userDetournementCard !== null) &&
                     <DetournementCard
+                        socket = { this.socket }
                         showDetournementCard={ this.state.showDetournementCard }
                         user={ this.state.userDetournementCard }
                         chantiers = { this.state.chantiers }

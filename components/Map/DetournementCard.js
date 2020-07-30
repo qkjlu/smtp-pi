@@ -4,13 +4,12 @@ import Style from "../../Style";
 import Config from "react-native-config";
 import axios from "axios";
 import CustomPicker from "../CustomPicker";
-import io from "socket.io-client";
 
 export default class DetournementCard extends React.Component {
     constructor(props) {
         super(props);
-        this.socket = io(Config.API_URL);
         this.handlePickerChange = this.handlePickerChange.bind(this);
+        this.sendDetournement = this.sendDetournement.bind(this);
         this.state = {
             chantier : null,
             nom : "",
@@ -26,7 +25,6 @@ export default class DetournementCard extends React.Component {
         this.setState({ chantier : await this.getChantier(this.props.user.chantierId)})
         await this.getCamionneurInfo();
         await this.getChantiersExceptCurrent();
-
     }
 
     async getChantier(chantierId){
@@ -73,13 +71,14 @@ export default class DetournementCard extends React.Component {
 
     }
 
-    async sendDetournement(){
+     sendDetournement(){
         let chargementLong = this.state.pickerSelected.chargement.longitude;
         let chargementLat = this.state.pickerSelected.chargement.latitude;
         let dechargementLong = this.state.pickerSelected.dechargement.longitude;
         let dechargementLat = this.state.pickerSelected.dechargement.latitude;
         let chantierId = this.state.pickerSelected.id;
         let userId = this.props.user.userId;
+        let previousChantierId = this.props.user.chantierId
         let obj = {
             "chantierId" : chantierId,
             "userId" : userId,
@@ -87,8 +86,10 @@ export default class DetournementCard extends React.Component {
             "originLat" : chargementLat,
             "destinationLong" : dechargementLong,
             "destinationLat" : dechargementLat,
+            "previousChantierId": previousChantierId,
         }
-        await this.socket.emit("chantier/detournement",obj)
+         console.log("sendDetournement "+JSON.stringify(obj))
+        this.props.socket.emit("chantier/detournement",obj)
     }
 
 
@@ -128,7 +129,7 @@ export default class DetournementCard extends React.Component {
                         <View style={{flexDirection : "row", alignContent:"flex-start"}}>
                             <Button  title={"Annuler"} color={"#d9cfcf"} onPress={this.props.toggleShow}/>
                             <View style={{flex:0.9}}/>
-                            <Button title={"Détourner"} onPress={null}/>
+                            <Button title={"Détourner"} onPress={this.sendDetournement}/>
                         </View>
                     </View>
                 </View>
