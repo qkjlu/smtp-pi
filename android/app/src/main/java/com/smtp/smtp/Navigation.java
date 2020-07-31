@@ -569,7 +569,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
             if(preOffRoute.equals("enChargement") || myEtat.equals("enChargement")){
                 myEtat = "enChargement";
-                preOffRoute =     "";
+                preOffRoute = "";
                 isOffRoute = false;
             }
         }
