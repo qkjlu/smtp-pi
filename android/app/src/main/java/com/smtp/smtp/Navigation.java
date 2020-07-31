@@ -68,7 +68,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 
 import io.socket.client.IO;
@@ -101,8 +100,10 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
     };
 
-    private Point ORIGIN;
-    private Point DESTINATION;
+    private Point CHARGEMENT;
+    private Point DECHARGEMENT;
+    private Point destination;
+
 
     private String userId;
     private String chantierId;
@@ -285,11 +286,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         double[] origin = i.getDoubleArrayExtra("origin");
         double[] destination = i.getDoubleArrayExtra("destination");
 
-        ORIGIN = Point.fromLngLat(origin[0], origin[1]);
-        DESTINATION = Point.fromLngLat(destination[0], destination[1]);
+        CHARGEMENT = Point.fromLngLat(origin[0], origin[1]);
+        DECHARGEMENT = Point.fromLngLat(destination[0], destination[1]);
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
         typeRoute = i.getStringExtra("typeRoute");
+        Log.d(TAG, "typeRoute: " + typeRoute);
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         previousEtat = myEtat;
@@ -445,12 +447,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
 
         navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Chargement")
-                .position(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .position(new LatLng(CHARGEMENT.latitude(), CHARGEMENT.longitude()))
                 .icon(icon)
         );
 
         navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Déchargement")
-                .position(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()))
+                .position(new LatLng(DECHARGEMENT.latitude(), DECHARGEMENT.longitude()))
                 .icon(icon2)
         );
 
@@ -554,50 +556,28 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     private float getDistanceFromDestination(Location location) {
         float[] distanceFromDestination = new float[3];
-        //Point destination = null;
+
 		Log.d("offT", " myEtat "+ myEtat);
-        Log.d("offT", " isOfRoute "+ isOffRoute);
+        Log.d("offT", " isOffRoute "+ isOffRoute);
         Log.d("offT", " preOffRoute "+ preOffRoute);
+
         if(isOffRoute){
-            if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
-                //destination = DESTINATION;
-            }
             if(preOffRoute.equals("enDéchargement") || myEtat.equals("enDéchargement")){
                 myEtat = "enDéchargement";
                 preOffRoute = "";
                 isOffRoute = false;
-                //destination = DESTINATION;
-            }
-            if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé") ) {
-                //destination = ORIGIN;
             }
             if(preOffRoute.equals("enChargement") || myEtat.equals("enChargement")){
                 myEtat = "enChargement";
-                preOffRoute = "";
+                preOffRoute =     "";
                 isOffRoute = false;
-                //destination = DESTINATION;
-            }
-        }else if(myEtat.equals("pause")) {
-            if(previousEtat.equals("chargé") || previousEtat.equals("enDéchargement")){
-                //destination = DESTINATION;
-            }else if (previousEtat.equals("déchargé") || previousEtat.equals("enChargement")) {
-                //destination = ORIGIN;
-            }
-        }else{
-            if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
-                //destination = DESTINATION;
-            }else if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
-                //destination = ORIGIN;
             }
         }
-       // if (destination == null) {
-            //throw new Error("getDistanceFromDestination: destination cannot be null");
-        //}
         Location.distanceBetween(
                 location.getLatitude(),
                 location.getLongitude(),
-                DESTINATION.latitude(),
-                DESTINATION.longitude(),
+                destination.latitude(),
+                destination.longitude(),
                 distanceFromDestination
         );
         return distanceFromDestination[0];
@@ -639,7 +619,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
-        this.remainingTime = routeProgress.durationRemaining() * 1.25;
+        this.remainingTime = Math.max(0, routeProgress.durationRemaining() * 1.25 );
 
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
@@ -733,7 +713,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         for (Waypoint waypoint : initialWaypoints) {
             points.add(waypoint.getPoint());
         }
-        points.add(DESTINATION);
+        points.add(destination);
         roadPoint = points;
     }
 
@@ -772,9 +752,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private void fetchRoute() {
         if (myEtat.equals("chargé") || myEtat.equals("enDéchargement")) {
             typeRoute = "aller";
+            destination = DECHARGEMENT;
         }
         if (myEtat.equals("déchargé") || myEtat.equals("enChargement")) {
             typeRoute = "retour";
+            destination = CHARGEMENT;
         }
         initWaypoints();
     }
@@ -952,9 +934,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         }
         if (userRerouted) {
-            Point tmp = ORIGIN;
-            ORIGIN = DESTINATION;
-            DESTINATION = tmp;
             fetchRoute();
         }
         return userRerouted;
@@ -1069,8 +1048,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Double originLat = data.getDouble("originLat");
         Double destinationLong = data.getDouble("destinationLong");
         Double destinationLat = data.getDouble("destinationLat");
-        ORIGIN = Point.fromLngLat(originLong,originLat);
-        DESTINATION = Point.fromLngLat(destinationLong,destinationLat);
+        CHARGEMENT = Point.fromLngLat(originLong,originLat);
+        DECHARGEMENT = Point.fromLngLat(destinationLong,destinationLat);
         myList = new ListUser();
         myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
         connectToChantier();
@@ -1085,12 +1064,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
 
         navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Chargement")
-                .position(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .position(new LatLng(CHARGEMENT.latitude(), CHARGEMENT.longitude()))
                 .icon(icon)
         );
 
         navigationView.retrieveNavigationMapboxMap().retrieveMap().addMarker(new MarkerOptions().title("Déchargement")
-                .position(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()))
+                .position(new LatLng(DECHARGEMENT.latitude(), DECHARGEMENT.longitude()))
                 .icon(icon2)
         );
     }
