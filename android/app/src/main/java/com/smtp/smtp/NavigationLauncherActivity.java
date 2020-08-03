@@ -371,7 +371,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 rayonChargement,
                 "SOURCE_RING_CHARGEMENT",
                 "LAYER_RING_CHARGEMENT",
-                25
+                distanceSecuriteMarkerRayon
                 );
         ringChargement.addToStyle(style);
 
@@ -380,7 +380,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 rayonDéchargement,
                 "SOURCE_RING_DECHARGEMENT",
                 "LAYER_RING_DECHARGEMENT",
-                25
+                distanceSecuriteMarkerRayon
         );
         ringDechargement.addToStyle(style);
 
