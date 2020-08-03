@@ -2,8 +2,6 @@ package com.smtp.smtp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +16,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -37,13 +34,11 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.core.constants.Constants;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
-import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -53,20 +48,14 @@ import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-
 import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.light.Position;
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
-import com.mapbox.turf.TurfMeta;
-import com.mapbox.turf.TurfTransformation;
 
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,15 +69,14 @@ import static com.mapbox.turf.TurfConstants.UNIT_METRES;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
+
 public class NavigationLauncherActivity extends AppCompatActivity implements OnMapReadyCallback,
         MapboxMap.OnMapLongClickListener, MapboxMap.OnMarkerClickListener {
 
-
     private static final int ONE_HUNDRED_MILLISECONDS = 100;
-
-    private Point ORIGIN;
-    private Point DESTINATION;
-    private static final String TAG = "Navigation";
+    private Point CHARGEMENT;
+    private Point DECHARGEMENT;
+    private static final String TAG = "EditRoad";
 
     private String nameChantier;
     private String typeRoute;
@@ -98,15 +86,11 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     private int rayonDéchargement;
     private  String token;
     private static final int CAMERA_ANIMATION_DURATION = 1000;
-    private static final int DEFAULT_CAMERA_ZOOM = 16;
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
 
     private NavigationMapRoute mapRoute;
     private MapboxMap mapboxMap;
 
-    private String circleUnit = UNIT_METRES;
-    private int circleSteps = 180;
-    private static final String TURF_CALCULATION_FILL_LAYER_GEOJSON_SOURCE_ID = "TURF_CALCULATION_FILL_LAYER_GEOJSON_SOURCE_ID";
     private final int[] padding = new int[]{50, 50, 50, 50};
 
     MapView mapView;
@@ -114,6 +98,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
 
     private TextView routeInfo;
     private DirectionsRoute route;
+    private boolean firstFetch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,8 +115,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         double[] origin = i.getDoubleArrayExtra("origin");
         double[] destination = i.getDoubleArrayExtra("destination");
 
-        ORIGIN = Point.fromLngLat(origin[0], origin[1]);
-        DESTINATION = Point.fromLngLat(destination[0], destination[1]);
+        CHARGEMENT = Point.fromLngLat(origin[0], origin[1]);
+        DECHARGEMENT = Point.fromLngLat(destination[0], destination[1]);
 
         routeInfo = findViewById(R.id.route_info);
         routeInfo.setText(nameChantier+ "\n" + "Route : " + typeRoute.substring(0, 1).toUpperCase() + typeRoute.substring(1));
@@ -140,181 +125,9 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
+        firstFetch = true;
         loading = findViewById(R.id.loading);
 
-    }
-
-    public JSONObject prepareRouteForSending(){
-        JSONArray res = new JSONArray();
-        int order = 0;
-        for (Marker marker : mapboxMap.getMarkers()) {
-            JSONObject json = new JSONObject();
-            try {
-                if(!isOriginOrDestination(marker)){
-                    json.put("latitude",marker.getPosition().getLatitude());
-                    json.put("longitude",marker.getPosition().getLongitude());
-                    json.put("ordre", order);
-                    res.put(json);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            order++;
-        }
-        try {
-            return new JSONObject().put("waypoints",res);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void initRoute(JSONArray array) throws JSONException {
-        // Ajoute chaque donnée à la liste de waypoint triable
-        List<Waypoint> waypoints = new ArrayList<>();
-        for (int i=0; i< array.length(); i++){
-            JSONObject waypoint = array.getJSONObject(i);
-            waypoints.add(
-                    new Waypoint(
-                            waypoint.getDouble("longitude"),
-                            waypoint.getDouble("latitude"),
-                            waypoint.getInt("ordre")
-                    )
-            );
-        }
-        Collections.sort(waypoints);
-
-        // Ajoute les marker à la map
-        int i = 0;
-        for (Waypoint w: waypoints ) {
-            i+=1;
-            LatLng point = new LatLng(w.latitude, w.longitude);
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .position(point)
-                    .icon(getMyIcon(i));
-            mapboxMap.addMarker(markerOptions);
-            showMessage(mapView,"Marqueur : "+mapboxMap.getMarkers().size()+"/"+25);
-        }
-        fetchRoute();
-    }
-
-    public Icon getMyIcon(int i){
-        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
-        switch (i){
-            case 1 :
-                return iconFactory.fromResource(R.drawable.marker1);
-            case 2 :
-                return iconFactory.fromResource(R.drawable.marker2);
-            case 3 :
-                return iconFactory.fromResource(R.drawable.marker3);
-            case 4 :
-                return iconFactory.fromResource(R.drawable.marker4);
-            case 5 :
-                return iconFactory.fromResource(R.drawable.marker5);
-            case 6 :
-                return iconFactory.fromResource(R.drawable.marker6);
-            case 7 :
-                return iconFactory.fromResource(R.drawable.marker7);
-            case 8 :
-                return iconFactory.fromResource(R.drawable.marker8);
-            case 9 :
-                return iconFactory.fromResource(R.drawable.marker9);
-        }
-        return iconFactory.fromResource(R.drawable.marker9);
-    }
-
-    public void initWaypoints(){
-        final String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        // prepare the Request
-        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, URL, null,
-                response -> {
-                    // display response
-                    try {
-                        initRoute(response);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    Log.d("Response", response.toString());
-                },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json; charset=UTF-8");
-                params.put("Authorization", "Bearer " + token);
-                return params;
-            }
-        } ;
-
-        // add it to the RequestQueue
-        requestQueue.add(getRequest);
-    }
-
-    public void sendRouteToServer(View view) {
-        if(mapboxMap.getMarkers().size() < 4){
-            showMessage(view,"Il faut au moins deux points pour faire une route");
-            return;
-        }
-        JSONObject route = prepareRouteForSending();
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        final String requestBody = route.toString();
-        String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
-        StringRequest stringRequest = new StringRequest(Request.Method.PUT, URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                showMessage(mapView,"La route a été enregistrée avec succès");
-                Log.i("VOLLEY", response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                showMessage(mapView,"Erreur de l'enregistrement de route, veuillez contacter un administrateur");
-                Log.e("VOLLEY", error.toString());
-            }
-        }) {
-            //This is for Headers If You Needed
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json; charset=UTF-8");
-                params.put("Authorization", "Bearer " + token);
-                return params;
-            }
-            //@Override
-            //public String getBodyContentType() {
-            //    return "application/json; charset=utf-8";
-            //}
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-                try {
-                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-                } catch (UnsupportedEncodingException uee) {
-                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                    return null;
-                }
-            }
-
-            @Override
-            protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                String responseString = "";
-                if (response != null) {
-                    responseString = String.valueOf(response.statusCode);
-                    // can get more details such as response.headers
-                }
-                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-            }
-        };
-
-        requestQueue.add(stringRequest);
     }
 
     @Override
@@ -359,6 +172,172 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         mapView.onSaveInstanceState(outState);
     }
 
+    public void initWaypoints(){
+        final String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, URL, null,
+                response -> {
+                    try {
+                        initRoute(response);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("Response", response.toString());
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Bearer " + token);
+                return params;
+            }
+        } ;
+
+        requestQueue.add(getRequest);
+    }
+
+    public JSONObject prepareRouteForSending(){
+        JSONArray res = new JSONArray();
+        int order = 0;
+        for (Marker marker : mapboxMap.getMarkers()) {
+            JSONObject json = new JSONObject();
+            try {
+                if(!isOriginOrDestination(marker)){
+                    json.put("latitude",marker.getPosition().getLatitude());
+                    json.put("longitude",marker.getPosition().getLongitude());
+                    json.put("ordre", order);
+                    res.put(json);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            order++;
+        }
+        try {
+            return new JSONObject().put("waypoints",res);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void initRoute(JSONArray array) throws JSONException {
+        // Ajoute chaque donnée à la liste de waypoint triable
+        List<Waypoint> waypoints = new ArrayList<>();
+        for (int i=0; i< array.length(); i++){
+            JSONObject waypoint = array.getJSONObject(i);
+            waypoints.add(
+                    new Waypoint(
+                            waypoint.getDouble("longitude"),
+                            waypoint.getDouble("latitude"),
+                            waypoint.getInt("ordre")
+                    )
+            );
+        }
+        Collections.sort(waypoints);
+
+        int i = 0;
+        for (Waypoint w: waypoints ) {
+            i+=1;
+            LatLng point = new LatLng(w.latitude, w.longitude);
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(point)
+                    .icon(getMyIcon(i));
+            mapboxMap.addMarker(markerOptions);
+            showMessage(mapView,"Marqueur : "+mapboxMap.getMarkers().size()+"/"+25);
+        }
+        fetchRoute();
+    }
+
+    public Icon getMyIcon(int i){
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        switch (i){
+            case 1 :
+                return iconFactory.fromResource(R.drawable.marker1);
+            case 2 :
+                return iconFactory.fromResource(R.drawable.marker2);
+            case 3 :
+                return iconFactory.fromResource(R.drawable.marker3);
+            case 4 :
+                return iconFactory.fromResource(R.drawable.marker4);
+            case 5 :
+                return iconFactory.fromResource(R.drawable.marker5);
+            case 6 :
+                return iconFactory.fromResource(R.drawable.marker6);
+            case 7 :
+                return iconFactory.fromResource(R.drawable.marker7);
+            case 8 :
+                return iconFactory.fromResource(R.drawable.marker8);
+            case 9 :
+                return iconFactory.fromResource(R.drawable.marker9);
+        }
+        return iconFactory.fromResource(R.drawable.marker9);
+    }
+
+    public void sendRouteToServer(View view) {
+        if(mapboxMap.getMarkers().size() < 4){
+            showMessage(view,"Il faut au moins deux points pour faire une route");
+            return;
+        }
+        JSONObject route = prepareRouteForSending();
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        final String requestBody = route.toString();
+        String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
+        StringRequest stringRequest = new StringRequest(Request.Method.PUT, URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                showMessage(mapView,"La route a été enregistrée avec succès");
+                Log.i("VOLLEY", response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                showMessage(mapView,"Erreur de l'enregistrement de route, veuillez contacter un administrateur");
+                Log.e("VOLLEY", error.toString());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Bearer " + token);
+                return params;
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(response.statusCode);
+                    // can get more details such as response.headers
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+
+        requestQueue.add(stringRequest);
+    }
+
+
+
     public void clearRoute(View view) {
         if(mapboxMap.getMarkers().size() == 0){
             mapboxMap.clear();
@@ -367,18 +346,44 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         route = null;
     }
 
+
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
-        this.mapboxMap.setStyle(Style.TRAFFIC_DAY, style -> {
-            this.mapboxMap.setOnMarkerClickListener(this);
-            this.mapboxMap.addOnMapLongClickListener(this);
-            initMapRoute();
-            initWaypoints();
-            initLieux();
-            fetchRayon();
-            boundCameraToRoute();
-        });
+        this.mapboxMap.setStyle(new Style.Builder()
+                .fromUri(Style.SATELLITE_STREETS), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        NavigationLauncherActivity.this.mapboxMap.setOnMarkerClickListener(NavigationLauncherActivity.this);
+                        NavigationLauncherActivity.this.mapboxMap.addOnMapLongClickListener(NavigationLauncherActivity.this);
+                        initMapRoute();
+                        initWaypoints();
+                        initLieux();
+                        fetchRayon(() -> { drawRings(style); });
+                    }
+                }
+        );
+    }
+
+    private void drawRings(Style style) {
+        MapboxRing ringChargement = new MapboxRing(
+                CHARGEMENT,
+                rayonChargement,
+                "SOURCE_RING_CHARGEMENT",
+                "LAYER_RING_CHARGEMENT",
+                25
+                );
+        ringChargement.addToStyle(style);
+
+        MapboxRing ringDechargement = new MapboxRing(
+                DECHARGEMENT,
+                rayonDéchargement,
+                "SOURCE_RING_DECHARGEMENT",
+                "LAYER_RING_DECHARGEMENT",
+                25
+        );
+        ringDechargement.addToStyle(style);
+
     }
 
     public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
@@ -427,16 +432,12 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     private void initLieux(){
-        //IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
-        //Icon icon = iconFactory.fromResource(R.drawable.icon_chargement);
-        //Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
-
         this.mapboxMap.addMarker(new MarkerOptions().title("Chargement")
-                .position(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .position(new LatLng(CHARGEMENT.latitude(), CHARGEMENT.longitude()))
         );
 
         this.mapboxMap.addMarker(new MarkerOptions().title("Déchargement")
-                .position(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()))
+                .position(new LatLng(DECHARGEMENT.latitude(), DECHARGEMENT.longitude()))
         );
     }
 
@@ -445,8 +446,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     private boolean isOriginOrDestination(Marker m){
-        boolean isOrigin =   m.getPosition().getLongitude() == ORIGIN.longitude() && m.getPosition().getLatitude() == ORIGIN.latitude();
-        boolean isDestination  =   m.getPosition().getLongitude() == DESTINATION.longitude() && m.getPosition().getLatitude() == DESTINATION.latitude();
+        boolean isOrigin =   m.getPosition().getLongitude() == CHARGEMENT.longitude() && m.getPosition().getLatitude() == CHARGEMENT.latitude();
+        boolean isDestination  =   m.getPosition().getLongitude() == DECHARGEMENT.longitude() && m.getPosition().getLatitude() == DECHARGEMENT.latitude();
         return (isOrigin || isDestination);
     }
 
@@ -488,7 +489,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 if (validRouteResponse(response)) {
                     route = response.body().routes().get(0);
                     mapRoute.addRoutes(response.body().routes());
-                    //boundCameraToRoute();
+                    boundCameraToRoute();
                 } else {
                     showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 }
@@ -520,7 +521,9 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     private void boundCameraToRoute() {
+        if(!firstFetch) return;
         if (route != null) {
+            firstFetch = false;
             List<Point> routeCoords = LineString.fromPolyline(route.geometry(),
                     Constants.PRECISION_6).coordinates();
             List<LatLng> bboxPoints = new ArrayList<>();
@@ -538,8 +541,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
             }
         }
         CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng((ORIGIN.latitude()+DESTINATION.latitude())/2, (ORIGIN.longitude()+DESTINATION.longitude())/2 ))
-                .zoom(12)
+                .target(new LatLng((CHARGEMENT.latitude()+ DECHARGEMENT.latitude())/2, (CHARGEMENT.longitude()+ DECHARGEMENT.longitude())/2 ))
+                .zoom(14)
                 .tilt(20)
                 .build();
         mapboxMap.setCameraPosition(position);
@@ -582,10 +585,10 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(point)
                 .icon(getMyIcon(mapboxMap.getMarkers().size()-1));
-        if(getDistance(markerOptions,ORIGIN)< rayonChargement + distanceSecuriteMarkerRayon ){
-            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de chargement "+(getDistance(markerOptions,ORIGIN))+" < "+rayonChargement+distanceSecuriteMarkerRayon);
-        }else if (getDistance(markerOptions,DESTINATION)< rayonDéchargement + distanceSecuriteMarkerRayon) {
-            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de déchargement "+(getDistance(markerOptions,DESTINATION))+" < "+rayonDéchargement+distanceSecuriteMarkerRayon);
+        if(getDistance(markerOptions,CHARGEMENT)< rayonChargement + distanceSecuriteMarkerRayon ){
+            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de chargement "+(getDistance(markerOptions,CHARGEMENT))+" < "+rayonChargement+distanceSecuriteMarkerRayon);
+        }else if (getDistance(markerOptions,DECHARGEMENT)< rayonDéchargement + distanceSecuriteMarkerRayon) {
+            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de déchargement "+(getDistance(markerOptions,DECHARGEMENT))+" < "+rayonDéchargement+distanceSecuriteMarkerRayon);
         }else{
             mapboxMap.addMarker(markerOptions);
             showMessage(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+23);
@@ -609,15 +612,17 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         }
     }
 
-
-
-    private void fetchRayon() {
+    private void fetchRayon(Runnable lambda) {
         final String URL = BASE_URL + "chantiers/" + chantierId;
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, URL, null,
                 response -> {
                     try {
                         rayonDéchargement = response.getJSONObject("lieuDéchargement").getInt("rayon");
                         rayonChargement = response.getJSONObject("lieuChargement").getInt("rayon");
+                        if(lambda != null) {
+                            lambda.run();
+                        }
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
