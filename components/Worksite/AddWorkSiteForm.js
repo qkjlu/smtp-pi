@@ -1,14 +1,11 @@
 import React from 'react'
-import {StyleSheet, TextInput, ScrollView, Text, TouchableOpacity, AsyncStorage, View } from 'react-native'
+import {StyleSheet, TextInput, Text, AsyncStorage, View } from 'react-native'
 import axios from 'axios'
 import {Button} from 'react-native-elements'
 import AutoCompletePlaces from "../Place/AutoCompletePlaces";
-import AddPlaceForm from "../Place/AddPlaceForm";
-import style from "../../Style";
 import {MaterialIcons, Ionicons} from "@expo/vector-icons";
 import Config from "react-native-config";
-import InputText from "../InputText";
-import ValidateButton from "../ValidateButton";
+import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import * as RootNavigation from '../../navigation/RootNavigation.js';
 
 export default class AddWorkSiteForm extends React.Component {
@@ -36,7 +33,7 @@ export default class AddWorkSiteForm extends React.Component {
 
     async getPlaces(){
       const token  = await AsyncStorage.getItem('token');
-      axios({
+      await axios({
           method: 'get',
           url: Config.API_URL + 'lieux',
           headers: {'Authorization': 'Bearer ' + token}
@@ -107,16 +104,14 @@ export default class AddWorkSiteForm extends React.Component {
                           <Text style={{fontWeight:"bold"}}>recharger</Text>
                         </View>
                     </View>
-                    <View style={{padding : 20}}>
                     <TextInput style={styles.textinput} onChangeText={(name) => this.setState({name})}
                                value={this.state.name} placeholder={"Nom du chantier"}/>
-
-                             {/*<AddPlaceForm  style={{padding: 20}} show={this.state.showNewPlaceForm} toggleShow={() => this.setState({showNewPlaceForm:false})} />*/}
-
-                    <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"} places={this.state.places}/>
-
-                    <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"} places={this.state.places}/>
-                    </View>
+                        <View style={{paddingTop : 10}}>
+                            <AutoCompletePlaces changePlace={(idPlace1) => this.setState({idPlace1})} name={"chargement"} places={this.state.places}/>
+                        </View>
+                        <View style={{paddingTop : 10}}>
+                            <AutoCompletePlaces changePlace={(idPlace2) => this.setState({idPlace2})} name={"déchargement"} places={this.state.places}/>
+                        </View>
                     <Button
                             buttonStyle={styles.button}
                             onPress={() => this.formSubmit().then(this.props.onReload)}

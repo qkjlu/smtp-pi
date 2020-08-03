@@ -45,7 +45,7 @@ export default class ListWorkSite extends React.Component {
         console.log(id);
         const token = await AsyncStorage.getItem('token');
         var data = { "id" : id};
-        axios({
+        await axios({
             method : 'delete',
             url : Config.API_URL +'chantiers',
             headers: {'Authorization': 'Bearer ' + token},
@@ -74,7 +74,7 @@ export default class ListWorkSite extends React.Component {
 
     async reloadData() {
         const token = await AsyncStorage.getItem('token');
-        axios({
+        await axios({
             method : 'get',
             url : Config.API_URL + 'chantiers',
             headers: {'Authorization': 'Bearer ' + token},
@@ -106,8 +106,7 @@ export default class ListWorkSite extends React.Component {
                 <View>
                     <ScrollView>
                     <ButtonGroupAdmin onReload={this.reloadData}/>
-                    <Text style={style.getStartedText}>Liste des chantiers:</Text>
-                    <Search/>
+                    <Text style={style.getStartedText}>Liste des chantiers :</Text>
                         <FlatList
                             data={this.state.report}
                             renderItem={({item}) => <WorkSiteRow worksite={item} onDelete={(id) =>this.handleDelete(id)}/>}

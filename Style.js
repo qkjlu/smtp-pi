@@ -15,8 +15,6 @@ export default {
     },
 
     input : {
-        height : 40 ,
-        padding : 10,
         borderColor: 'gray',
         borderWidth:1 ,
         marginHorizontal : 5
