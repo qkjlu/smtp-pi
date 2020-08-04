@@ -2,7 +2,6 @@ package com.smtp.smtp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +15,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -40,6 +38,7 @@ import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.exceptions.InvalidLatLngBoundsException;
@@ -48,46 +47,40 @@ import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-
 import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.light.Position;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
-
-
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import retrofit2.Call;
 import retrofit2.Callback;
+import static com.mapbox.turf.TurfConstants.UNIT_METRES;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 
 public class NavigationLauncherActivity extends AppCompatActivity implements OnMapReadyCallback,
         MapboxMap.OnMapLongClickListener, MapboxMap.OnMarkerClickListener {
 
-
     private static final int ONE_HUNDRED_MILLISECONDS = 100;
-
-    private Point ORIGIN;
-    private Point DESTINATION;
-    private static final String TAG = "Navigation";
+    private Point CHARGEMENT;
+    private Point DECHARGEMENT;
+    private static final String TAG = "EditRoad";
 
     private String nameChantier;
     private String typeRoute;
     private String chantierId;
     private int rayonChargement;
+    private int distanceSecuriteMarkerRayon = 25;
     private int rayonDéchargement;
     private  String token;
     private static final int CAMERA_ANIMATION_DURATION = 1000;
-    private static final int DEFAULT_CAMERA_ZOOM = 16;
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
 
     private NavigationMapRoute mapRoute;
@@ -100,6 +93,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
 
     private TextView routeInfo;
     private DirectionsRoute route;
+    private boolean firstFetch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,8 +110,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         double[] origin = i.getDoubleArrayExtra("origin");
         double[] destination = i.getDoubleArrayExtra("destination");
 
-        ORIGIN = Point.fromLngLat(origin[0], origin[1]);
-        DESTINATION = Point.fromLngLat(destination[0], destination[1]);
+        CHARGEMENT = Point.fromLngLat(origin[0], origin[1]);
+        DECHARGEMENT = Point.fromLngLat(destination[0], destination[1]);
 
         routeInfo = findViewById(R.id.route_info);
         routeInfo.setText(nameChantier+ "\n" + "Route : " + typeRoute.substring(0, 1).toUpperCase() + typeRoute.substring(1));
@@ -126,181 +120,9 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
+        firstFetch = true;
         loading = findViewById(R.id.loading);
 
-    }
-
-    public JSONObject prepareRouteForSending(){
-        JSONArray res = new JSONArray();
-        int order = 0;
-        for (Marker marker : mapboxMap.getMarkers()) {
-            JSONObject json = new JSONObject();
-            try {
-                if(!isOriginOrDestination(marker)){
-                    json.put("latitude",marker.getPosition().getLatitude());
-                    json.put("longitude",marker.getPosition().getLongitude());
-                    json.put("ordre", order);
-                    res.put(json);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            order++;
-        }
-        try {
-            return new JSONObject().put("waypoints",res);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void initRoute(JSONArray array) throws JSONException {
-        // Ajoute chaque donnée à la liste de waypoint triable
-        List<Waypoint> waypoints = new ArrayList<>();
-        for (int i=0; i< array.length(); i++){
-            JSONObject waypoint = array.getJSONObject(i);
-            waypoints.add(
-                    new Waypoint(
-                            waypoint.getDouble("longitude"),
-                            waypoint.getDouble("latitude"),
-                            waypoint.getInt("ordre")
-                    )
-            );
-        }
-        Collections.sort(waypoints);
-
-        // Ajoute les marker à la map
-        int i = 0;
-        for (Waypoint w: waypoints ) {
-            i+=1;
-            LatLng point = new LatLng(w.latitude, w.longitude);
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .position(point)
-                    .icon(getMyIcon(i));
-            mapboxMap.addMarker(markerOptions);
-            Snackbar.make(mapView, "Marqueur : "+mapboxMap.getMarkers().size()+"/"+25, Snackbar.LENGTH_LONG).show();
-        }
-        fetchRoute();
-    }
-
-    public Icon getMyIcon(int i){
-        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
-        switch (i){
-            case 1 :
-                return iconFactory.fromResource(R.drawable.marker1);
-            case 2 :
-                return iconFactory.fromResource(R.drawable.marker2);
-            case 3 :
-                return iconFactory.fromResource(R.drawable.marker3);
-            case 4 :
-                return iconFactory.fromResource(R.drawable.marker4);
-            case 5 :
-                return iconFactory.fromResource(R.drawable.marker5);
-            case 6 :
-                return iconFactory.fromResource(R.drawable.marker6);
-            case 7 :
-                return iconFactory.fromResource(R.drawable.marker7);
-            case 8 :
-                return iconFactory.fromResource(R.drawable.marker8);
-            case 9 :
-                return iconFactory.fromResource(R.drawable.marker9);
-        }
-        return iconFactory.fromResource(R.drawable.marker9);
-    }
-
-    public void initWaypoints(){
-        final String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        // prepare the Request
-        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, URL, null,
-                response -> {
-                    // display response
-                    try {
-                        initRoute(response);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    Log.d("Response", response.toString());
-                },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json; charset=UTF-8");
-                params.put("Authorization", "Bearer " + token);
-                return params;
-            }
-        } ;
-
-        // add it to the RequestQueue
-        requestQueue.add(getRequest);
-    }
-
-    public void sendRouteToServer(View view) {
-        if(mapboxMap.getMarkers().size() < 4){
-            Snackbar.make(mapView, R.string.error_not_enough_waypoints, Snackbar.LENGTH_LONG ).show();
-            return;
-        }
-        JSONObject route = prepareRouteForSending();
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        final String requestBody = route.toString();
-        String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
-        StringRequest stringRequest = new StringRequest(Request.Method.PUT, URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Snackbar.make(mapView, "La route a été enregistrée avec succès", Snackbar.LENGTH_LONG ).show();
-                Log.i("VOLLEY", response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Snackbar.make(mapView, "Erreur de l'enregistrement de route, veuillez contacter un administrateur", Snackbar.LENGTH_LONG ).show();
-                Log.e("VOLLEY", error.toString());
-            }
-        }) {
-            //This is for Headers If You Needed
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json; charset=UTF-8");
-                params.put("Authorization", "Bearer " + token);
-                return params;
-            }
-            //@Override
-            //public String getBodyContentType() {
-            //    return "application/json; charset=utf-8";
-            //}
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-                try {
-                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-                } catch (UnsupportedEncodingException uee) {
-                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                    return null;
-                }
-            }
-
-            @Override
-            protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                String responseString = "";
-                if (response != null) {
-                    responseString = String.valueOf(response.statusCode);
-                    // can get more details such as response.headers
-                }
-                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-            }
-        };
-
-        requestQueue.add(stringRequest);
     }
 
     @Override
@@ -345,6 +167,172 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         mapView.onSaveInstanceState(outState);
     }
 
+    public void initWaypoints(){
+        final String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, URL, null,
+                response -> {
+                    try {
+                        initRoute(response);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("Response", response.toString());
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Bearer " + token);
+                return params;
+            }
+        } ;
+
+        requestQueue.add(getRequest);
+    }
+
+    public JSONObject prepareRouteForSending(){
+        JSONArray res = new JSONArray();
+        int order = 0;
+        for (Marker marker : mapboxMap.getMarkers()) {
+            JSONObject json = new JSONObject();
+            try {
+                if(!isOriginOrDestination(marker)){
+                    json.put("latitude",marker.getPosition().getLatitude());
+                    json.put("longitude",marker.getPosition().getLongitude());
+                    json.put("ordre", order);
+                    res.put(json);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            order++;
+        }
+        try {
+            return new JSONObject().put("waypoints",res);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void initRoute(JSONArray array) throws JSONException {
+        // Ajoute chaque donnée à la liste de waypoint triable
+        List<Waypoint> waypoints = new ArrayList<>();
+        for (int i=0; i< array.length(); i++){
+            JSONObject waypoint = array.getJSONObject(i);
+            waypoints.add(
+                    new Waypoint(
+                            waypoint.getDouble("longitude"),
+                            waypoint.getDouble("latitude"),
+                            waypoint.getInt("ordre")
+                    )
+            );
+        }
+        Collections.sort(waypoints);
+
+        int i = 0;
+        for (Waypoint w: waypoints ) {
+            i+=1;
+            LatLng point = new LatLng(w.latitude, w.longitude);
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(point)
+                    .icon(getMyIcon(i));
+            mapboxMap.addMarker(markerOptions);
+            showMessage(mapView,"Marqueur : "+mapboxMap.getMarkers().size()+"/"+25);
+        }
+        fetchRoute();
+    }
+
+    public Icon getMyIcon(int i){
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+        switch (i){
+            case 1 :
+                return iconFactory.fromResource(R.drawable.marker1);
+            case 2 :
+                return iconFactory.fromResource(R.drawable.marker2);
+            case 3 :
+                return iconFactory.fromResource(R.drawable.marker3);
+            case 4 :
+                return iconFactory.fromResource(R.drawable.marker4);
+            case 5 :
+                return iconFactory.fromResource(R.drawable.marker5);
+            case 6 :
+                return iconFactory.fromResource(R.drawable.marker6);
+            case 7 :
+                return iconFactory.fromResource(R.drawable.marker7);
+            case 8 :
+                return iconFactory.fromResource(R.drawable.marker8);
+            case 9 :
+                return iconFactory.fromResource(R.drawable.marker9);
+        }
+        return iconFactory.fromResource(R.drawable.marker9);
+    }
+
+    public void sendRouteToServer(View view) {
+        if(mapboxMap.getMarkers().size() < 4){
+            showMessage(view,"Il faut au moins deux points pour faire une route");
+            return;
+        }
+        JSONObject route = prepareRouteForSending();
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        final String requestBody = route.toString();
+        String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
+        StringRequest stringRequest = new StringRequest(Request.Method.PUT, URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                showMessage(mapView,"La route a été enregistrée avec succès");
+                Log.i("VOLLEY", response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                showMessage(mapView,"Erreur de l'enregistrement de route, veuillez contacter un administrateur");
+                Log.e("VOLLEY", error.toString());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("Authorization", "Bearer " + token);
+                return params;
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(response.statusCode);
+                    // can get more details such as response.headers
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+
+        requestQueue.add(stringRequest);
+    }
+
+
+
     public void clearRoute(View view) {
         if(mapboxMap.getMarkers().size() == 0){
             mapboxMap.clear();
@@ -353,18 +341,77 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         route = null;
     }
 
+
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
-        this.mapboxMap.setStyle(Style.TRAFFIC_DAY, style -> {
-            this.mapboxMap.setOnMarkerClickListener(this);
-            this.mapboxMap.addOnMapLongClickListener(this);
-            initMapRoute();
-            initWaypoints();
-            initLieux();
-            fetchRayon();
-            boundCameraToRoute();
-        });
+        this.mapboxMap.setStyle(new Style.Builder()
+                .fromUri(Style.SATELLITE_STREETS), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        NavigationLauncherActivity.this.mapboxMap.setOnMarkerClickListener(NavigationLauncherActivity.this);
+                        NavigationLauncherActivity.this.mapboxMap.addOnMapLongClickListener(NavigationLauncherActivity.this);
+                        initMapRoute();
+                        initWaypoints();
+                        initLieux();
+                        fetchRayon(() -> { drawRings(style); });
+                    }
+                }
+        );
+    }
+
+    private void drawRings(Style style) {
+        MapboxRing ringChargement = new MapboxRing(
+                CHARGEMENT,
+                rayonChargement,
+                "SOURCE_RING_CHARGEMENT",
+                "LAYER_RING_CHARGEMENT",
+                distanceSecuriteMarkerRayon
+                );
+        ringChargement.addToStyle(style);
+
+        MapboxRing ringDechargement = new MapboxRing(
+                DECHARGEMENT,
+                rayonDéchargement,
+                "SOURCE_RING_DECHARGEMENT",
+                "LAYER_RING_DECHARGEMENT",
+                distanceSecuriteMarkerRayon
+        );
+        ringDechargement.addToStyle(style);
+
+    }
+
+    public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(color);
+        polylineOptions.width(0.5f); // change the line width here
+        polylineOptions.addAll(getCirclePoints(position, radiusMeters));
+        map.addPolyline(polylineOptions);
+    }
+
+    private static ArrayList<LatLng> getCirclePoints(LatLng position, double radius) {
+        int degreesBetweenPoints = 10; // change here for shape
+        int numberOfPoints = (int) Math.floor(360 / degreesBetweenPoints);
+        double distRadians = radius / 6371000.0; // earth radius in meters
+        double centerLatRadians = position.getLatitude() * Math.PI / 180;
+        double centerLonRadians = position.getLongitude() * Math.PI / 180;
+        ArrayList<LatLng> polygons = new ArrayList<>(); // array to hold all the points
+        for (int index = 0; index < numberOfPoints; index++) {
+            double degrees = index * degreesBetweenPoints;
+            double degreeRadians = degrees * Math.PI / 180;
+            double pointLatRadians = Math.asin(sin(centerLatRadians) * cos(distRadians)
+                    + cos(centerLatRadians) * sin(distRadians) * cos(degreeRadians));
+            double pointLonRadians = centerLonRadians + Math.atan2(sin(degreeRadians)
+                            * sin(distRadians) * cos(centerLatRadians),
+                    cos(distRadians) - sin(centerLatRadians) * sin(pointLatRadians));
+            double pointLat = pointLatRadians * 180 / Math.PI;
+            double pointLon = pointLonRadians * 180 / Math.PI;
+            LatLng point = new LatLng(pointLat, pointLon);
+            polygons.add(point);
+        }
+        // add first point at end to close circle
+        polygons.add(polygons.get(0));
+        return polygons;
     }
 
     private float getDistance(MarkerOptions marker, Point lieu){
@@ -380,16 +427,12 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     private void initLieux(){
-        //IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
-        //Icon icon = iconFactory.fromResource(R.drawable.icon_chargement);
-        //Icon icon2 = iconFactory.fromResource(R.drawable.icon_dechargement);
-
         this.mapboxMap.addMarker(new MarkerOptions().title("Chargement")
-                .position(new LatLng(ORIGIN.latitude(), ORIGIN.longitude()))
+                .position(new LatLng(CHARGEMENT.latitude(), CHARGEMENT.longitude()))
         );
 
         this.mapboxMap.addMarker(new MarkerOptions().title("Déchargement")
-                .position(new LatLng(DESTINATION.latitude(), DESTINATION.longitude()))
+                .position(new LatLng(DECHARGEMENT.latitude(), DECHARGEMENT.longitude()))
         );
     }
 
@@ -398,8 +441,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     private boolean isOriginOrDestination(Marker m){
-        boolean isOrigin =   m.getPosition().getLongitude() == ORIGIN.longitude() && m.getPosition().getLatitude() == ORIGIN.latitude();
-        boolean isDestination  =   m.getPosition().getLongitude() == DESTINATION.longitude() && m.getPosition().getLatitude() == DESTINATION.latitude();
+        boolean isOrigin =   m.getPosition().getLongitude() == CHARGEMENT.longitude() && m.getPosition().getLatitude() == CHARGEMENT.latitude();
+        boolean isDestination  =   m.getPosition().getLongitude() == DECHARGEMENT.longitude() && m.getPosition().getLatitude() == DECHARGEMENT.latitude();
         return (isOrigin || isDestination);
     }
 
@@ -411,7 +454,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 .profile("car");
 
         if (mapboxMap.getMarkers().size() < 4) {
-            Snackbar.make(mapView, R.string.error_not_enough_waypoints, Snackbar.LENGTH_LONG).show();
+            showMessage(mapView,"Il faut au moins deux points pour faire une route");
             return;
         }
 
@@ -441,16 +484,16 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 if (validRouteResponse(response)) {
                     route = response.body().routes().get(0);
                     mapRoute.addRoutes(response.body().routes());
-                    //boundCameraToRoute();
+                    boundCameraToRoute();
                 } else {
-                    Snackbar.make(mapView, R.string.error_calculating_route, Snackbar.LENGTH_LONG).show();
+                    showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 }
                 hideLoading();
             }
 
             @Override
             public void onFailure(Call<DirectionsResponse> call, Throwable t) {
-                Snackbar.make(mapView, R.string.error_calculating_route, Snackbar.LENGTH_LONG).show();
+                showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 hideLoading();
             }
         });
@@ -473,7 +516,9 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     }
 
     private void boundCameraToRoute() {
+        if(!firstFetch) return;
         if (route != null) {
+            firstFetch = false;
             List<Point> routeCoords = LineString.fromPolyline(route.geometry(),
                     Constants.PRECISION_6).coordinates();
             List<LatLng> bboxPoints = new ArrayList<>();
@@ -491,8 +536,8 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
             }
         }
         CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng((ORIGIN.latitude()+DESTINATION.latitude())/2, (ORIGIN.longitude()+DESTINATION.longitude())/2 ))
-                .zoom(12)
+                .target(new LatLng((CHARGEMENT.latitude()+ DECHARGEMENT.latitude())/2, (CHARGEMENT.longitude()+ DECHARGEMENT.longitude())/2 ))
+                .zoom(14)
                 .tilt(20)
                 .build();
         mapboxMap.setCameraPosition(position);
@@ -517,28 +562,35 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         } else {
             clearRoute(null);
         }
-        Snackbar.make(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+25, Snackbar.LENGTH_LONG).show();
+        showMessage(mapView,"Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+25);
         Log.d("MARKER", Long.toString(marker.getId()));
         return false;
     }
 
+    public void showMessage(View mapView,String message){
+        Snackbar snackbar;
+        snackbar = Snackbar.make(mapView, message, Snackbar.LENGTH_LONG);
+        View snackBarView = snackbar.getView();
+        snackBarView.setBackgroundColor(Color.WHITE);
+        snackbar.show();
+    }
     @Override
     public boolean onMapLongClick(@NonNull LatLng point) {
         vibrate();
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(point)
                 .icon(getMyIcon(mapboxMap.getMarkers().size()-1));
-        if(getDistance(markerOptions,ORIGIN)< rayonChargement ){
-            Snackbar.make(mapView, "Le marqueur ne peut pas être dans le rayon de chargement"+getDistance(markerOptions,ORIGIN)+"<"+rayonChargement, Snackbar.LENGTH_LONG).show();
-        }else if (getDistance(markerOptions,DESTINATION)< rayonDéchargement) {
-            Snackbar.make(mapView, "Le marqueur ne peut pas être dans le rayon de déchargement"+getDistance(markerOptions,DESTINATION)+"<"+rayonDéchargement, Snackbar.LENGTH_LONG).show();
+        if(getDistance(markerOptions,CHARGEMENT)< rayonChargement + distanceSecuriteMarkerRayon ){
+            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de chargement "+(getDistance(markerOptions,CHARGEMENT))+" < "+rayonChargement+distanceSecuriteMarkerRayon);
+        }else if (getDistance(markerOptions,DECHARGEMENT)< rayonDéchargement + distanceSecuriteMarkerRayon) {
+            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de déchargement "+(getDistance(markerOptions,DECHARGEMENT))+" < "+rayonDéchargement+distanceSecuriteMarkerRayon);
         }else{
             mapboxMap.addMarker(markerOptions);
-            Snackbar.make(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+23, Snackbar.LENGTH_LONG).show();
+            showMessage(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+23);
         }
-        //addPointToRoute(point.getLatitude(), point.getLongitude());
-        //updateRouteAfterWaypointChange();
-        fetchRoute();
+        if(mapboxMap.getMarkers().size() > 3) {
+            fetchRoute();
+        }
         return true;
     }
 
@@ -555,13 +607,17 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         }
     }
 
-    private void fetchRayon() {
+    private void fetchRayon(Runnable lambda) {
         final String URL = BASE_URL + "chantiers/" + chantierId;
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, URL, null,
                 response -> {
                     try {
                         rayonDéchargement = response.getJSONObject("lieuDéchargement").getInt("rayon");
                         rayonChargement = response.getJSONObject("lieuChargement").getInt("rayon");
+                        if(lambda != null) {
+                            lambda.run();
+                        }
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
