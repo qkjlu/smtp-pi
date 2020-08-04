@@ -10,9 +10,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -81,6 +88,7 @@ import retrofit2.Response;
 @SuppressLint("MissingPermission")
 public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener{
 
+    private static final int ONE_HUNDRED_MILLISECONDS = 100;
     private NavigationView navigationView;
     private TextView timeDiffTextView;
     private DirectionsRoute route;
@@ -1083,6 +1091,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             userIdToMove = data.getString("userId");
             if (userIdToMove.equals(userId)) {
                 rerouting(data);
+                vibrateAndNotify();
+                showAlertDetournementWithAutoDismiss();
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -1090,4 +1100,47 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
         modifyTimeDiffTruckAheadIfNecessary();
     });
+
+    @SuppressLint("MissingPermission")
+    private void vibrateAndNotify() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(ONE_HUNDRED_MILLISECONDS, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            vibrator.vibrate(ONE_HUNDRED_MILLISECONDS);
+        }
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showAlertDetournementWithAutoDismiss() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(Navigation.this);
+        builder.setTitle("Détournement !")
+                .setMessage("Vous avez été détourné vers un autre chantier")
+                .setCancelable(false).setCancelable(false)
+                .setPositiveButton("SKIP", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //this for skip dialog
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (alertDialog.isShowing()){
+                    alertDialog.dismiss();
+                }
+            }
+        }, 5000); //change 5000 with a specific time you want
+    }
 }
