@@ -38,6 +38,7 @@ import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.exceptions.InvalidLatLngBoundsException;
@@ -60,6 +61,9 @@ import java.util.List;
 import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
+import static com.mapbox.turf.TurfConstants.UNIT_METRES;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 
 public class NavigationLauncherActivity extends AppCompatActivity implements OnMapReadyCallback,
         MapboxMap.OnMapLongClickListener, MapboxMap.OnMarkerClickListener {
@@ -73,6 +77,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     private String typeRoute;
     private String chantierId;
     private int rayonChargement;
+    private int distanceSecuriteMarkerRayon = 25;
     private int rayonDéchargement;
     private  String token;
     private static final int CAMERA_ANIMATION_DURATION = 1000;
@@ -242,7 +247,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                     .position(point)
                     .icon(getMyIcon(i));
             mapboxMap.addMarker(markerOptions);
-            Snackbar.make(mapView, "Marqueur : "+mapboxMap.getMarkers().size()+"/"+25, Snackbar.LENGTH_LONG).show();
+            showMessage(mapView,"Marqueur : "+mapboxMap.getMarkers().size()+"/"+25);
         }
         fetchRoute();
     }
@@ -274,7 +279,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
 
     public void sendRouteToServer(View view) {
         if(mapboxMap.getMarkers().size() < 4){
-            Snackbar.make(mapView, R.string.error_not_enough_waypoints, Snackbar.LENGTH_LONG ).show();
+            showMessage(view,"Il faut au moins deux points pour faire une route");
             return;
         }
         JSONObject route = prepareRouteForSending();
@@ -284,13 +289,13 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         StringRequest stringRequest = new StringRequest(Request.Method.PUT, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Snackbar.make(mapView, "La route a été enregistrée avec succès", Snackbar.LENGTH_LONG ).show();
+                showMessage(mapView,"La route a été enregistrée avec succès");
                 Log.i("VOLLEY", response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Snackbar.make(mapView, "Erreur de l'enregistrement de route, veuillez contacter un administrateur", Snackbar.LENGTH_LONG ).show();
+                showMessage(mapView,"Erreur de l'enregistrement de route, veuillez contacter un administrateur");
                 Log.e("VOLLEY", error.toString());
             }
         }) {
@@ -361,7 +366,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 rayonChargement,
                 "SOURCE_RING_CHARGEMENT",
                 "LAYER_RING_CHARGEMENT",
-                25
+                distanceSecuriteMarkerRayon
                 );
         ringChargement.addToStyle(style);
 
@@ -370,10 +375,43 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 rayonDéchargement,
                 "SOURCE_RING_DECHARGEMENT",
                 "LAYER_RING_DECHARGEMENT",
-                25
+                distanceSecuriteMarkerRayon
         );
         ringDechargement.addToStyle(style);
 
+    }
+
+    public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(color);
+        polylineOptions.width(0.5f); // change the line width here
+        polylineOptions.addAll(getCirclePoints(position, radiusMeters));
+        map.addPolyline(polylineOptions);
+    }
+
+    private static ArrayList<LatLng> getCirclePoints(LatLng position, double radius) {
+        int degreesBetweenPoints = 10; // change here for shape
+        int numberOfPoints = (int) Math.floor(360 / degreesBetweenPoints);
+        double distRadians = radius / 6371000.0; // earth radius in meters
+        double centerLatRadians = position.getLatitude() * Math.PI / 180;
+        double centerLonRadians = position.getLongitude() * Math.PI / 180;
+        ArrayList<LatLng> polygons = new ArrayList<>(); // array to hold all the points
+        for (int index = 0; index < numberOfPoints; index++) {
+            double degrees = index * degreesBetweenPoints;
+            double degreeRadians = degrees * Math.PI / 180;
+            double pointLatRadians = Math.asin(sin(centerLatRadians) * cos(distRadians)
+                    + cos(centerLatRadians) * sin(distRadians) * cos(degreeRadians));
+            double pointLonRadians = centerLonRadians + Math.atan2(sin(degreeRadians)
+                            * sin(distRadians) * cos(centerLatRadians),
+                    cos(distRadians) - sin(centerLatRadians) * sin(pointLatRadians));
+            double pointLat = pointLatRadians * 180 / Math.PI;
+            double pointLon = pointLonRadians * 180 / Math.PI;
+            LatLng point = new LatLng(pointLat, pointLon);
+            polygons.add(point);
+        }
+        // add first point at end to close circle
+        polygons.add(polygons.get(0));
+        return polygons;
     }
 
     private float getDistance(MarkerOptions marker, Point lieu){
@@ -416,7 +454,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                 .profile("car");
 
         if (mapboxMap.getMarkers().size() < 4) {
-            Snackbar.make(mapView, R.string.error_not_enough_waypoints, Snackbar.LENGTH_LONG).show();
+            showMessage(mapView,"Il faut au moins deux points pour faire une route");
             return;
         }
 
@@ -448,14 +486,14 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
                     mapRoute.addRoutes(response.body().routes());
                     boundCameraToRoute();
                 } else {
-                    Snackbar.make(mapView, R.string.error_calculating_route, Snackbar.LENGTH_LONG).show();
+                    showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 }
                 hideLoading();
             }
 
             @Override
             public void onFailure(Call<DirectionsResponse> call, Throwable t) {
-                Snackbar.make(mapView, R.string.error_calculating_route, Snackbar.LENGTH_LONG).show();
+                showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 hideLoading();
             }
         });
@@ -524,28 +562,35 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
         } else {
             clearRoute(null);
         }
-        Snackbar.make(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+25, Snackbar.LENGTH_LONG).show();
+        showMessage(mapView,"Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+25);
         Log.d("MARKER", Long.toString(marker.getId()));
         return false;
     }
 
+    public void showMessage(View mapView,String message){
+        Snackbar snackbar;
+        snackbar = Snackbar.make(mapView, message, Snackbar.LENGTH_LONG);
+        View snackBarView = snackbar.getView();
+        snackBarView.setBackgroundColor(Color.WHITE);
+        snackbar.show();
+    }
     @Override
     public boolean onMapLongClick(@NonNull LatLng point) {
         vibrate();
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(point)
                 .icon(getMyIcon(mapboxMap.getMarkers().size()-1));
-        if(getDistance(markerOptions, CHARGEMENT)< rayonChargement ){
-            Snackbar.make(mapView, "Le marqueur ne peut pas être dans le rayon de chargement"+getDistance(markerOptions, CHARGEMENT)+"<"+rayonChargement, Snackbar.LENGTH_LONG).show();
-        }else if (getDistance(markerOptions, DECHARGEMENT)< rayonDéchargement) {
-            Snackbar.make(mapView, "Le marqueur ne peut pas être dans le rayon de déchargement"+getDistance(markerOptions, DECHARGEMENT)+"<"+rayonDéchargement, Snackbar.LENGTH_LONG).show();
+        if(getDistance(markerOptions,CHARGEMENT)< rayonChargement + distanceSecuriteMarkerRayon ){
+            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de chargement "+(getDistance(markerOptions,CHARGEMENT))+" < "+rayonChargement+distanceSecuriteMarkerRayon);
+        }else if (getDistance(markerOptions,DECHARGEMENT)< rayonDéchargement + distanceSecuriteMarkerRayon) {
+            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de déchargement "+(getDistance(markerOptions,DECHARGEMENT))+" < "+rayonDéchargement+distanceSecuriteMarkerRayon);
         }else{
             mapboxMap.addMarker(markerOptions);
-            Snackbar.make(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+23, Snackbar.LENGTH_LONG).show();
+            showMessage(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+23);
         }
-        //addPointToRoute(point.getLatitude(), point.getLongitude());
-        //updateRouteAfterWaypointChange();
-        fetchRoute();
+        if(mapboxMap.getMarkers().size() > 3) {
+            fetchRoute();
+        }
         return true;
     }
 

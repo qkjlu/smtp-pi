@@ -1,11 +1,8 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity , Text, ScrollView , View} from 'react-native';
-import Constants from 'expo-constants';
-import axios from 'axios';
 import Autocomplete from "react-native-autocomplete-input";
-import PlacePreview from "./PlacePreview";
-import ValidateButton from "../ValidateButton";
-export default class AutoCompletePlaces extends React.Component {
+import PlacePreview from "../Place/PlacePreview";
+export default class AutoCompleteMateriaux extends React.Component {
 
     constructor (props) {
         super(props)
@@ -19,23 +16,23 @@ export default class AutoCompletePlaces extends React.Component {
         if (query === '') {
             return [];
         }
-        const { places } = this.props.places;
+        const { places } = this.props.materiaux;
         const regex = new RegExp(`${query.trim()}`, 'i');
-        return this.props.places.filter(place => place.adresse.search(regex) >= 0);
+        return this.props.materiaux.filter(place => place.nom.search(regex) >= 0);
     }
 
     render() {
         const { query } = this.state;
         const places = this.findPlace(query);
         const comp = (a, b) => a.toLowerCase().trim() === b.toLowerCase().trim();
-        const placeHolderName = " Addresse du lieu de "+ this.props.name;
+        const placeHolderName = " type du materiau";
         if(!this.state.showPreview){
             return (
                 <ScrollView>
                     <Autocomplete
                         autoCapitalize="none"
                         autoCorrect={false}
-                        data={places.length === 1 && comp(query, places[0].adresse) ? [] : places}
+                        data={places.length === 1 && comp(query, places[0].nom) ? [] : places}
                         defaultValue={query}
                         onChangeText={text => this.setState({ query: text })}
                         placeholder={placeHolderName}
@@ -43,12 +40,12 @@ export default class AutoCompletePlaces extends React.Component {
                         renderItem={({ item }) => (
                             <TouchableOpacity onPress={() =>
                             {
-                                this.setState({ query: item.adresse });
-                                this.props.changePlace(item.id);
+                                this.setState({ query: item.nom });
+                                this.props.changeMateriau(item.id);
                                 this.setState({showPreview : true});
                             }
                             }>
-                                <Text> {item.adresse +" ("+ (item.type ? item.type :  "chantier") +")"} </Text>
+                                <Text> { item.nom } </Text>
                             </TouchableOpacity>
                         )}
                     />
@@ -58,7 +55,7 @@ export default class AutoCompletePlaces extends React.Component {
             return (
                 <PlacePreview idPlace={this.state.query}
                               unShowPreview={() => this.setState({showPreview:false})}
-                              changePlace={(idPlace) => this.props.changePlace({idPlace})}
+                              changePlace={(idPlace) => this.props.changeMateriau({idPlace})}
                               changeQuery={(query => this.setState({query}))}
                 />
             );
