@@ -5,8 +5,6 @@ import axios from 'axios';
 import Config from "react-native-config";
 import Style from "../Style";
 
-
-
 export default class FuelForm extends React.Component{
     constructor(props){
         super(props);

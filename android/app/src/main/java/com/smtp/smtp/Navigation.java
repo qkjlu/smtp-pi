@@ -62,11 +62,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -113,6 +117,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
     private Etape etape = null;
+    private Pause pause = null;
     private String etapeIdPrecedente = null;
     private int rayonChargement;
     private int rayonDéchargement;
@@ -469,12 +474,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     // Alert to show when internet is disabled
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Erreur Réseaux");
-        builder.setMessage("Pas de connexion internet")
+        builder.setTitle("Pas de connexion internet");
+        builder.setMessage("Vérifier que les données mobiles sont bien activées")
                 .setCancelable(false);
-        builder.setPositiveButton("Quitter", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Fermer", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                finish();
+                dialog.dismiss();
             }
         });
         AlertDialog alert = builder.create();
@@ -494,10 +499,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setEnabled(false);
                     buttonReprendre.setVisibility(View.VISIBLE);
                     buttonReprendre.setEnabled(true);
+
                     if(isOffRoute){
                         previousEtat = preOffRoute;
                     }else{
                         previousEtat = myEtat;
+                    }
+                    if(etape != null){
+                        pause = new Pause(etape.getEtapeId(),getApplicationContext());
                     }
                     myEtat = "pause";
                     onPause = true;
@@ -515,10 +524,24 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setEnabled(true);
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
+                    if(etape != null && pause != null){
+                        pause.sendFinPause();
+                    }
                     myEtat = previousEtat;
                 }
             }
         });
+    }
+
+    private void createPause(){
+
+    }
+
+    private void getCoefficient(){
+
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        System.out.println(new SimpleDateFormat("EEEE", Locale.FRANCE).format(date.getTime()));
     }
 
     private void fetchRayon() {
