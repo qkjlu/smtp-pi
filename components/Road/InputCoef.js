@@ -12,7 +12,7 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 export default function InputCoef (props){
   return(
     <View style={styles.view} >
-      <Text>{props.placeholder}: {typeof(props.value)}</Text>
+      <Text>{props.placeholder}</Text>
       <TextInput
         style={styles.text}
         value={props.value.toString(10)}
