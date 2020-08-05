@@ -1,4 +1,4 @@
-package com.smtp.smtp;
+package com.smtp.smtp.navigation;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -56,6 +56,11 @@ import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeLis
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgressState;
 import com.mapbox.services.android.navigation.v5.utils.RouteUtils;
+import com.smtp.smtp.BuildConfig;
+import com.smtp.smtp.Helper;
+import com.smtp.smtp.R;
+import com.smtp.smtp.http.CoefJSONAsyncRequest;
+import com.smtp.smtp.http.RequestManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -103,14 +108,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Point CHARGEMENT;
     private Point DECHARGEMENT;
     private Point destination;
-
-
     private String userId;
     private String chantierId;
     private String typeRoute;
     private String token;
     private JSONObject coordinates;
     private double remainingTime;
+    private Double remainingTimeCoef;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
     private Etape etape = null;
@@ -125,7 +129,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private List<Point> roadPoint = new ArrayList<>();
     private Location location;
     private int remainingWaypoints = -1;
-
     private int timeToSend = 3;
     private int delay = timeToSend;
 
@@ -290,8 +293,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         DECHARGEMENT = Point.fromLngLat(destination[0], destination[1]);
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
-        typeRoute = i.getStringExtra("typeRoute");
-        Log.d(TAG, "typeRoute: " + typeRoute);
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         previousEtat = myEtat;
@@ -307,7 +308,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         navigationView.onCreate(savedInstanceState);
 
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkStateReceiver, filter);
         registerReceiver(broadcastReceiver, new IntentFilter("NO_INTERNET"));
 
@@ -619,7 +619,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
-        this.remainingTime = Math.max(0, routeProgress.durationRemaining() * 1.25 );
+        this.remainingTime = Math.max(0, routeProgress.durationRemaining() * this.remainingTimeCoef);
+
 
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
@@ -758,7 +759,21 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             typeRoute = "retour";
             destination = CHARGEMENT;
         }
-        initWaypoints();
+        
+        fetchCoef(() -> initWaypoints());
+    }
+
+    private void fetchCoef(Runnable then) {
+        CoefJSONAsyncRequest coefAsyncRequest = new CoefJSONAsyncRequest(getApplicationContext(), token);
+        HashMap<String, String> coefRequestArgs = new HashMap<>();
+        coefRequestArgs.put("chantierId", this.chantierId);
+        coefRequestArgs.put("typeRoute", this.typeRoute);
+        coefRequestArgs.put("day", Helper.getDayString());
+
+        coefAsyncRequest.getByChantierAndTypeRouteAndDay(coefRequestArgs, fetchedCoef -> {
+            this.remainingTimeCoef = fetchedCoef;
+            then.run();
+        });
     }
 
     private void buildRoute() {

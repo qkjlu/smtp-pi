@@ -1,4 +1,4 @@
-package com.smtp.smtp;
+package com.smtp.smtp.http;
 
 import android.content.Context;
 
