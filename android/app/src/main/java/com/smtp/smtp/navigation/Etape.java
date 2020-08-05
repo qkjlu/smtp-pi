@@ -1,4 +1,4 @@
-package com.smtp.smtp;
+package com.smtp.smtp.navigation;
 
 import android.content.Context;
 import android.util.Log;
@@ -22,6 +22,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
+import com.smtp.smtp.BuildConfig;
+import com.smtp.smtp.http.RequestManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
