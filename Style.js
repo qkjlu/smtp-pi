@@ -13,7 +13,10 @@ export default {
     containerForm:{
         alignItems: 'center',
     },
-
+    progressBar:{
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     input : {
         borderColor: 'gray',
         borderWidth:1 ,

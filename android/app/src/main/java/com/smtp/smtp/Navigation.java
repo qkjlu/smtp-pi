@@ -476,25 +476,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            navigationView.stopNavigation();
-            showAlertDialog();
+            showAlertDetournementWithAutoDismiss("Pas de connexion internet","Pas de connexion internet","Fermer",10000);
         }
     };
 
-    // Alert to show when internet is disabled
-    private void showAlertDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Pas de connexion internet");
-        builder.setMessage("Vérifier que les données mobiles sont bien activées")
-                .setCancelable(false);
-        builder.setNegativeButton("Fermer", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
+
 
     // listener for paused and reprendre buttons
     private void addListenerOnButton() {
@@ -1115,7 +1101,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             if (userIdToMove.equals(userId)) {
                 rerouting(data);
                 vibrateAndNotify();
-                showAlertDetournementWithAutoDismiss();
+                showAlertDetournementWithAutoDismiss("Détournement !","Vous avez été détourné vers un autre chantier","Fermer",5000);
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -1144,12 +1130,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
     }
 
-    public void showAlertDetournementWithAutoDismiss() {
+    public void showAlertDetournementWithAutoDismiss(String title, String message, String messageButton, int delayTime) {
         AlertDialog.Builder builder = new AlertDialog.Builder(Navigation.this);
-        builder.setTitle("Détournement !")
-                .setMessage("Vous avez été détourné vers un autre chantier")
+        builder.setTitle(title)
+                .setMessage(message)
                 .setCancelable(false).setCancelable(false)
-                .setPositiveButton("SKIP", new DialogInterface.OnClickListener() {
+                .setPositiveButton(messageButton, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //this for skip dialog
                         dialog.cancel();
@@ -1164,6 +1150,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     alertDialog.dismiss();
                 }
             }
-        }, 5000); //change 5000 with a specific time you want
+        }, delayTime); //change 5000 with a specific time you want
     }
 }
