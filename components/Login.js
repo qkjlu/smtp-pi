@@ -3,19 +3,15 @@ import InputText from './InputText';
 import ValidateButton from './ValidateButton';
 import CustomPicker from './CustomPicker';
 import { ButtonGroup } from 'react-native-elements';
-import * as Permissions from 'expo-permissions';
-import * as Location from 'expo-location';
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import style from "../Style";
 import  {View, ActivityIndicator, AsyncStorage, ScrollView, Text} from 'react-native';
 import AutoCompletePlaces from "./Place/AutoCompletePlaces";
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
 var jwtDecode = require('jwt-decode');
 import Config from "react-native-config";
-import VersionCheck from 'react-native-version-check';
 import Setup from './Services/setup'
 import { Image } from 'react-native-elements';
 
@@ -28,9 +24,6 @@ export default class Login extends React.Component{
     this.handlePickerChange = this.handlePickerChange.bind(this);
     this.handleChangeFirstField = this.handleChangeFirstField.bind(this);
     this.handleChangeSecondField = this.handleChangeSecondField.bind(this);
-    this.requestLocationPermission = this.requestLocationPermission.bind(this);
-    this.internetCheck = this.internetCheck.bind(this);
-    this.accesLocation = this.accesLocation.bind(this);
     this.handleValidate = this.handleValidate.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
@@ -42,13 +35,12 @@ export default class Login extends React.Component{
       secondField : "",
       selectedIndex: 0,
       user : null,
+      fill :100
     };
   }
 
   async componentDidMount(){
     await this.setup.initSetup();
-    await this.requestLocationPermission();
-    await this.internetCheck();
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
         if(response.status != 200){
@@ -64,56 +56,6 @@ export default class Login extends React.Component{
         alert(error)
         console.log(error);
       });
-  }
-
-  // handle connection error
-  async internetCheck(){
-    NetInfo.fetch().then(state => {
-      if (state.type === 'cellular' || state.type === 'wifi') {
-        axios.get(Config.API_URL + 'entreprises')
-          .then( response => {
-            console.log("internet check passed !");
-            }
-          ).catch(function (error) {
-            alert("Erreur réseau ! Vérifier que les données mobiles et la localisation sont activées");
-          });
-      }else{
-        alert("Erreur réseau ! Vérifier que les données mobiles et la localisation sont activées");
-      }
-    }).catch(function (error){
-      alert("error")
-    });
-  }
-
-  accesLocation(){
-    return RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastInterval: 5000})
-    .then(data => {
-      console.log("data" + data)
-      return true
-    }).catch(err => {
-      return false
-    });
-  }
-
-  // ask location to GPS and get current position if granted
-  async requestLocationPermission() {
-    let permission = false;
-    let acces = false;
-    while (!permission || !acces){
-      try {
-          let {granted} = await Permissions.askAsync(Permissions.LOCATION);
-          if (granted) {
-              console.log("access to position granted");
-              permission = true;
-              acces = this.accesLocation();
-              console.log(acces);
-          } else {
-              console.log("Location permission denied");
-          }
-      } catch (err) {
-          console.log("error "+err)
-      }
-    }
   }
 
   async storeDataSession(item, selectedValue){
@@ -218,7 +160,25 @@ export default class Login extends React.Component{
 
   render(){
     if (this.state.companies == null){
-      return (<ActivityIndicator color="red" size="large"/>);
+      return (
+        <View style={style.container}>
+          <AnimatedCircularProgress
+            size={150}
+            width={25}
+            fill={100}
+            tintColor="#f69552"
+            duration={120000}
+            backgroundColor="#3d5875">
+            {
+              (fill) => (
+                <Text>
+                  {Math.trunc(fill)} %
+                </Text>
+              )
+            }
+          </AnimatedCircularProgress>
+        </View>
+      );
     }else{
       let firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
       let secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";

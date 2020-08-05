@@ -1,9 +1,10 @@
 import React from "react";
 import style from "../../Style";
-import {Text, View, ScrollView, AsyncStorage, ActivityIndicator} from "react-native";
+import {Text, View, ScrollView, AsyncStorage, ActivityIndicator, TextInput, StyleSheet} from "react-native";
 import {Badge, Button, Icon} from "react-native-elements";
 import ActivityStarter from "../../ActivityStarter";
 let func = require('../globalHelper/axios');
+import CoefForm from './CoefForm';
 
 export default class Road extends React.Component {
     constructor(props) {
@@ -58,15 +59,7 @@ export default class Road extends React.Component {
                                 </View>
                             </View>
                         </View>
-                        <View style={style.semaines}>
-                            <Text style={style.jours}> coefficient : </Text>
-                            <Text style={style.jours}> Lundi : 1.25 </Text>
-                            <Text style={style.jours}> Mardi : 1.25 </Text>
-                            <Text style={style.jours}> Mercredi : 1.25 </Text>
-                            <Text style={style.jours}> Jeudi : 1.25 </Text>
-                            <Text style={style.jours}> Vendredi : 1.25 </Text>
-                            <Text style={style.jours}> VALIDER </Text>
-                        </View>
+                        <CoefForm chantier={this.worksite.id} type="aller"/>
                         <View style={style.worksite}>
                             <View style={{flex: 8}}>
                                 <Text style={{paddingTop: 10}}> Déchargement -> Chargement </Text>
@@ -95,17 +88,19 @@ export default class Road extends React.Component {
                                 </View>
                             </View>
                         </View>
-                        <View style={style.semaines}>
-                            <Text style={style.jours}> coefficient : </Text>
-                            <Text style={style.jours}> Lundi : 1.25 </Text>
-                            <Text style={style.jours}> Mardi : 1.25 </Text>
-                            <Text style={style.jours}> Mercredi : 1.25 </Text>
-                            <Text style={style.jours}> Jeudi : 1.25 </Text>
-                            <Text style={style.jours}> Vendredi : 1.25 </Text>
-                            <Text style={style.jours}> VALIDER </Text>
-                        </View>
+                        <CoefForm chantier={this.worksite.id} type="retour"/>
                     </ScrollView>
                 )
             }
     }
 }
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  coef : {
+    flex: 1,
+  }
+});
