@@ -88,7 +88,7 @@ export default class AddWorkSiteForm extends React.Component {
     }
 
     setGPSLocationPage(){
-      RootNavigation.navigate("setGPSLocation", {longitude:this.state.lon, latitude: this.state.lat, origin:"AddPlace", type: "add" });
+      RootNavigation.navigate("AddGPSLocation", {longitude:this.state.lon, latitude: this.state.lat});
     }
 
     setLocation(marker){

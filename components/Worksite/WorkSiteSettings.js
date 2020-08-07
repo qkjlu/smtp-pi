@@ -69,12 +69,14 @@ export default class WorkSiteSettings extends React.Component {
           })
         }
       }else{
-        let copy = Object.assign({}, this.state.dechargement);
-        copy.latitude = this.props.route.params?.marker.coordinate.latitude;
-        copy.longitude = this.props.route.params?.marker.coordinate.longitude;
-        this.setState({
-          dechargement :copy
-        })
+        if(this.state.dechargement.latitude !== this.props.route.params?.marker.coordinate.latitude){
+          let copy = Object.assign({}, this.state.dechargement);
+          copy.latitude = this.props.route.params?.marker.coordinate.latitude;
+          copy.longitude = this.props.route.params?.marker.coordinate.longitude;
+          this.setState({
+            dechargement :copy
+          })
+        }
       }
     }
   }
@@ -109,9 +111,8 @@ export default class WorkSiteSettings extends React.Component {
   }
 
   setGPSLocationPage(type){
-    let lat = type === "chargement" ? this.state.chargement.latitude : this.state.dechargement.latitude;
-    let lon = type === "chargement" ? this.state.chargement.longitude : this.state.dechargement.longitude;
-    RootNavigation.navigate("setGPSLocation", {longitude:lon, latitude: lat, origin : "Settings", type: type });
+    let lieu = type === "chargement" ? this.state.chargement : this.state.dechargement;
+    RootNavigation.navigate("ModifyGPSLocation", {lieu: lieu, type: type });
   }
 
   render(){
@@ -122,6 +123,7 @@ export default class WorkSiteSettings extends React.Component {
         </View>
       )
     }else{
+      console.log(" render :" + JSON.stringify(this.state.chargement))
       return(
         <View>
             <ScrollView>

@@ -8,7 +8,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from './components/Login';
 import Chart from "./components/Chart";
 import MapAdmin from './components/Map/MapAdmin';
-import SetGPSLocation from "./components/Place/SetGPSLocation";
 import MapTruck from './components/Map/MapTruck';
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import useLinking from './navigation/useLinking';
