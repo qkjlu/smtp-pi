@@ -784,8 +784,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
-                .baseUrl("http://192.168.43.108:3000/")
-                //.baseUrl(BuildConfig.API_URL)
+                //.baseUrl("http://192.168.43.108:3000/")
+                .baseUrl(BuildConfig.API_URL)
                 .user("gh")
                 .origin(roadPoint.get(0))
                 .destination(roadPoint.get(roadPoint.size() - 1))
