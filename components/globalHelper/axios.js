@@ -49,13 +49,35 @@ export async function getChantiers() {
 export async function getChantier(chantierId){
     const token = await AsyncStorage.getItem('token');
     let url = Config.API_URL+ "chantiers/"+ chantierId;
-    return await axios({
+    await axios({
         method : 'get',
         url : url,
         headers: {'Authorization': 'Bearer ' + token},
     })
         .then( response => {
-            if(response.status != 200){
+            if(response.status !== 200){
+                alert(response.status);
+                return response.status;
+            }
+            console.log(response.status);
+            return response.data;
+        })
+        .catch(function (error) {
+            alert(error)
+            console.log(error);
+        });
+}
+
+export async function getCamionneur(camionneurId){
+    const token = await AsyncStorage.getItem('token');
+    let url = Config.API_URL+ "camionneurs/"+ camionneurId;
+    await axios({
+        method : 'get',
+        url : url,
+        headers: {'Authorization': 'Bearer ' + token},
+    })
+        .then( response => {
+            if(response.status !== 200){
                 alert(response.status);
                 return response.status;
             }

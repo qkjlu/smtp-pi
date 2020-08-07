@@ -287,4 +287,5 @@ android/java_pid22412.hprof
 
 # environment variable
 .env.dev
+.env.dev.local
 .env.prod

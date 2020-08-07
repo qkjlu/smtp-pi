@@ -41,9 +41,20 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.mapbox.api.directions.v5.WalkingOptions;
+import com.mapbox.api.directions.v5.models.BannerInstructions;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.api.directions.v5.models.LegAnnotation;
+import com.mapbox.api.directions.v5.models.LegStep;
+import com.mapbox.api.directions.v5.models.RouteLeg;
+import com.mapbox.api.directions.v5.models.RouteOptions;
+import com.mapbox.api.directions.v5.models.StepIntersection;
+import com.mapbox.api.directions.v5.models.StepManeuver;
+import com.mapbox.api.directions.v5.models.VoiceInstructions;
+import com.mapbox.api.matching.v5.MapboxMapMatching;
 import com.mapbox.geojson.Point;
+import com.mapbox.geojson.utils.PolylineUtils;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -64,8 +75,8 @@ import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgressState;
 import com.mapbox.services.android.navigation.v5.utils.RouteUtils;
 import com.smtp.smtp.BuildConfig;
-import com.smtp.smtp.Helper;
 import com.smtp.smtp.R;
+import com.smtp.smtp.Sortie;
 import com.smtp.smtp.http.CoefJSONAsyncRequest;
 import com.smtp.smtp.http.RequestManager;
 
@@ -74,15 +85,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -108,15 +115,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private static final String TAG = "Navigation";
     private boolean isOffRoute = false;
     private String preOffRoute = "";
-    private OffRoute neverOffRouteEngine = new OffRoute() {
-        @Override
-        public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
-            // User will never be off-route
-
-            return false;
-        }
-    };
-
+    private Boolean sendingOffRoute = false;
+    private OffRoute neverOffRouteEngine;
     private Point CHARGEMENT;
     private Point DECHARGEMENT;
     private Point destination;
@@ -130,6 +130,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
     private Etape etape = null;
+    private Sortie sortie = null;
     private Pause pause = null;
     private String etapeIdPrecedente = null;
     private int rayonChargement;
@@ -151,6 +152,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Button buttonReprendre;
     private boolean onPause = false;
     private NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
+    private List<Waypoint> initialWaypoints;
 
     // Connection to the socket server
     {
@@ -529,17 +531,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         });
     }
 
-    private void createPause(){
-
-    }
-
-    private void getCoefficient(){
-
-        Calendar calendar = Calendar.getInstance();
-        Date date = calendar.getTime();
-        System.out.println(new SimpleDateFormat("EEEE", Locale.FRANCE).format(date.getTime()));
-    }
-
     private void fetchRayon() {
         final String URL = BASE_URL + "chantiers/" + chantierId;
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, URL, null,
@@ -600,12 +591,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         return distanceFromDestination[0];
     }
 
-	public void handleOffRoute(RouteProgress routeProgress){
-        Log.d("offR", " preOffRoute : " + preOffRoute);
-        Log.d("offR", " isOffRoute  : " + isOffRoute);
-        Log.d("offR", " routeProgress? : " + (routeProgress.currentState() != null));
-        Log.d("offR", " previousEtat : " + previousEtat);
-
+	public void handleOffRoute(Location location, RouteProgress routeProgress){
         if(myEtat.equals("enChargement") || myEtat.equals("enDéchargement") || myEtat.equals("pause") ){
             preOffRoute = "";
             isOffRoute = false;
@@ -628,23 +614,47 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 }
             }
         }
+        sendOffRoute(location);
+    }
+
+    public void sendOffRoute(Location location){
+        // on commence un offRoute
+        if(!sendingOffRoute && isOffRoute){
+            Log.d("Sortie", "débutSortie");
+            sendingOffRoute = true;
+            sortie = new Sortie(chantierId,userId,typeRoute,getApplicationContext());
+            sortie.addWaypoint(location.getLatitude(),location.getLongitude());
+        }
+        // on continue
+        if(sendingOffRoute && isOffRoute){
+            Log.d("Sortie", "ajoutPointSortie");
+            // on conserve la meme Sortie ( ajout d'un Point)
+            sortie.addWaypoint(location.getLongitude(),location.getLatitude());
+        }
+        // on arrete
+        if(sendingOffRoute && !isOffRoute){
+            sendingOffRoute = false;
+            sortie.sendFinSortie();
+            Log.d("Sortie", "finSortie");
+            // on termine la Sortie ( dateFin)
+        }
+
     }
 
     @Override
     public void onProgressChange(Location location, RouteProgress routeProgress) {
-		handleOffRoute(routeProgress);
+		handleOffRoute(location,routeProgress);
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
         this.remainingTime = Math.max(0, routeProgress.durationRemaining() * this.remainingTimeCoef);
 
-
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
             return;
         }
-        modifyTimeDiffTruckAheadIfNecessary();
 
+        modifyTimeDiffTruckAheadIfNecessary();
 
         //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
@@ -699,7 +709,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     public void prepareRoute(JSONArray array) throws JSONException {
         // Ajoute chaque donnée à la liste de waypoint
-        List<Waypoint> initialWaypoints = new ArrayList<>();
+        initialWaypoints = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             JSONObject waypoint = array.getJSONObject(i);
             initialWaypoints.add(
@@ -716,13 +726,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 initialWaypoints,
                 location,
                 DISTANCE_TOLERANCE,
-                getRemainingWaypointsFromSharedPreferences(initialWaypoints)
+                getRemainingWaypointsFromSharedPreferences()
         );
 
         initialWaypoints = filter.cleanWaypoints();
 
         for (Waypoint wp:
-             initialWaypoints) {
+                initialWaypoints) {
             Log.d(TAG, "Cleaned waypoints: " + wp.toString());
         }
 
@@ -743,18 +753,18 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         editor.apply();
     }
 
-    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(List<Waypoint> initialWaypointList){
+    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(){
         Log.d(TAG, "Getting remaining points in " + chantierId + typeRoute + "remainingWaypoints");
         SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
         int nbRemainingWp = sharedPref.getInt(chantierId + typeRoute + "remainingWaypoints", -1);
         Log.d(TAG, "nbRemainingWaypoints:" + nbRemainingWp);
         if (nbRemainingWp == -1) {
-            return initialWaypointList;
-        } else if (nbRemainingWp > initialWaypointList.size()) {
+            return initialWaypoints;
+        } else if (nbRemainingWp > initialWaypoints.size()) {
             removeRemainingWaypointsFromSharedPreferences();
-            return initialWaypointList;
+            return initialWaypoints;
         }
-        List<Waypoint> res = new ArrayList<>(initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size()));
+        List<Waypoint> res = new ArrayList<>(initialWaypoints.subList(initialWaypoints.size()-nbRemainingWp, initialWaypoints.size()));
         Collections.sort(res);
         return res;
     }
@@ -794,15 +804,15 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
-
-
+        Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
-                .baseUrl(getString(R.string.base_url))
-                //.baseUrl("https://router.project-osrm.org/route/v1/")
+                //.baseUrl("http://192.168.43.108:3000/")
+                .baseUrl(BuildConfig.API_URL)
                 .user("gh")
                 .origin(roadPoint.get(0))
                 .destination(roadPoint.get(roadPoint.size() - 1))
+                .continueStraight(false)
                 .profile("car");
         // add waypoints without first and last point
         if (roadPoint.size() > 2) {
@@ -828,6 +838,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
                     @Override
                     public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
+                        Log.e(TAG, "Error at URL: " + call.request().url().toString());
+                        Log.e(TAG, throwable.getLocalizedMessage());
                         Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
                     }
                 });
@@ -860,6 +872,16 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         navigationView.startNavigation(navViewBuilderOptions.build());
         navigationView.retrieveMapboxNavigation().setCameraEngine(camera);
+        setOffRouteEngine();
+    }
+
+    private void setOffRouteEngine() {
+        neverOffRouteEngine = new OffRoute() {
+            @Override
+            public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
+                return false;
+            }
+        };
         navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
     }
 
@@ -885,7 +907,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 new com.android.volley.Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, error.toString() + error.networkResponse);
+                        Log.d(TAG, error.toString() + " " + error.networkResponse.toString());
                     }
                 }
         ) {
@@ -956,19 +978,24 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     private boolean rerouteUserIfNecessary(boolean etatChanged) {
         boolean userRerouted = false;
-        if (etatChanged) {
-            if (myEtat.equals("chargé") || myEtat.equals("déchargé")) {
-                roadPoint.clear();
-                navigationView.stopNavigation();
-                navigationView.retrieveNavigationMapboxMap().clearMarkers();
-                Log.d(TAG, "User rerouted");
-                userRerouted = true;
-            }
-        }
+        if(!etatChanged) return userRerouted;
+        if(!userIsInReroutableState()) return userRerouted;
+
+        roadPoint.clear();
+        navigationView.stopNavigation();
+        navigationView.retrieveNavigationMapboxMap().clearMarkers();
+        Log.d(TAG, "User rerouted");
+        userRerouted = true;
+
+
         if (userRerouted) {
             fetchRoute();
         }
         return userRerouted;
+    }
+
+    private boolean userIsInReroutableState() {
+        return myEtat.equals("chargé") || myEtat.equals("déchargé");
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary() {
