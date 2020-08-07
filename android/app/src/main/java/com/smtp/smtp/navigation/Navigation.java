@@ -83,19 +83,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -638,13 +631,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             return;
         }
 
-        logRouteProgressThings(routeProgress);
-
-//        if (bypassNextWaypointIfNecessary()){
-//            return;
-//        }
         modifyTimeDiffTruckAheadIfNecessary();
-
 
         //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
@@ -684,10 +671,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
             myList.updateList(new User(userId, remainingTime, myEtat));
         }
-    }
-
-    private void logRouteProgressThings(RouteProgress routeProgress) {
-        Log.d(TAG, "Decoded geometry: " + routeProgress.directionsRoute().geometry());
     }
 
     private boolean timeToSend() {
@@ -975,21 +958,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         if(!etatChanged) return userRerouted;
         if(!userIsInReroutableState()) return userRerouted;
 
-//        if(userIsOffRouteAndNextWaypointIsBehind()){
-//            bypassNextWaypoint();
-//        }
         roadPoint.clear();
         navigationView.stopNavigation();
         navigationView.retrieveNavigationMapboxMap().clearMarkers();
         Log.d(TAG, "User rerouted");
         userRerouted = true;
-//        if (myEtat.equals("chargé") || myEtat.equals("déchargé")) {
-//            roadPoint.clear();
-//            navigationView.stopNavigation();
-//            navigationView.retrieveNavigationMapboxMap().clearMarkers();
-//            Log.d(TAG, "User rerouted");
-//            userRerouted = true;
-//        }
+
 
         if (userRerouted) {
             fetchRoute();
@@ -998,7 +972,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private boolean userIsInReroutableState() {
-        return myEtat.equals("chargé") || myEtat.equals("déchargé");// || userIsOffRouteAndNextWaypointIsBehind();
+        return myEtat.equals("chargé") || myEtat.equals("déchargé");
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary() {
