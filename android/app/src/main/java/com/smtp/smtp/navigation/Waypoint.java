@@ -1,19 +1,19 @@
-package com.smtp.smtp;
+package com.smtp.smtp.navigation;
 import com.mapbox.geojson.Point;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class Waypoint implements Comparable {
-    double longitude;
-    double latitude;
-    int ordre;
-    Waypoint(double longitude, double latitude, int ordre){
+    public double longitude;
+    public double latitude;
+    public int ordre;
+    public Waypoint(double longitude, double latitude, int ordre){
         this.longitude = longitude;
         this.latitude = latitude;
         this.ordre = ordre;
     }
-    Waypoint(double longitude, double latitude){
+    public Waypoint(double longitude, double latitude){
         this.longitude = longitude;
         this.latitude = latitude;
         ordre = -1;

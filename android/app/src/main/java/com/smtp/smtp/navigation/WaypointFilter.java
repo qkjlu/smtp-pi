@@ -1,4 +1,4 @@
-package com.smtp.smtp;
+package com.smtp.smtp.navigation;
 
 import android.location.Location;
 import android.util.Log;

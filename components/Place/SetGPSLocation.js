@@ -7,7 +7,8 @@ import axios from 'axios';
 import Config from "react-native-config";
 import * as RootNavigation from '../../navigation/RootNavigation.js';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import {Button} from 'react-native-elements'
+import {Button} from 'react-native-elements';
+import InputText from '../InputText';
 
 export default class SetGPSLocation extends React.Component {
     constructor(props) {

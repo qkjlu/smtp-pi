@@ -284,3 +284,8 @@ web-build/
 android/java_pid13560.hprof
 android/java_pid22412.hprof
 .idea/smtp-pi.iml
+
+# environment variable
+.env.dev
+.env.dev.local
+.env.prod

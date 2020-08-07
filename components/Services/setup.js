@@ -1,12 +1,16 @@
 /*
-Class to check if the app is updated and have all permissions
+Class to check if the app is updated and have all permissions (location an internet enabled)
 */
 
 import axios from 'axios';
 import VersionCheck from 'react-native-version-check';
 import Config from "react-native-config";
 import {AsyncStorage,Alert,BackHandler,Linking} from 'react-native';
-
+import NetInfo from "@react-native-community/netinfo";
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import RNExitApp from 'react-native-exit-app';
+import * as Permissions from 'expo-permissions';
+import * as Location from 'expo-location';
 
 export default class Setup{
   constructor() {
@@ -14,7 +18,9 @@ export default class Setup{
 
 
   async initSetup(){
-    await this.checkUpdate()
+    await this.internetCheck();
+    await this.checkUpdate();
+    await this.requestLocationPermission();
   }
 
   // request for get the latest version of the app by type
@@ -31,7 +37,7 @@ export default class Setup{
           alert(response.status);
           return response.status;
         }
-        console.log(response.status);
+        console.log("Setup | getLatestVersion : " + response.status);
         return response.data;
       })
       .catch(function (error) {
@@ -90,5 +96,72 @@ export default class Setup{
     }catch (error){
       console.log(error);
     }
+  }
+
+  // Check if we have acces to internet
+  async internetCheck(){
+    NetInfo.fetch().then(state => {
+      if (state.type === 'cellular' || state.type === 'wifi') {
+        axios({
+          method: 'get',
+          url: Config.API_URL + 'entreprises',
+          timeout: 10000,
+        })
+          .then( response => {
+            console.log("Setup | internetCheck : internet check passed !");
+            }
+          ).catch(function (error) {
+            alert("Erreur réseau ! Vérifier que les données mobiles sont activées");
+          });
+      }else{
+        alert("Erreur réseau ! Vérifier que les données mobiles sont activées");
+      }
+    }).catch(function (error){
+      alert("error")
+    });
+  }
+
+  async accesLocation(){
+    let acces = false;
+    while (!acces){
+      await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastInterval: 5000})
+      .then(data => {
+        console.log("Setup | accesLocation : " + data);
+        acces = true
+      }).catch(err => {
+        console.log("Setup | accesLocation : error " + err)
+      });
+    }
+  }
+
+  // ask location to GPS and get current position if granted
+  async requestLocationPermission() {
+    let permission = false;
+      try {
+          let {granted} = await Permissions.askAsync(Permissions.LOCATION);
+          if (granted) {
+              console.log("Setup | requestLocationPermission : permission to location granted");
+              permission = true;
+              acces = await this.accesLocation();
+          } else {
+            console.log(" Setup | requestLocationPermission : Location permission denied");
+            // print alert not cancelable
+            Alert.alert(
+                'Autorisation',
+                "Veuillez modifier les paramètres pour autoriser l'application à accéder à la position ou relancer l'application",
+                [
+                  {
+                    text: 'Quitter',
+                    onPress: () => {
+                      RNExitApp.exitApp();
+                    },
+                  },
+                ],
+                { cancelable: false },
+              );
+          }
+      } catch (err) {
+          console.log(" Setup | requestLocationPermission : error "+err)
+      }
   }
 }

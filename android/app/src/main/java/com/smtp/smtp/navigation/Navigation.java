@@ -1,4 +1,4 @@
-package com.smtp.smtp;
+package com.smtp.smtp.navigation;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -41,9 +41,20 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.mapbox.api.directions.v5.WalkingOptions;
+import com.mapbox.api.directions.v5.models.BannerInstructions;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.api.directions.v5.models.LegAnnotation;
+import com.mapbox.api.directions.v5.models.LegStep;
+import com.mapbox.api.directions.v5.models.RouteLeg;
+import com.mapbox.api.directions.v5.models.RouteOptions;
+import com.mapbox.api.directions.v5.models.StepIntersection;
+import com.mapbox.api.directions.v5.models.StepManeuver;
+import com.mapbox.api.directions.v5.models.VoiceInstructions;
+import com.mapbox.api.matching.v5.MapboxMapMatching;
 import com.mapbox.geojson.Point;
+import com.mapbox.geojson.utils.PolylineUtils;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -63,6 +74,11 @@ import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeLis
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgressState;
 import com.mapbox.services.android.navigation.v5.utils.RouteUtils;
+import com.smtp.smtp.BuildConfig;
+import com.smtp.smtp.R;
+import com.smtp.smtp.Sortie;
+import com.smtp.smtp.http.CoefJSONAsyncRequest;
+import com.smtp.smtp.http.RequestManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,29 +116,22 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private boolean isOffRoute = false;
     private String preOffRoute = "";
     private Boolean sendingOffRoute = false;
-    private OffRoute neverOffRouteEngine = new OffRoute() {
-        @Override
-        public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
-            // User will never be off-route
-
-            return false;
-        }
-    };
-
+    private OffRoute neverOffRouteEngine;
     private Point CHARGEMENT;
     private Point DECHARGEMENT;
     private Point destination;
-
     private String userId;
     private String chantierId;
     private String typeRoute;
     private String token;
     private JSONObject coordinates;
     private double remainingTime;
+    private Double remainingTimeCoef;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
     private Etape etape = null;
     private Sortie sortie = null;
+    private Pause pause = null;
     private String etapeIdPrecedente = null;
     private int rayonChargement;
     private int rayonDéchargement;
@@ -134,7 +143,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private List<Point> roadPoint = new ArrayList<>();
     private Location location;
     private int remainingWaypoints = -1;
-
     private int timeToSend = 3;
     private int delay = timeToSend;
 
@@ -144,6 +152,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Button buttonReprendre;
     private boolean onPause = false;
     private NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
+    private List<Waypoint> initialWaypoints;
 
     // Connection to the socket server
     {
@@ -299,8 +308,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         DECHARGEMENT = Point.fromLngLat(destination[0], destination[1]);
         userId = i.getStringExtra("userId");
         chantierId = i.getStringExtra("chantierId");
-        typeRoute = i.getStringExtra("typeRoute");
-        Log.d(TAG, "typeRoute: " + typeRoute);
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         previousEtat = myEtat;
@@ -316,7 +323,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         navigationView.onCreate(savedInstanceState);
 
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkStateReceiver, filter);
         registerReceiver(broadcastReceiver, new IntentFilter("NO_INTERNET"));
 
@@ -472,25 +478,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            navigationView.stopNavigation();
-            showAlertDialog();
+            showAlertDetournementWithAutoDismiss("Pas de connexion internet","Pas de connexion internet","Fermer",10000);
         }
     };
 
-    // Alert to show when internet is disabled
-    private void showAlertDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Erreur Réseaux");
-        builder.setMessage("Pas de connexion internet")
-                .setCancelable(false);
-        builder.setPositiveButton("Quitter", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                finish();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
+
 
     // listener for paused and reprendre buttons
     private void addListenerOnButton() {
@@ -505,10 +497,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setEnabled(false);
                     buttonReprendre.setVisibility(View.VISIBLE);
                     buttonReprendre.setEnabled(true);
+
                     if(isOffRoute){
                         previousEtat = preOffRoute;
                     }else{
                         previousEtat = myEtat;
+                    }
+                    if(etape != null){
+                        pause = new Pause(etape.getEtapeId(),getApplicationContext());
                     }
                     myEtat = "pause";
                     onPause = true;
@@ -526,6 +522,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     buttonPause.setEnabled(true);
                     buttonPause.setVisibility(View.VISIBLE);
                     timeDiffTextView.setVisibility(View.VISIBLE);
+                    if(etape != null && pause != null){
+                        pause.sendFinPause();
+                    }
                     myEtat = previousEtat;
                 }
             }
@@ -648,14 +647,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;
-        this.remainingTime = Math.max(0, routeProgress.durationRemaining() * 1.25 );
+        this.remainingTime = Math.max(0, routeProgress.durationRemaining() * this.remainingTimeCoef);
 
         didEtatChanged = changeMyEtatIfNecessary(distanceFromDestination);
         if (rerouteUserIfNecessary(didEtatChanged)) {
             return;
         }
-        modifyTimeDiffTruckAheadIfNecessary();
 
+        modifyTimeDiffTruckAheadIfNecessary();
 
         //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
@@ -710,7 +709,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     public void prepareRoute(JSONArray array) throws JSONException {
         // Ajoute chaque donnée à la liste de waypoint
-        List<Waypoint> initialWaypoints = new ArrayList<>();
+        initialWaypoints = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             JSONObject waypoint = array.getJSONObject(i);
             initialWaypoints.add(
@@ -727,13 +726,13 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 initialWaypoints,
                 location,
                 DISTANCE_TOLERANCE,
-                getRemainingWaypointsFromSharedPreferences(initialWaypoints)
+                getRemainingWaypointsFromSharedPreferences()
         );
 
         initialWaypoints = filter.cleanWaypoints();
 
         for (Waypoint wp:
-             initialWaypoints) {
+                initialWaypoints) {
             Log.d(TAG, "Cleaned waypoints: " + wp.toString());
         }
 
@@ -754,18 +753,18 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         editor.apply();
     }
 
-    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(List<Waypoint> initialWaypointList){
+    public List<Waypoint> getRemainingWaypointsFromSharedPreferences(){
         Log.d(TAG, "Getting remaining points in " + chantierId + typeRoute + "remainingWaypoints");
         SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
         int nbRemainingWp = sharedPref.getInt(chantierId + typeRoute + "remainingWaypoints", -1);
         Log.d(TAG, "nbRemainingWaypoints:" + nbRemainingWp);
         if (nbRemainingWp == -1) {
-            return initialWaypointList;
-        } else if (nbRemainingWp > initialWaypointList.size()) {
+            return initialWaypoints;
+        } else if (nbRemainingWp > initialWaypoints.size()) {
             removeRemainingWaypointsFromSharedPreferences();
-            return initialWaypointList;
+            return initialWaypoints;
         }
-        List<Waypoint> res = new ArrayList<>(initialWaypointList.subList(initialWaypointList.size()-nbRemainingWp, initialWaypointList.size()));
+        List<Waypoint> res = new ArrayList<>(initialWaypoints.subList(initialWaypoints.size()-nbRemainingWp, initialWaypoints.size()));
         Collections.sort(res);
         return res;
     }
@@ -787,19 +786,33 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             typeRoute = "retour";
             destination = CHARGEMENT;
         }
-        initWaypoints();
+        
+        fetchCoef(() -> initWaypoints());
+    }
+
+    private void fetchCoef(Runnable then) {
+        CoefJSONAsyncRequest coefAsyncRequest = new CoefJSONAsyncRequest(getApplicationContext(), token);
+        HashMap<String, String> coefRequestArgs = new HashMap<>();
+        coefRequestArgs.put("chantierId", this.chantierId);
+        coefRequestArgs.put("typeRoute", this.typeRoute);
+        coefRequestArgs.put("day", Helper.getDayString());
+
+        coefAsyncRequest.getByChantierAndTypeRouteAndDay(coefRequestArgs, fetchedCoef -> {
+            this.remainingTimeCoef = fetchedCoef;
+            then.run();
+        });
     }
 
     private void buildRoute() {
-
-
+        Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
-                .baseUrl(getString(R.string.base_url))
-                //.baseUrl("https://router.project-osrm.org/route/v1/")
+                //.baseUrl("http://192.168.43.108:3000/")
+                .baseUrl(BuildConfig.API_URL)
                 .user("gh")
                 .origin(roadPoint.get(0))
                 .destination(roadPoint.get(roadPoint.size() - 1))
+                .continueStraight(false)
                 .profile("car");
         // add waypoints without first and last point
         if (roadPoint.size() > 2) {
@@ -825,6 +838,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
                     @Override
                     public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
+                        Log.e(TAG, "Error at URL: " + call.request().url().toString());
+                        Log.e(TAG, throwable.getLocalizedMessage());
                         Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
                     }
                 });
@@ -857,6 +872,16 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         navigationView.startNavigation(navViewBuilderOptions.build());
         navigationView.retrieveMapboxNavigation().setCameraEngine(camera);
+        setOffRouteEngine();
+    }
+
+    private void setOffRouteEngine() {
+        neverOffRouteEngine = new OffRoute() {
+            @Override
+            public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
+                return false;
+            }
+        };
         navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
     }
 
@@ -882,7 +907,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 new com.android.volley.Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, error.toString() + error.networkResponse);
+                        Log.d(TAG, error.toString() + " " + error.networkResponse.toString());
                     }
                 }
         ) {
@@ -953,19 +978,24 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     private boolean rerouteUserIfNecessary(boolean etatChanged) {
         boolean userRerouted = false;
-        if (etatChanged) {
-            if (myEtat.equals("chargé") || myEtat.equals("déchargé")) {
-                roadPoint.clear();
-                navigationView.stopNavigation();
-                navigationView.retrieveNavigationMapboxMap().clearMarkers();
-                Log.d(TAG, "User rerouted");
-                userRerouted = true;
-            }
-        }
+        if(!etatChanged) return userRerouted;
+        if(!userIsInReroutableState()) return userRerouted;
+
+        roadPoint.clear();
+        navigationView.stopNavigation();
+        navigationView.retrieveNavigationMapboxMap().clearMarkers();
+        Log.d(TAG, "User rerouted");
+        userRerouted = true;
+
+
         if (userRerouted) {
             fetchRoute();
         }
         return userRerouted;
+    }
+
+    private boolean userIsInReroutableState() {
+        return myEtat.equals("chargé") || myEtat.equals("déchargé");
     }
 
     private void modifyTimeDiffTruckAheadIfNecessary() {
@@ -1113,7 +1143,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             if (userIdToMove.equals(userId)) {
                 rerouting(data);
                 vibrateAndNotify();
-                showAlertDetournementWithAutoDismiss();
+                showAlertDetournementWithAutoDismiss("Détournement !","Vous avez été détourné vers un autre chantier","Fermer",5000);
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -1142,12 +1172,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
     }
 
-    public void showAlertDetournementWithAutoDismiss() {
+    public void showAlertDetournementWithAutoDismiss(String title, String message, String messageButton, int delayTime) {
         AlertDialog.Builder builder = new AlertDialog.Builder(Navigation.this);
-        builder.setTitle("Détournement !")
-                .setMessage("Vous avez été détourné vers un autre chantier")
+        builder.setTitle(title)
+                .setMessage(message)
                 .setCancelable(false).setCancelable(false)
-                .setPositiveButton("SKIP", new DialogInterface.OnClickListener() {
+                .setPositiveButton(messageButton, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //this for skip dialog
                         dialog.cancel();
@@ -1162,6 +1192,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     alertDialog.dismiss();
                 }
             }
-        }, 5000); //change 5000 with a specific time you want
+        }, delayTime); //change 5000 with a specific time you want
     }
 }
