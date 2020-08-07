@@ -18,9 +18,9 @@ export default class Setup{
 
 
   async initSetup(){
+    await this.internetCheck();
     await this.checkUpdate();
     await this.requestLocationPermission();
-    await this.internetCheck();
   }
 
   // request for get the latest version of the app by type
@@ -37,7 +37,7 @@ export default class Setup{
           alert(response.status);
           return response.status;
         }
-        console.log(response.status);
+        console.log("Setup | getLatestVersion : " + response.status);
         return response.data;
       })
       .catch(function (error) {
@@ -108,7 +108,7 @@ export default class Setup{
           timeout: 10000,
         })
           .then( response => {
-            console.log("internet check passed !");
+            console.log("Setup | internetCheck : internet check passed !");
             }
           ).catch(function (error) {
             alert("Erreur réseau ! Vérifier que les données mobiles sont activées");
@@ -126,10 +126,10 @@ export default class Setup{
     while (!acces){
       await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastInterval: 5000})
       .then(data => {
-        console.log("data" + data);
+        console.log("Setup | accesLocation : " + data);
         acces = true
       }).catch(err => {
-        console.log("error" + err)
+        console.log("Setup | accesLocation : error " + err)
       });
     }
   }
@@ -140,11 +140,11 @@ export default class Setup{
       try {
           let {granted} = await Permissions.askAsync(Permissions.LOCATION);
           if (granted) {
-              console.log("permission to location granted");
+              console.log("Setup | requestLocationPermission : permission to location granted");
               permission = true;
               acces = await this.accesLocation();
           } else {
-            console.log("Location permission denied");
+            console.log(" Setup | requestLocationPermission : Location permission denied");
             // print alert not cancelable
             Alert.alert(
                 'Autorisation',
@@ -161,7 +161,7 @@ export default class Setup{
               );
           }
       } catch (err) {
-          console.log("error "+err)
+          console.log(" Setup | requestLocationPermission : error "+err)
       }
   }
 }
