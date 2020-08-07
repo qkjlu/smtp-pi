@@ -99,6 +99,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private static final String TAG = "Navigation";
     private boolean isOffRoute = false;
     private String preOffRoute = "";
+    private Boolean sendingOffRoute = false;
     private OffRoute neverOffRouteEngine = new OffRoute() {
         @Override
         public boolean isUserOffRoute(Location location, RouteProgress routeProgress, MapboxNavigationOptions options) {
@@ -112,7 +113,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private Point DECHARGEMENT;
     private Point destination;
 
-
     private String userId;
     private String chantierId;
     private String typeRoute;
@@ -122,6 +122,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
     private String myEtat;
     private Etape etape = null;
+    private Sortie sortie = null;
     private String etapeIdPrecedente = null;
     private int rayonChargement;
     private int rayonDéchargement;
@@ -591,12 +592,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         return distanceFromDestination[0];
     }
 
-	public void handleOffRoute(RouteProgress routeProgress){
-        Log.d("offR", " preOffRoute : " + preOffRoute);
-        Log.d("offR", " isOffRoute  : " + isOffRoute);
-        Log.d("offR", " routeProgress? : " + (routeProgress.currentState() != null));
-        Log.d("offR", " previousEtat : " + previousEtat);
-
+	public void handleOffRoute(Location location, RouteProgress routeProgress){
         if(myEtat.equals("enChargement") || myEtat.equals("enDéchargement") || myEtat.equals("pause") ){
             preOffRoute = "";
             isOffRoute = false;
@@ -619,11 +615,36 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 }
             }
         }
+        sendOffRoute(location);
+    }
+
+    public void sendOffRoute(Location location){
+        // on commence un offRoute
+        if(!sendingOffRoute && isOffRoute){
+            Log.d("Sortie", "débutSortie");
+            sendingOffRoute = true;
+            sortie = new Sortie(chantierId,userId,typeRoute,getApplicationContext());
+            sortie.addWaypoint(location.getLatitude(),location.getLongitude());
+        }
+        // on continue
+        if(sendingOffRoute && isOffRoute){
+            Log.d("Sortie", "ajoutPointSortie");
+            // on conserve la meme Sortie ( ajout d'un Point)
+            sortie.addWaypoint(location.getLongitude(),location.getLatitude());
+        }
+        // on arrete
+        if(sendingOffRoute && !isOffRoute){
+            sendingOffRoute = false;
+            sortie.sendFinSortie();
+            Log.d("Sortie", "finSortie");
+            // on termine la Sortie ( dateFin)
+        }
+
     }
 
     @Override
     public void onProgressChange(Location location, RouteProgress routeProgress) {
-		handleOffRoute(routeProgress);
+		handleOffRoute(location,routeProgress);
         boolean didEtatChanged;
         float distanceFromDestination = getDistanceFromDestination(location);
         this.location = location;

@@ -1,13 +1,12 @@
 import React from "react";
-import style from "../../Style";
 import axios from 'axios'
-import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Alert} from "react-native";
-import WorkSiteRow from "./WorkSiteRow";
-import ButtonGroupAdmin from "../ButtonGroupAdmin";
+import {Text, ActivityIndicator, View, ScrollView, AsyncStorage, Alert, FlatList} from "react-native";
 import Config from "react-native-config";
+import style from "../../Style";
+import OffRouteRow from "./OffRouteRow";
 
 
-export default class ListWorkSite extends React.Component {
+export default class OffRouteHistory extends React.Component {
     constructor(props) {
         super(props);
         this.deleteWorkSite = this.deleteWorkSite.bind(this);
@@ -23,27 +22,27 @@ export default class ListWorkSite extends React.Component {
     }
 
     async handleDelete(id){
-      Alert.alert(
-        'Suppresion de chantier',
-        'Etes-vous sûr de vouloir supprimer ce chantier ?',
-        [
-          {
-            text: 'OUI',
-            onPress: () => this.deleteWorkSite(id)
-          },
-          {
-            text: 'NON',
-            style: 'cancel'
-          },
-        ],
-        { cancelable: false }
-      );
+        Alert.alert(
+            'Suppresion de chantier',
+            'Etes-vous sûr de vouloir supprimer ce chantier ?',
+            [
+                {
+                    text: 'OUI',
+                    onPress: () => this.deleteWorkSite(id)
+                },
+                {
+                    text: 'NON',
+                    style: 'cancel'
+                },
+            ],
+            { cancelable: false }
+        );
     }
 
     async deleteWorkSite(id) {
         console.log(id);
         const token = await AsyncStorage.getItem('token');
-        var data = { "id" : id};
+        let data = { "id" : id};
         await axios({
             method : 'delete',
             url : Config.API_URL +'chantiers',
@@ -75,7 +74,7 @@ export default class ListWorkSite extends React.Component {
         const token = await AsyncStorage.getItem('token');
         await axios({
             method : 'get',
-            url : Config.API_URL + 'chantiers',
+            url : Config.API_URL + 'sorties',
             headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {
@@ -104,11 +103,10 @@ export default class ListWorkSite extends React.Component {
             return (
                 <View>
                     <ScrollView>
-                    <ButtonGroupAdmin onReload={this.reloadData}/>
-                    <Text style={style.getStartedText}>Liste des chantiers :</Text>
+                        <Text style={style.getStartedText}>Liste des sorties de route :</Text>
                         <FlatList
                             data={this.state.report}
-                            renderItem={({item}) => <WorkSiteRow worksite={item} onDelete={(id) =>this.handleDelete(id)}/>}
+                            renderItem={({item}) => <OffRouteRow item={item} onDelete={(id) =>this.handleDelete(id)}/>}
                         />
                     </ScrollView>
                 </View>

@@ -1,15 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator} from "@react-navigation/stack";
 import * as React from 'react';
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/Admin/HomeScreen';
-import LinksScreen from '../screens/Admin/MapScreen';
 import UsersScreen from "../screens/Admin/UsersScreen";
 import MapScreen from "../screens/Admin/MapScreen";
+import OffRouteScreen from "../screens/Admin/OffRouteScreen";
 
 const BottomTab = createBottomTabNavigator();
-const INITIAL_ROUTE_NAME = 'Home';
 
 export default function BottomTabNavigator({ navigation, route }) {
     // Set the header title on the parent stack navigator depending on the
@@ -33,6 +31,14 @@ export default function BottomTabNavigator({ navigation, route }) {
                 options={{
                     title: 'Utilisateurs',
                     tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-people" />,
+                }}
+            />
+            <BottomTab.Screen
+                name="offRouteResume"
+                component={OffRouteScreen}
+                options={{
+                    title: 'Sortie de route',
+                    tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-remove-circle" />,
                 }}
             />
             <BottomTab.Screen
