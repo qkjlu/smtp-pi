@@ -30,11 +30,16 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
+import com.mapbox.api.directions.v5.DirectionsCriteria;
+import com.mapbox.api.directions.v5.DirectionsService;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.api.matching.v5.MapboxMapMatching;
+import com.mapbox.api.matching.v5.models.MapMatchingResponse;
 import com.mapbox.core.constants.Constants;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
+import com.mapbox.geojson.utils.PolylineUtils;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -58,11 +63,14 @@ import com.smtp.smtp.navigation.Waypoint;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unimodules.core.interfaces.Consumer;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -447,15 +455,50 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                 builder.destination(p);
             }
         }
+
         showLoading();
+
+        Consumer<List<Point>> mapMatchingRequest = (pts) -> {
+            MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()
+                    .accessToken(getString(R.string.mapbox_access_token))
+                    //.user("qklu")
+                    .coordinates(pts)
+                    .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                    .language(Locale.FRENCH);
+
+            mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
+                @Override
+                public void onResponse(Call<MapMatchingResponse> call, retrofit2.Response<MapMatchingResponse> response) {
+                    Log.d(TAG, "Matching response: " + response.toString());
+                    route = response.body().matchings().get(0).toDirectionRoute();
+                    Log.d(TAG, "Route duration: " + route.duration());
+                    mapRoute.addRoute(route);
+                    boundCameraToRoute();
+                }
+
+                @Override
+                public void onFailure(Call<MapMatchingResponse> call, Throwable t) {
+                    Log.e(TAG, "Error getting matching: " + t.getLocalizedMessage());
+                }
+            });
+        };
 
         builder.build().getRoute(new Callback<DirectionsResponse>() {
             @Override
             public void onResponse(Call<DirectionsResponse> call, retrofit2.Response<DirectionsResponse> response) {
                 if (validRouteResponse(response)) {
                     route = response.body().routes().get(0);
-                    mapRoute.addRoutes(response.body().routes());
-                    boundCameraToRoute();
+                    List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
+
+                    List<Point> lessThan100_Points = new ArrayList<>();
+                    int indice = 0;
+                    for (int i=0; i<100; i++){
+                        indice = Math.round(i*pts.size()/100);
+                        lessThan100_Points.add(pts.get(indice));
+                    }
+                    Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
+                    mapMatchingRequest.apply(lessThan100_Points);
+                    //boundCameraToRoute();
                 } else {
                     showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 }

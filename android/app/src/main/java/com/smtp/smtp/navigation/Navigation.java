@@ -291,7 +291,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         super.onCreate(savedInstanceState);
         Log.d(TAG, "OnCreate");
         ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        Log.d(TAG, "LargeMemoryClass : " + am.getLargeMemoryClass());
 
         AndroidLoggingHandler.reset(new AndroidLoggingHandler());
         java.util.logging.Logger.getLogger(Socket.class.getName()).setLevel(Level.FINEST);
@@ -542,7 +541,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.d(TAG, response.toString());
                 },
                 new com.android.volley.Response.ErrorListener() {
                     @Override
@@ -656,6 +654,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         modifyTimeDiffTruckAheadIfNecessary();
 
+        Log.d(TAG, "Number of remaining waypoints: " + routeProgress.remainingWaypoints());
+
         //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
             remainingWaypoints = routeProgress.remainingWaypoints();
@@ -676,7 +676,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Log.d(TAG, Integer.toString(remainingWaypoints));
         for (Point p: remaininPoints
              ) {
-            Log.d(TAG, p.toString());
+            Log.d(TAG, "Remaining waypoints: " + p.toString());
         }
 
         coordinates = new JSONObject();
@@ -807,7 +807,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
-                //.baseUrl("http://192.168.43.108:3000/")
                 .baseUrl(BuildConfig.API_URL)
                 .user("gh")
                 .origin(roadPoint.get(0))
@@ -826,8 +825,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 new Callback<DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
-                        Log.d(TAG, call.request().url().toString());
-                        Log.d(TAG, response.message());
                         if (validRouteResponse(response)) {
                             route = response.body().routes().get(0);
                             launchNavigation();
@@ -902,12 +899,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.d(TAG, response.toString());
                 },
                 new com.android.volley.Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, error.toString() + " " + error.networkResponse.toString());
+                        Log.e(TAG, error.toString() + " " + error.networkResponse.toString());
                     }
                 }
         ) {
@@ -936,8 +932,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private boolean changeMyEtatIfNecessary(double distanceRemaining) {
-        boolean etatChanged = false;
-        String previousEtat = myEtat;
         int rayonChangementEtat = 0;
         if (typeRoute.equals("aller")) {
             rayonChangementEtat = rayonDéchargement;
@@ -949,29 +943,22 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
                 myEtat = "enDéchargement";
                 changeEtape();
-                etatChanged = true;
                 return true;
             } else if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé")) {
                 myEtat = "enChargement";
                 changeEtape();
-                etatChanged = true;
                 return true;
             }
         } else {
             if (myEtat.equals("enChargement")) {
                 myEtat = "chargé";
                 changeEtape();
-                etatChanged = true;
                 return true;
             } else if (myEtat.equals("enDéchargement")) {
                 myEtat = "déchargé";
                 changeEtape();
-                etatChanged = true;
                 return true;
             }
-        }
-        if (etatChanged) {
-            Log.d(TAG, "Etat changed: from " + previousEtat + " to " + myEtat);
         }
         return false;
     }
