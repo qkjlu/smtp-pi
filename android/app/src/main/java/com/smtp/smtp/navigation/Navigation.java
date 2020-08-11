@@ -41,6 +41,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.WalkingOptions;
 import com.mapbox.api.directions.v5.models.BannerInstructions;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
@@ -53,6 +54,7 @@ import com.mapbox.api.directions.v5.models.StepIntersection;
 import com.mapbox.api.directions.v5.models.StepManeuver;
 import com.mapbox.api.directions.v5.models.VoiceInstructions;
 import com.mapbox.api.matching.v5.MapboxMapMatching;
+import com.mapbox.api.matching.v5.models.MapMatchingResponse;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.utils.PolylineUtils;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -90,7 +92,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 import io.socket.client.IO;
@@ -291,7 +297,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         super.onCreate(savedInstanceState);
         Log.d(TAG, "OnCreate");
         ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        Log.d(TAG, "LargeMemoryClass : " + am.getLargeMemoryClass());
 
         AndroidLoggingHandler.reset(new AndroidLoggingHandler());
         java.util.logging.Logger.getLogger(Socket.class.getName()).setLevel(Level.FINEST);
@@ -525,7 +530,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     if(etape != null && pause != null){
                         pause.sendFinPause();
                     }
-                    myEtat = previousEtat;
+                    if(isOffRoute){
+                        myEtat = "offRoute";
+                        preOffRoute = previousEtat;
+                    }else{
+                        myEtat = previousEtat;
+                        preOffRoute = "";
+                    }
+
                 }
             }
         });
@@ -542,7 +554,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.d(TAG, response.toString());
                 },
                 new com.android.volley.Response.ErrorListener() {
                     @Override
@@ -603,7 +614,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 isOffRoute = false;
                 Log.d("offR", " sortie de route " + isOffRoute);
             }else{
-                // je ne suis pas sur la route
+                // je ne suis plus sur la route et isOffRoute = false
                 if(routeProgress.currentState() == null && !isOffRoute){
                     preOffRoute = myEtat;
                     myEtat = "offRoute";
@@ -656,6 +667,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         modifyTimeDiffTruckAheadIfNecessary();
 
+        Log.d(TAG, "Number of remaining waypoints: " + routeProgress.remainingWaypoints());
+
         //Register remaining waypoints in SharedPreferences
         if(remainingWaypoints != routeProgress.remainingWaypoints()) {
             remainingWaypoints = routeProgress.remainingWaypoints();
@@ -676,7 +689,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Log.d(TAG, Integer.toString(remainingWaypoints));
         for (Point p: remaininPoints
              ) {
-            Log.d(TAG, p.toString());
+            Log.d(TAG, "Remaining waypoints: " + p.toString());
         }
 
         coordinates = new JSONObject();
@@ -804,45 +817,22 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
-        Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
-        NavigationRoute.Builder builder = NavigationRoute.builder(this)
-                .accessToken("pk." + getString(R.string.gh_key))
-                //.baseUrl("http://192.168.43.108:3000/")
-                .baseUrl(BuildConfig.API_URL)
-                .user("gh")
-                .origin(roadPoint.get(0))
-                .destination(roadPoint.get(roadPoint.size() - 1))
-                .continueStraight(false)
-                .profile("car");
-        // add waypoints without first and last point
-        if (roadPoint.size() > 2) {
-            for (int i = 1; i < roadPoint.size() - 1; i++) {
-                builder.addWaypoint(roadPoint.get(i));
-            }
-        }
-        NavigationRoute navRoute = builder.build();
+        Consumer<DirectionsRoute> matchGetSuccess = (route) -> {
+            Navigation.this.route = route;
+            launchNavigation();
+        };
 
-        navRoute.getRoute(
-                new Callback<DirectionsResponse>() {
-                    @Override
-                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
-                        Log.d(TAG, call.request().url().toString());
-                        Log.d(TAG, response.message());
-                        if (validRouteResponse(response)) {
-                            route = response.body().routes().get(0);
-                            launchNavigation();
-                        } else {
-                            Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
-                        }
-                    }
+        Consumer<Throwable> routeGetFailure = (t) -> {
+            Snackbar.make(navigationView, "Error getting the route", Snackbar.LENGTH_LONG).show();
+            Log.e(TAG, t.getLocalizedMessage());
+        };
+        Consumer<DirectionsRoute> routeGetSuccess = (route) -> {
+            MapMatcher mapMatcher = new MapMatcher(getApplicationContext(), route);
+            mapMatcher.getMatch( matchGetSuccess, routeGetFailure);
+        };
 
-                    @Override
-                    public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
-                        Log.e(TAG, "Error at URL: " + call.request().url().toString());
-                        Log.e(TAG, throwable.getLocalizedMessage());
-                        Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
-                    }
-                });
+        RouteGetter routeGetter = new RouteGetter(getApplicationContext(), roadPoint);
+        routeGetter.getRoute(routeGetSuccess, routeGetFailure);
     }
 
     private void launchNavigation() {
@@ -885,10 +875,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
     }
 
-    private boolean validRouteResponse(Response<DirectionsResponse> response) {
-        return response.body() != null && !response.body().routes().isEmpty();
-    }
-
     public void initWaypoints() {
         final String URL = BASE_URL + "chantiers/" + chantierId + "/route/" + typeRoute;
         RequestQueue requestQueue = Volley.newRequestQueue(this);
@@ -902,12 +888,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.d(TAG, response.toString());
                 },
                 new com.android.volley.Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, error.toString() + " " + error.networkResponse.toString());
+                        Log.e(TAG, error.toString() + " " + error.networkResponse.toString());
                     }
                 }
         ) {
@@ -936,8 +921,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private boolean changeMyEtatIfNecessary(double distanceRemaining) {
-        boolean etatChanged = false;
-        String previousState = myEtat;
         int rayonChangementEtat = 0;
         if (typeRoute.equals("aller")) {
             rayonChangementEtat = rayonDéchargement;
@@ -949,29 +932,22 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             if (myEtat.equals("chargé") || preOffRoute.equals("chargé")) {
                 myEtat = "enDéchargement";
                 changeEtape();
-                etatChanged = true;
                 return true;
             } else if (myEtat.equals("déchargé") || preOffRoute.equals("déchargé")) {
                 myEtat = "enChargement";
                 changeEtape();
-                etatChanged = true;
                 return true;
             }
         } else {
             if (myEtat.equals("enChargement")) {
                 myEtat = "chargé";
                 changeEtape();
-                etatChanged = true;
                 return true;
             } else if (myEtat.equals("enDéchargement")) {
                 myEtat = "déchargé";
                 changeEtape();
-                etatChanged = true;
                 return true;
             }
-        }
-        if (etatChanged) {
-            Log.d(TAG, "Etat changed: from " + previousState + " to " + myEtat);
         }
         return false;
     }

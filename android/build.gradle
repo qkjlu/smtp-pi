@@ -9,7 +9,7 @@ buildscript {
         supportLibVersion = "28.0.0"
         playServicesVersion = "17.0.0"
         androidMapsUtilsVersion = "xxx"
-        defaultEnvFile = ".env.dev"
+        defaultEnvFile = ".env.local"
     }
     repositories {
         google()
