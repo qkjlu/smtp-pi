@@ -53,9 +53,10 @@ public class MapMatcher {
                 .steps(true)
                 .voiceInstructions(true)
                 .bannerInstructions(true)
-                .coordinates(pts)
+                .coordinates(lessThan100_Points)
                 .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                .tidy(true)
+                .overview(DirectionsCriteria.OVERVIEW_FULL)
+                //.tidy(true)
                 .language(Locale.FRENCH);
 
         mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
