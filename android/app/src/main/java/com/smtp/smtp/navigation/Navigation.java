@@ -833,80 +833,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         RouteGetter routeGetter = new RouteGetter(getApplicationContext(), roadPoint);
         routeGetter.getRoute(routeGetSuccess, routeGetFailure);
-
-       /* Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
-        NavigationRoute.Builder builder = NavigationRoute.builder(this)
-                .accessToken("pk." + getString(R.string.gh_key))
-                .baseUrl(BuildConfig.API_URL)
-                .user("gh")
-                .origin(roadPoint.get(0))
-                .destination(roadPoint.get(roadPoint.size() - 1))
-                .continueStraight(false)
-                .profile("car");
-        // add waypoints without first and last point
-        if (roadPoint.size() > 2) {
-            for (int i = 1; i < roadPoint.size() - 1; i++) {
-                builder.addWaypoint(roadPoint.get(i));
-            }
-        }
-        NavigationRoute navRoute = builder.build();
-
-
-        navRoute.getRoute(
-                new Callback<DirectionsResponse>() {
-                    @Override
-                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
-                        if (validRouteResponse(response)) {
-                            route = response.body().routes().get(0);
-                            CompletableFuture<DirectionsRoute> mapMatchedRoute = new MapMatcher(getApplicationContext(), route)
-                                    .getMatchedRoute();
-
-
-                        } else {
-                            Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
-                        Log.e(TAG, "Error at URL: " + call.request().url().toString());
-                        Log.e(TAG, throwable.getLocalizedMessage());
-                        Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
-                    }
-                });*/
-    }
-
-    private void mapMatchRouteWithTraffic(@NonNull Runnable callback) {
-        List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
-        List<Point> lessThan100_Points = new ArrayList<>();
-        int indice = 0;
-        for (int i=0; i<100; i++){
-            indice = Math.round(i*pts.size()/100);
-            lessThan100_Points.add(pts.get(indice));
-        }
-        Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
-
-        MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()
-                .accessToken(getString(R.string.mapbox_access_token))
-                .steps(true)
-                .voiceInstructions(true)
-                .bannerInstructions(true)
-                .coordinates(pts)
-                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                .language(Locale.FRENCH);
-
-        mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
-            @Override
-            public void onResponse(Call<MapMatchingResponse> call, retrofit2.Response<MapMatchingResponse> response) {
-                Log.d(TAG, "Matching response: " + response.message());
-                route = response.body().matchings().get(0).toDirectionRoute();
-            }
-
-            @Override
-            public void onFailure(Call<MapMatchingResponse> call, Throwable t) {
-                Log.e(TAG, "Error getting matching: " + t.getLocalizedMessage());
-            }
-        });
     }
 
     private void launchNavigation() {
@@ -947,10 +873,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         };
         navigationView.retrieveMapboxNavigation().setOffRouteEngine(neverOffRouteEngine);
-    }
-
-    private boolean validRouteResponse(Response<DirectionsResponse> response) {
-        return response.body() != null && !response.body().routes().isEmpty();
     }
 
     public void initWaypoints() {
