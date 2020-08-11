@@ -5,8 +5,7 @@ import CustomPicker from './CustomPicker';
 import { ButtonGroup } from 'react-native-elements';
 import axios from 'axios';
 import style from "../Style";
-import  {View, ActivityIndicator, AsyncStorage, ScrollView, Text} from 'react-native';
-import AutoCompletePlaces from "./Place/AutoCompletePlaces";
+import  {View, AsyncStorage, ScrollView, Text} from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
@@ -44,7 +43,7 @@ export default class Login extends React.Component{
     await this.setup.initSetup();
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
-        if(response.status != 200){
+        if(response.status !== 200){
           console.log(response.status);
           alert(response.status);
           return response.status;
@@ -80,17 +79,17 @@ export default class Login extends React.Component{
 
   // to do : change view in fonction of User type
   async formSubmit(){
-    if(this.state.firstField == "" || this.state.secondField == ""){
+    if(this.state.firstField === "" || this.state.secondField === ""){
       alert('Veuillez saisir tous les champs')
     }else{
-      var data = {
+      let data = {
         "nom": this.state.firstField,
         "prenom": this.state.secondField,
         "entreprise" : this.state.pickerSelected
       };
 
-      var url = Config.API_URL;
-      var typeUser;
+      let url = Config.API_URL;
+      let typeUser;
 
       switch (this.state.selectedIndex) {
         case 0:
@@ -117,7 +116,7 @@ export default class Login extends React.Component{
         data : data
       })
       .then((response) => {
-        if(response.status != 200){
+        if(response.status !== 200){
           console.log(response);
         }else{
           console.log(response.status);
@@ -182,26 +181,20 @@ export default class Login extends React.Component{
         </View>
       );
     }else{
-      let firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
-      let secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";
+      let firstPC = this.state.selectedIndex === 2 ?  "Mail" : "Nom";
+      let secondPC = this.state.selectedIndex === 2 ? "Mot de passe" : "Prenom";
 
-      const component1 = () => <Image source={require('./../assets/images/truck.png') }
-                                      style={{ width: 68, height: 68 }}
-                                />
-      const component2 = () => <Image source={require('./../assets/images/crane.png')}
-                                      style={{ width: 50, height: 50 }}
-                               />
-      const component3 = () => <Image source={require('./../assets/images/admin.png')}
-                                      style={{ width: 50, height: 44 }}
-                               />
-
-      const buttons = [{ element: component1 }, { element: component2 }, { element: component3 }];
+      const buttons = [
+          <Image source={require('./../assets/images/truck.png') } style={{ width: 68, height: 68 }}/>,
+          <Image source={require('./../assets/images/crane.png')} style={{ width: 50, height: 50 }}/>,
+          <Image source={require('./../assets/images/admin.png')} style={{ width: 50, height: 44 }}/>
+          ];
 
       // set Data for picker
       let pickerData = this.state.companies.map(item => item.nom);
       // set selectedValue for picker
-      let resIndex = this.state.companies.findIndex(s => s.id == this.state.pickerSelected);
-      let selectedIndex = resIndex == -1 ? 0 : resIndex
+      let resIndex = this.state.companies.findIndex(s => s.id === this.state.pickerSelected);
+      let selectedIndex = resIndex === -1 ? 0 : resIndex
       let selected = this.state.companies[selectedIndex].nom;
 
       return (
@@ -216,20 +209,20 @@ export default class Login extends React.Component{
                   buttons={buttons}
                   containerStyle={{height: 50}}
               />
-              {this.state.selectedIndex != 2 &&
+              {this.state.selectedIndex !== 2 &&
               <AutoCompleteUsers style={Style.input} changePlace={(user) => this.setState({user})}
                                  currentIndex={this.state.selectedIndex} user={this.state.user}
                                  changeFirstField={txt => this.handleChangeFirstField(txt)}
                                  changeSecondField={txt => this.handleChangeSecondField(txt)}/>
               }
-              {this.state.selectedIndex == 2 &&
+              {this.state.selectedIndex === 2 &&
                 <InputText style={style.input} placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField} />
               }
-              {this.state.selectedIndex == 2 &&
-              <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
+              {this.state.selectedIndex === 2 &&
+              <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex === 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
               }
 
-              <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
+              <CustomPicker isVisible={this.state.selectedIndex === 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
               <ValidateButton text={"valider"} onPress={this.handleValidate}/>
               <Text>{Config.VERSION} version</Text>
             </View>

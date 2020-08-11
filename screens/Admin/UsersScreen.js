@@ -6,13 +6,14 @@ import AddUser from "../../components/User/AddUser";
 import Login from "../../components/Login";
 import style from "../../Style";
 import { createStackNavigator} from "@react-navigation/stack";
+import LogoutButton from "../../components/LogoutButton";
 
 
 const UserStack = createStackNavigator();
 
 export default function UsersScreen() {
   return (
-      <UserStack.Navigator>
+      <UserStack.Navigator screenOptions={{headerRight : () => (<LogoutButton/>)}}>
           <UserStack.Screen
               name="Users"
               component={UserList}
