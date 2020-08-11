@@ -937,7 +937,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
     private boolean changeMyEtatIfNecessary(double distanceRemaining) {
         boolean etatChanged = false;
-        String previousEtat = myEtat;
+        String previousState = myEtat;
         int rayonChangementEtat = 0;
         if (typeRoute.equals("aller")) {
             rayonChangementEtat = rayonDéchargement;
@@ -971,7 +971,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         }
         if (etatChanged) {
-            Log.d(TAG, "Etat changed: from " + previousEtat + " to " + myEtat);
+            Log.d(TAG, "Etat changed: from " + previousState + " to " + myEtat);
         }
         return false;
     }
