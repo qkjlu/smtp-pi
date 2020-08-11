@@ -12,8 +12,6 @@ import com.smtp.smtp.BuildConfig;
 import com.smtp.smtp.R;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import retrofit2.Call;
