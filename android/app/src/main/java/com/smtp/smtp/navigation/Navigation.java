@@ -41,6 +41,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.WalkingOptions;
 import com.mapbox.api.directions.v5.models.BannerInstructions;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
@@ -53,6 +54,7 @@ import com.mapbox.api.directions.v5.models.StepIntersection;
 import com.mapbox.api.directions.v5.models.StepManeuver;
 import com.mapbox.api.directions.v5.models.VoiceInstructions;
 import com.mapbox.api.matching.v5.MapboxMapMatching;
+import com.mapbox.api.matching.v5.models.MapMatchingResponse;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.utils.PolylineUtils;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -90,7 +92,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 import io.socket.client.IO;
@@ -804,7 +810,24 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     }
 
     private void buildRoute() {
-        Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
+        Consumer<DirectionsRoute> matchGetSuccess = (route) -> {
+            Navigation.this.route = route;
+            launchNavigation();
+        };
+
+        Consumer<Throwable> routeGetFailure = (t) -> {
+            Snackbar.make(navigationView, "Error getting the route", Snackbar.LENGTH_LONG).show();
+            Log.e(TAG, t.getLocalizedMessage());
+        };
+        Consumer<DirectionsRoute> routeGetSuccess = (route) -> {
+            MapMatcher mapMatcher = new MapMatcher(getApplicationContext(), route);
+            mapMatcher.getMatch( matchGetSuccess, routeGetFailure);
+        };
+
+        RouteGetter routeGetter = new RouteGetter(getApplicationContext(), roadPoint);
+        routeGetter.getRoute(routeGetSuccess, routeGetFailure);
+
+       /* Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
         NavigationRoute.Builder builder = NavigationRoute.builder(this)
                 .accessToken("pk." + getString(R.string.gh_key))
                 .baseUrl(BuildConfig.API_URL)
@@ -821,13 +844,17 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
         NavigationRoute navRoute = builder.build();
 
+
         navRoute.getRoute(
                 new Callback<DirectionsResponse>() {
                     @Override
                     public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
                         if (validRouteResponse(response)) {
                             route = response.body().routes().get(0);
-                            launchNavigation();
+                            CompletableFuture<DirectionsRoute> mapMatchedRoute = new MapMatcher(getApplicationContext(), route)
+                                    .getMatchedRoute();
+
+
                         } else {
                             Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
                         }
@@ -839,7 +866,40 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                         Log.e(TAG, throwable.getLocalizedMessage());
                         Snackbar.make(navigationView, "Erreur au calcul de la route", Snackbar.LENGTH_LONG).show();
                     }
-                });
+                });*/
+    }
+
+    private void mapMatchRouteWithTraffic(@NonNull Runnable callback) {
+        List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
+        List<Point> lessThan100_Points = new ArrayList<>();
+        int indice = 0;
+        for (int i=0; i<100; i++){
+            indice = Math.round(i*pts.size()/100);
+            lessThan100_Points.add(pts.get(indice));
+        }
+        Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
+
+        MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()
+                .accessToken(getString(R.string.mapbox_access_token))
+                .steps(true)
+                .voiceInstructions(true)
+                .bannerInstructions(true)
+                .coordinates(pts)
+                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                .language(Locale.FRENCH);
+
+        mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
+            @Override
+            public void onResponse(Call<MapMatchingResponse> call, retrofit2.Response<MapMatchingResponse> response) {
+                Log.d(TAG, "Matching response: " + response.message());
+                route = response.body().matchings().get(0).toDirectionRoute();
+            }
+
+            @Override
+            public void onFailure(Call<MapMatchingResponse> call, Throwable t) {
+                Log.e(TAG, "Error getting matching: " + t.getLocalizedMessage());
+            }
+        });
     }
 
     private void launchNavigation() {

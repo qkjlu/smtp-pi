@@ -458,46 +458,13 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
 
         showLoading();
 
-        Consumer<List<Point>> mapMatchingRequest = (pts) -> {
-            MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()
-                    .accessToken(getString(R.string.mapbox_access_token))
-                    //.user("qklu")
-                    .coordinates(pts)
-                    .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                    .language(Locale.FRENCH);
-
-            mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
-                @Override
-                public void onResponse(Call<MapMatchingResponse> call, retrofit2.Response<MapMatchingResponse> response) {
-                    Log.d(TAG, "Matching response: " + response.toString());
-                    route = response.body().matchings().get(0).toDirectionRoute();
-                    Log.d(TAG, "Route duration: " + route.duration());
-                    mapRoute.addRoute(route);
-                    boundCameraToRoute();
-                }
-
-                @Override
-                public void onFailure(Call<MapMatchingResponse> call, Throwable t) {
-                    Log.e(TAG, "Error getting matching: " + t.getLocalizedMessage());
-                }
-            });
-        };
 
         builder.build().getRoute(new Callback<DirectionsResponse>() {
             @Override
             public void onResponse(Call<DirectionsResponse> call, retrofit2.Response<DirectionsResponse> response) {
                 if (validRouteResponse(response)) {
                     route = response.body().routes().get(0);
-                    List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
-
-                    List<Point> lessThan100_Points = new ArrayList<>();
-                    int indice = 0;
-                    for (int i=0; i<100; i++){
-                        indice = Math.round(i*pts.size()/100);
-                        lessThan100_Points.add(pts.get(indice));
-                    }
-                    Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
-                    mapMatchingRequest.apply(lessThan100_Points);
+                    mapMatchRouteWithTraffic();
                     //boundCameraToRoute();
                 } else {
                     showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
@@ -509,6 +476,38 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
             public void onFailure(Call<DirectionsResponse> call, Throwable t) {
                 showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
                 hideLoading();
+            }
+        });
+    }
+    private void mapMatchRouteWithTraffic() {
+        List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
+        List<Point> lessThan100_Points = new ArrayList<>();
+        int indice = 0;
+        for (int i=0; i<100; i++){
+            indice = Math.round(i*pts.size()/100);
+            lessThan100_Points.add(pts.get(indice));
+        }
+        Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
+
+        MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()
+                .accessToken(getString(R.string.mapbox_access_token))
+                .steps(true)
+                .voiceInstructions(true)
+                .bannerInstructions(true)
+                .coordinates(pts)
+                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                .language(Locale.FRENCH);
+
+        mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
+            @Override
+            public void onResponse(Call<MapMatchingResponse> call, retrofit2.Response<MapMatchingResponse> response) {
+                Log.d(TAG, "Matching response: " + response.message());
+                route = response.body().matchings().get(0).toDirectionRoute();
+            }
+
+            @Override
+            public void onFailure(Call<MapMatchingResponse> call, Throwable t) {
+                Log.e(TAG, "Error getting matching: " + t.getLocalizedMessage());
             }
         });
     }
