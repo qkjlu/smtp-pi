@@ -40,6 +40,7 @@ export default class Login extends React.Component{
   }
 
   async componentDidMount(){
+    console.log("Login | begin componentDidMount");
     await this.setup.initSetup();
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
@@ -136,6 +137,7 @@ export default class Login extends React.Component{
 
   updateIndex (selectedIndex) {
     this.setState({selectedIndex})
+    this.setState({firstField : "", secondField : ""})
   }
 
   handleSwitchChange(){

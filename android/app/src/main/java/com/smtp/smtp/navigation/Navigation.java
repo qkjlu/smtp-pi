@@ -530,7 +530,14 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                     if(etape != null && pause != null){
                         pause.sendFinPause();
                     }
-                    myEtat = previousEtat;
+                    if(isOffRoute){
+                        myEtat = "offRoute";
+                        preOffRoute = previousEtat;
+                    }else{
+                        myEtat = previousEtat;
+                        preOffRoute = "";
+                    }
+
                 }
             }
         });
@@ -607,7 +614,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 isOffRoute = false;
                 Log.d("offR", " sortie de route " + isOffRoute);
             }else{
-                // je ne suis pas sur la route
+                // je ne suis plus sur la route et isOffRoute = false
                 if(routeProgress.currentState() == null && !isOffRoute){
                     preOffRoute = myEtat;
                     myEtat = "offRoute";
