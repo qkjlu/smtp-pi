@@ -46,7 +46,7 @@ public class Sortie  extends AppCompatActivity {
         sendDebutSortie();
     }
 
-    public void addWaypoint(Double lat, Double lon){
+    public void addWaypoint(Double lon, Double lat){
         Map<String, Object> send = new HashMap<>();
         send.put("longitude",lon);
         send.put("latitude",lat);

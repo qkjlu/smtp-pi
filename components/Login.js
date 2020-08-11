@@ -136,6 +136,7 @@ export default class Login extends React.Component{
 
   updateIndex (selectedIndex) {
     this.setState({selectedIndex})
+    this.setState({firstField : "", secondField : ""})
   }
 
   handleSwitchChange(){

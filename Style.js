@@ -54,18 +54,17 @@ export default {
     },
 
     previewPlace : {
+        borderWidth:1,
         backgroundColor : '#FFFFFF',
-        borderBottomColor : '#202340',
-        marginTop : 30,
-        height : 37,
-        flex : 1,
+        borderColor : '#aaa5a5',
+        height : 50,
+        marginHorizontal : 15,
         flexDirection : 'row',
-        justifyContent : 'space-between',
         alignItems: 'center',
     },
     rightWorksite : {
         color : '#FFF',
-        fontweight : 'bold',
+        fontWeight : 'bold',
         fontSize : 22
     },
     button : {
@@ -107,6 +106,17 @@ export default {
         color: 'rgba(96,100,109, 1)',
         lineHeight: 24,
         textAlign: 'center',
+        justifyContent : 'center'
+    },
+
+    previewText: {
+        flex : 2,
+        paddingVertical : 50,
+        fontSize: 17,
+        color: 'rgba(96,100,109, 1)',
+        lineHeight: 24,
+        textAlign: 'center',
+        justifyContent : 'center'
     },
     textinput : {
         alignSelf: 'stretch',
