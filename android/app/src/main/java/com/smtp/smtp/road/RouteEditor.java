@@ -57,6 +57,7 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
+import com.smtp.smtp.BuildConfig;
 import com.smtp.smtp.R;
 import com.smtp.smtp.http.RequestManager;
 import com.smtp.smtp.navigation.RouteGetter;
@@ -94,7 +95,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     private int rayonDéchargement;
     private String token;
     private static final int CAMERA_ANIMATION_DURATION = 1000;
-    private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
+    private static final String BASE_URL = BuildConfig.API_URL;
 
     private NavigationMapRoute mapRoute;
     private MapboxMap mapboxMap;
@@ -190,12 +191,11 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.d("Response", response.toString());
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
+                        Log.d(TAG, error.toString());
                     }
                 }
         ) {
@@ -472,7 +472,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
             showMessage(mapView, "Erreur au calcul de la route, veuillez contacter un administrateur");
         });
     }
-    
+
     private void hideLoading() {
         if (loading.getVisibility() == View.VISIBLE) {
             loading.setVisibility(View.INVISIBLE);
@@ -533,7 +533,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
             clearRoute(null);
         }
         showMessage(mapView, "Marqueur : " + (mapboxMap.getMarkers().size() - 2) + "/" + 25);
-        Log.d("MARKER", Long.toString(marker.getId()));
+        Log.d(TAG,"Clicked marker id: " + marker.getId());
         return false;
     }
 
@@ -588,11 +588,9 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                         if (lambda != null) {
                             lambda.run();
                         }
-
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        Log.e(TAG, e.getLocalizedMessage());
                     }
-                    Log.d(TAG, response.toString());
                 },
                 new com.android.volley.Response.ErrorListener() {
                     @Override
