@@ -4,6 +4,8 @@ import * as React from "react";
 import axios from 'axios';
 import Config from "react-native-config";
 import Style from "../Style";
+import TimePicker from 'react-native-simple-time-picker';
+
 
 export default class FuelForm extends React.Component{
     constructor(props){
@@ -12,6 +14,7 @@ export default class FuelForm extends React.Component{
         this.changeVolumeFinFuel = this.changeVolumeFinFuel.bind(this)
         this.changeVolumeAjoutFuel = this.changeVolumeAjoutFuel.bind(this)
         this.getVolumes = this.getVolumes.bind(this)
+        this.addHoraire = this.getHoraires.bind(this)
         this.rearangeVolumes = this.rearangeVolumes.bind(this)
         this.state = {
             volumeDebutFuel: "",
@@ -20,14 +23,17 @@ export default class FuelForm extends React.Component{
             volumeFinStored : false,
             volumeAjoutFuel : "",
             volumeAjoutStored : false,
+            horaireStored : false,
             volumes : [],
             ready : false,
+            horaires : null,
         }
     }
 
     async componentDidMount() {
         await this.getVolumes();
         await this.rearangeVolumes();
+        await this.getHoraires();
     }
 
     changeVolumeDebutFuel(e){
@@ -88,8 +94,61 @@ export default class FuelForm extends React.Component{
             })
     }
 
+    async getHoraires(){
+        const token  = await AsyncStorage.getItem('token');
+        const userId  = await AsyncStorage.getItem('userId');
+        await axios({
+            method: 'get',
+            url: Config.API_URL + 'grutiers/'+ userId +'/work-time',
+            headers: {'Authorization': 'Bearer ' + token},
+        })
+            .then( response => {
+                if(response.status !== 200){
+                    console.log(response.status);
+                    alert(response.status);
+                    return response.status;
+                }
+                this.setState({horaires : response.data[new Date().toISOString().split("T")[0]]})
+                console.log("axios get horaires "+ JSON.stringify(response.data[new Date().toISOString().split("T")[0]]));
+                return response.status;
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+    async addHoraire(){
+        const token  = await AsyncStorage.getItem('token');
+        const userId  = await AsyncStorage.getItem('userId');
+        const data = {
+            "idWorkTime" : this.state.horaires.idWorkTime,
+            "hour": this.state.horaires.hour,
+            "minute" : this.state.horaires.minute,
+        };
+        axios({
+            method: 'put',
+            url: Config.API_URL + 'grutiers/'+userId+'/work-time',
+            data : data,
+            headers: {'Authorization': 'Bearer ' + token},
+        })
+            .then( response => {
+                if(response.status !== 200){
+                    console.log(response.status);
+                    alert(response.status);
+                    return response.status;
+                }
+                this.setState({ horaireStored : true })
+                let item = this.state.horaires
+                item.idWorkTime = response.data[0].id
+                this.setState({ horaires : item })
+                console.log(response.status);
+                return response.status;
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
 
-    async addVolume(type,volume,etatStored){
+    async addVolume(type,volume){
         const token  = await AsyncStorage.getItem('token');
         const userId  = await AsyncStorage.getItem('userId');
         const data = {
@@ -157,6 +216,28 @@ export default class FuelForm extends React.Component{
                             <TouchableOpacity style={{paddingTop:5}} onPress={() =>this.addVolume("ajout",this.state.volumeAjoutFuel)}>
                                 { this.state.volumeAjoutStored ? <Icon name={"save"} size={30} color="#32CD32"/> : <Icon name={"save"} size={30} color="#A9A9A9"/>}
                             </TouchableOpacity>
+                        </View>
+                        <View>
+                            <Text style={Style.cardDescription}> Nombre d'heure de travail effectuée</Text>
+                        </View>
+                        <View style={{flexDirection : "row"}}>
+                                <View style={Style.timePicker}>
+                                    <TimePicker
+                                        selectedHours={this.state.horaires !== null ? this.state.horaires.hour : 0}
+                                        selectedMinutes={this.state.horaires !== null ? this.state.horaires.minute : 0}
+                                        onChange={(hours, minutes) => {
+                                            let time = this.state.horaires !== null ? this.state.horaires : {};
+                                            time.hour = hours;
+                                            time.minute = minutes;
+                                            this.setState({ horaires : time, horaireStored : false })}
+                                        }
+                                    />
+                                </View>
+                            <View>
+                                <TouchableOpacity style={{paddingTop:5}} onPress={() =>this.addHoraire()}>
+                                    { this.state.horaireStored ? <Icon name={"save"} size={30} color="#32CD32"/> : <Icon name={"save"} size={30} color="#A9A9A9"/>}
+                                </TouchableOpacity>
+                            </View>
                         </View>
                         <View style={{flexDirection : "row", alignContent:"flex-start"}}>
                             <Button  title={"Annuler"} color={"#d9cfcf"} onPress={this.props.toggleShow}/>

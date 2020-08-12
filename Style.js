@@ -138,10 +138,10 @@ export default {
         shadowColor: "#000",
         shadowRadius: 5,
         shadowOpacity: 0.3,
-        bottom: 300,
+        bottom: 200,
         left: width*0.07,
         right: 0,
-        height: CARD_HEIGHT*1.45,
+        height: CARD_HEIGHT*1.9,
         width: CARD_WIDTH,
         overflow: "hidden",
     },
@@ -193,6 +193,11 @@ export default {
         height: CARD_HEIGHT,
         width: CARD_WIDTH,
         overflow: "hidden",
+    },
+    timePicker : {
+        flexDirection : "column",
+        width: CARD_WIDTH*0.66,
+
     },
     textContent: {
         flex: 2,
