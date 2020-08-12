@@ -340,6 +340,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         LocationRequest locationRequest = LocationRequest.create();
         // Location is requested every 0.5 seconds
         locationRequest.setInterval(500);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         LocationCallback locationCallback = new LocationCallback() {
             @Override
@@ -606,7 +607,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         if(myEtat.equals("enChargement") || myEtat.equals("enDéchargement") || myEtat.equals("pause") ){
             preOffRoute = "";
             isOffRoute = false;
-        }else{
+        } else {
             // je suis sur la route et isOffRoute = true => je change isOfRoute en false
             if(routeProgress.currentState() != null && isOffRoute) {
                 myEtat = preOffRoute;

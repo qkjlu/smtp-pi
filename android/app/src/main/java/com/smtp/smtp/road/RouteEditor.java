@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -58,6 +59,7 @@ import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.smtp.smtp.R;
 import com.smtp.smtp.http.RequestManager;
+import com.smtp.smtp.navigation.RouteGetter;
 import com.smtp.smtp.navigation.Waypoint;
 
 import org.json.JSONArray;
@@ -72,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 
@@ -89,7 +92,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     private int rayonChargement;
     private int distanceSecuriteMarkerRayon = 25;
     private int rayonDéchargement;
-    private  String token;
+    private String token;
     private static final int CAMERA_ANIMATION_DURATION = 1000;
     private static final String BASE_URL = "http://smtp-dev-env.eba-5jqrxjhz.eu-west-3.elasticbeanstalk.com/";
 
@@ -124,7 +127,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
         DECHARGEMENT = Point.fromLngLat(destination[0], destination[1]);
 
         routeInfo = findViewById(R.id.route_info);
-        routeInfo.setText(nameChantier+ "\n" + "Route : " + typeRoute.substring(0, 1).toUpperCase() + typeRoute.substring(1));
+        routeInfo.setText(nameChantier + "\n" + "Route : " + typeRoute.substring(0, 1).toUpperCase() + typeRoute.substring(1));
 
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
@@ -177,8 +180,8 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
         mapView.onSaveInstanceState(outState);
     }
 
-    public void initWaypoints(){
-        final String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
+    public void initWaypoints() {
+        final String URL = BASE_URL + "chantiers/" + chantierId + "/route/" + typeRoute;
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, URL, null,
                 response -> {
@@ -189,8 +192,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                     }
                     Log.d("Response", response.toString());
                 },
-                new Response.ErrorListener()
-                {
+                new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("Error.Response", error.toString());
@@ -204,20 +206,20 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                 params.put("Authorization", "Bearer " + token);
                 return params;
             }
-        } ;
+        };
 
         requestQueue.add(getRequest);
     }
 
-    public JSONObject prepareRouteForSending(){
+    public JSONObject prepareRouteForSending() {
         JSONArray res = new JSONArray();
         int order = 0;
         for (Marker marker : mapboxMap.getMarkers()) {
             JSONObject json = new JSONObject();
             try {
-                if(!isOriginOrDestination(marker)){
-                    json.put("latitude",marker.getPosition().getLatitude());
-                    json.put("longitude",marker.getPosition().getLongitude());
+                if (!isOriginOrDestination(marker)) {
+                    json.put("latitude", marker.getPosition().getLatitude());
+                    json.put("longitude", marker.getPosition().getLongitude());
                     json.put("ordre", order);
                     res.put(json);
                 }
@@ -227,7 +229,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
             order++;
         }
         try {
-            return new JSONObject().put("waypoints",res);
+            return new JSONObject().put("waypoints", res);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -237,7 +239,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     public void initRoute(JSONArray array) throws JSONException {
         // Ajoute chaque donnée à la liste de waypoint triable
         List<Waypoint> waypoints = new ArrayList<>();
-        for (int i=0; i< array.length(); i++){
+        for (int i = 0; i < array.length(); i++) {
             JSONObject waypoint = array.getJSONObject(i);
             waypoints.add(
                     new Waypoint(
@@ -250,62 +252,62 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
         Collections.sort(waypoints);
 
         int i = 0;
-        for (Waypoint w: waypoints ) {
-            i+=1;
+        for (Waypoint w : waypoints) {
+            i += 1;
             LatLng point = new LatLng(w.latitude, w.longitude);
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(point)
                     .icon(getMyIcon(i));
             mapboxMap.addMarker(markerOptions);
-            showMessage(mapView,"Marqueur : "+mapboxMap.getMarkers().size()+"/"+25);
+            showMessage(mapView, "Marqueur : " + mapboxMap.getMarkers().size() + "/" + 25);
         }
         fetchRoute();
     }
 
-    public Icon getMyIcon(int i){
+    public Icon getMyIcon(int i) {
         IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
-        switch (i){
-            case 1 :
+        switch (i) {
+            case 1:
                 return iconFactory.fromResource(R.drawable.marker1);
-            case 2 :
+            case 2:
                 return iconFactory.fromResource(R.drawable.marker2);
-            case 3 :
+            case 3:
                 return iconFactory.fromResource(R.drawable.marker3);
-            case 4 :
+            case 4:
                 return iconFactory.fromResource(R.drawable.marker4);
-            case 5 :
+            case 5:
                 return iconFactory.fromResource(R.drawable.marker5);
-            case 6 :
+            case 6:
                 return iconFactory.fromResource(R.drawable.marker6);
-            case 7 :
+            case 7:
                 return iconFactory.fromResource(R.drawable.marker7);
-            case 8 :
+            case 8:
                 return iconFactory.fromResource(R.drawable.marker8);
-            case 9 :
+            case 9:
                 return iconFactory.fromResource(R.drawable.marker9);
         }
         return iconFactory.fromResource(R.drawable.marker9);
     }
 
     public void sendRouteToServer(View view) {
-        if(mapboxMap.getMarkers().size() < 4){
-            showMessage(view,"Il faut au moins deux points pour faire une route");
+        if (mapboxMap.getMarkers().size() < 4) {
+            showMessage(view, "Il faut au moins deux points pour faire une route");
             return;
         }
         JSONObject route = prepareRouteForSending();
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         final String requestBody = route.toString();
-        String URL = BASE_URL + "chantiers/"+chantierId+"/route/"+typeRoute;
+        String URL = BASE_URL + "chantiers/" + chantierId + "/route/" + typeRoute;
         StringRequest stringRequest = new StringRequest(Request.Method.PUT, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                showMessage(mapView,"La route a été enregistrée avec succès");
+                showMessage(mapView, "La route a été enregistrée avec succès");
                 Log.i("VOLLEY", response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                showMessage(mapView,"Erreur de l'enregistrement de route, veuillez contacter un administrateur");
+                showMessage(mapView, "Erreur de l'enregistrement de route, veuillez contacter un administrateur");
                 Log.e("VOLLEY", error.toString());
             }
         }) {
@@ -342,10 +344,9 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-
     public void clearRoute(View view) {
-        for(Marker m : mapboxMap.getMarkers()) {
-            if(!isOriginOrDestination(m)){
+        for (Marker m : mapboxMap.getMarkers()) {
+            if (!isOriginOrDestination(m)) {
                 mapboxMap.removeMarker(m);
             }
         }
@@ -358,7 +359,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
         this.mapboxMap.setStyle(new Style.Builder()
-                .fromUri(Style.SATELLITE_STREETS), new Style.OnStyleLoaded() {
+                        .fromUri(Style.SATELLITE_STREETS), new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
                         RouteEditor.this.mapboxMap.setOnMarkerClickListener(RouteEditor.this);
@@ -366,7 +367,9 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                         initMapRoute();
                         initWaypoints();
                         initLieux();
-                        fetchRayon(() -> { drawRings(style); });
+                        fetchRayon(() -> {
+                            drawRings(style);
+                        });
                     }
                 }
         );
@@ -379,7 +382,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                 "SOURCE_RING_CHARGEMENT",
                 "LAYER_RING_CHARGEMENT",
                 distanceSecuriteMarkerRayon
-                );
+        );
         ringChargement.addToStyle(style);
 
         MapboxRing ringDechargement = new MapboxRing(
@@ -393,7 +396,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private float getDistance(MarkerOptions marker, Point lieu){
+    private float getDistance(MarkerOptions marker, Point lieu) {
         float[] distanceFromDestination = new float[3];
         Location.distanceBetween(
                 marker.getPosition().getLatitude(),
@@ -405,7 +408,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
         return distanceFromDestination[0];
     }
 
-    private void initLieux(){
+    private void initLieux() {
         this.mapboxMap.addMarker(new MarkerOptions().title("Chargement")
                 .position(new LatLng(CHARGEMENT.latitude(), CHARGEMENT.longitude()))
         );
@@ -419,9 +422,9 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
         mapRoute = new NavigationMapRoute(null, mapView, mapboxMap);
     }
 
-    private boolean isOriginOrDestination(Marker m){
-        boolean isOrigin =   m.getPosition().getLongitude() == CHARGEMENT.longitude() && m.getPosition().getLatitude() == CHARGEMENT.latitude();
-        boolean isDestination  =   m.getPosition().getLongitude() == DECHARGEMENT.longitude() && m.getPosition().getLatitude() == DECHARGEMENT.latitude();
+    private boolean isOriginOrDestination(Marker m) {
+        boolean isOrigin = m.getPosition().getLongitude() == CHARGEMENT.longitude() && m.getPosition().getLatitude() == CHARGEMENT.latitude();
+        boolean isDestination = m.getPosition().getLongitude() == DECHARGEMENT.longitude() && m.getPosition().getLatitude() == DECHARGEMENT.latitude();
         return (isOrigin || isDestination);
     }
 
@@ -433,13 +436,13 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                 .profile("car");
 
         if (mapboxMap.getMarkers().size() < 4) {
-            showMessage(mapView,"Il faut au moins deux points pour faire une route");
+            showMessage(mapView, "Il faut au moins deux points pour faire une route");
             return;
         }
 
         List<Point> wp = new ArrayList<>();
-        for(Marker m : mapboxMap.getMarkers()) {
-            if(!isOriginOrDestination(m)){
+        for (Marker m : mapboxMap.getMarkers()) {
+            if (!isOriginOrDestination(m)) {
                 Point p = Point.fromLngLat(m.getPosition().getLongitude(), m.getPosition().getLatitude());
                 wp.add(p);
             }
@@ -458,64 +461,18 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
 
         showLoading();
 
-
-        builder.build().getRoute(new Callback<DirectionsResponse>() {
-            @Override
-            public void onResponse(Call<DirectionsResponse> call, retrofit2.Response<DirectionsResponse> response) {
-                if (validRouteResponse(response)) {
-                    route = response.body().routes().get(0);
-                    mapMatchRouteWithTraffic();
-                    //boundCameraToRoute();
-                } else {
-                    showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
-                }
-                hideLoading();
-            }
-
-            @Override
-            public void onFailure(Call<DirectionsResponse> call, Throwable t) {
-                showMessage(mapView,"Erreur au calcul de la route, veuillez contacter un administrateur");
-                hideLoading();
-            }
+        RouteGetter routeGetter = new RouteGetter(getApplicationContext(), wp);
+        routeGetter.getRoute((route) -> {
+            this.route = route;
+            this.mapRoute.addRoute(this.route);
+            hideLoading();
+            boundCameraToRoute();
+        }, (t) -> {
+            Log.e(TAG, t.getLocalizedMessage());
+            showMessage(mapView, "Erreur au calcul de la route, veuillez contacter un administrateur");
         });
     }
-    private void mapMatchRouteWithTraffic() {
-        List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
-        List<Point> lessThan100_Points = new ArrayList<>();
-        int indice = 0;
-        for (int i=0; i<100; i++){
-            indice = Math.round(i*pts.size()/100);
-            lessThan100_Points.add(pts.get(indice));
-        }
-        Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
-
-        MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()
-                .accessToken(getString(R.string.mapbox_access_token))
-                .steps(true)
-                .voiceInstructions(true)
-                .bannerInstructions(true)
-                .coordinates(pts)
-                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                .language(Locale.FRENCH);
-
-        mapMatchingBuilder.build().enqueueCall(new Callback<MapMatchingResponse>() {
-            @Override
-            public void onResponse(Call<MapMatchingResponse> call, retrofit2.Response<MapMatchingResponse> response) {
-                Log.d(TAG, "Matching response: " + response.message());
-                route = response.body().matchings().get(0).toDirectionRoute();
-            }
-
-            @Override
-            public void onFailure(Call<MapMatchingResponse> call, Throwable t) {
-                Log.e(TAG, "Error getting matching: " + t.getLocalizedMessage());
-            }
-        });
-    }
-
-    private boolean validRouteResponse(retrofit2.Response<DirectionsResponse> response) {
-        return response.body() != null && !response.body().routes().isEmpty();
-    }
-
+    
     private void hideLoading() {
         if (loading.getVisibility() == View.VISIBLE) {
             loading.setVisibility(View.INVISIBLE);
@@ -529,7 +486,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void boundCameraToRoute() {
-        if(!firstFetch) return;
+        if (!firstFetch) return;
         if (route != null) {
             firstFetch = false;
             List<Point> routeCoords = LineString.fromPolyline(route.geometry(),
@@ -549,7 +506,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
             }
         }
         CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng((CHARGEMENT.latitude()+ DECHARGEMENT.latitude())/2, (CHARGEMENT.longitude()+ DECHARGEMENT.longitude())/2 ))
+                .target(new LatLng((CHARGEMENT.latitude() + DECHARGEMENT.latitude()) / 2, (CHARGEMENT.longitude() + DECHARGEMENT.longitude()) / 2))
                 .zoom(14)
                 .tilt(20)
                 .build();
@@ -563,45 +520,46 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public boolean onMarkerClick(@NonNull Marker marker) {
-        for(Marker m : mapboxMap.getMarkers()) {
-            if(m.getId() == marker.getId()){
-                if(!isOriginOrDestination(m)){
+        for (Marker m : mapboxMap.getMarkers()) {
+            if (m.getId() == marker.getId()) {
+                if (!isOriginOrDestination(m)) {
                     mapboxMap.removeMarker(m);
                 }
             }
         }
-        if(mapboxMap.getMarkers().size() > 3) {
+        if (mapboxMap.getMarkers().size() > 3) {
             fetchRoute();
         } else {
             clearRoute(null);
         }
-        showMessage(mapView,"Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+25);
+        showMessage(mapView, "Marqueur : " + (mapboxMap.getMarkers().size() - 2) + "/" + 25);
         Log.d("MARKER", Long.toString(marker.getId()));
         return false;
     }
 
-    public void showMessage(View mapView,String message){
+    public void showMessage(View mapView, String message) {
         Snackbar snackbar;
         snackbar = Snackbar.make(mapView, message, Snackbar.LENGTH_LONG);
         View snackBarView = snackbar.getView();
         snackBarView.setBackgroundColor(Color.WHITE);
         snackbar.show();
     }
+
     @Override
     public boolean onMapLongClick(@NonNull LatLng point) {
         vibrate();
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(point)
-                .icon(getMyIcon(mapboxMap.getMarkers().size()-1));
-        if(getDistance(markerOptions,CHARGEMENT)< rayonChargement + distanceSecuriteMarkerRayon ){
-            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de chargement "+(getDistance(markerOptions,CHARGEMENT))+" < "+ (rayonChargement + distanceSecuriteMarkerRayon));
-        }else if (getDistance(markerOptions,DECHARGEMENT)< rayonDéchargement + distanceSecuriteMarkerRayon) {
-            showMessage(mapView,"Le marqueur ne peut pas être dans le rayon de déchargement "+(getDistance(markerOptions,DECHARGEMENT))+" < "+ (rayonDéchargement + distanceSecuriteMarkerRayon));
-        }else{
+                .icon(getMyIcon(mapboxMap.getMarkers().size() - 1));
+        if (getDistance(markerOptions, CHARGEMENT) < rayonChargement + distanceSecuriteMarkerRayon) {
+            showMessage(mapView, "Le marqueur ne peut pas être dans le rayon de chargement " + (getDistance(markerOptions, CHARGEMENT)) + " < " + (rayonChargement + distanceSecuriteMarkerRayon));
+        } else if (getDistance(markerOptions, DECHARGEMENT) < rayonDéchargement + distanceSecuriteMarkerRayon) {
+            showMessage(mapView, "Le marqueur ne peut pas être dans le rayon de déchargement " + (getDistance(markerOptions, DECHARGEMENT)) + " < " + (rayonDéchargement + distanceSecuriteMarkerRayon));
+        } else {
             mapboxMap.addMarker(markerOptions);
-            showMessage(mapView, "Marqueur : "+(mapboxMap.getMarkers().size()-2)+"/"+23);
+            showMessage(mapView, "Marqueur : " + (mapboxMap.getMarkers().size() - 2) + "/" + 23);
         }
-        if(mapboxMap.getMarkers().size() > 3) {
+        if (mapboxMap.getMarkers().size() > 3) {
             fetchRoute();
         }
         return true;
@@ -627,7 +585,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                     try {
                         rayonDéchargement = response.getJSONObject("lieuDéchargement").getInt("rayon");
                         rayonChargement = response.getJSONObject("lieuChargement").getInt("rayon");
-                        if(lambda != null) {
+                        if (lambda != null) {
                             lambda.run();
                         }
 
