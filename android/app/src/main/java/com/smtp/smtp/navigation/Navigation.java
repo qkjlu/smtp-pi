@@ -159,6 +159,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private boolean onPause = false;
     private NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
     private List<Waypoint> initialWaypoints;
+    private CycleManager cycleManager;
 
     // Connection to the socket server
     {
@@ -174,6 +175,11 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private CustomUEH UEH = new CustomUEH(new Runnable() {
         @Override
         public void run() {
+            try {
+                cycleManager.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             disconnectFromChantier();
         }
     });
@@ -332,6 +338,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         registerReceiver(broadcastReceiver, new IntentFilter("NO_INTERNET"));
 
         retrieveLocation();
+
+        cycleManager = new CycleManager(()-> print());
     }
 
     private void retrieveLocation() {
@@ -442,12 +450,18 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     public void onCancelNavigation() {
         Log.d(TAG, "OnCancelNavigation");
         disconnectFromChantier();
+        try {
+            cycleManager.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         this.finish();
     }
 
     @Override
     public void onNavigationFinished() {
         Log.d(TAG, "OnNavigationFinished");
+
     }
 
     @Override
@@ -477,6 +491,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
                 .icon(icon2)
         );
 
+        cycleManager.start();
+
+    }
+
+    public void print(){
+        Log.d("CycleManager", "Hello");
     }
 
 
@@ -487,8 +507,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             showAlertDetournementWithAutoDismiss("Pas de connexion internet","Pas de connexion internet","Fermer",10000);
         }
     };
-
-
 
     // listener for paused and reprendre buttons
     private void addListenerOnButton() {
