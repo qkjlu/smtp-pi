@@ -55,6 +55,10 @@ export default class AddWorkSiteForm extends React.Component {
 
     async postPlace(){
         const token  = await AsyncStorage.getItem('token');
+        if(this.state.adress == '' || this.state.rayon == ''){
+          alert("Veuillez entrer une adresse et/ou un rayon");
+          return;
+        }
         const data = {
                 "adresse": this.state.adress,
                 "longitude": parseFloat(this.state.lon),
@@ -120,7 +124,7 @@ export default class AddWorkSiteForm extends React.Component {
 
                         <TextInput style={style.textinput} onChangeText={(adress) => this.setState({adress})}
                                    value={this.state.adress} placeholder={" libellé adresse"}/>
-                        <TextInput style={style.textinput} onChangeText={(rayon) => this.setState({rayon})}
+                        <TextInput style={style.textinput} keyboardType="decimal-pad" onChangeText={(rayon) => this.setState({rayon})}
                                    value={this.state.rayon} placeholder={" Rayon du lieu en mètre : exemple 50"}/>
                         <Button
                           onPress={() => this.setGPSLocationPage()}
