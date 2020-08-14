@@ -1,4 +1,7 @@
-package com.smtp.smtp.navigation;
+package com.smtp.smtp.navigation.test;
+
+import com.smtp.smtp.navigation.Cycle;
+import com.smtp.smtp.navigation.User;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,7 +12,7 @@ public class TestCycle {
     @Test
     public void cloneStateIsDifferentAfterModification() throws CloneNotSupportedException {
         Cycle c1 = new Cycle("1","chargé");
-        Cycle c2 = c1.clone();
+        Cycle c2 = c1.cloneMe();
         c2.setMyEtat("déchargé");
         Assert.assertNotEquals(c1.getMyEtat(), c2.getMyEtat());
     }
@@ -21,7 +24,7 @@ public class TestCycle {
          User u2 = new User("2", 2.0, "chargé");
          c1.addUser(u1);
          c1.addUser(u2);
-         Cycle c2 = c1.clone();
+         Cycle c2 = c1.cloneMe();
          c1.deleteUser(u1.getUserId());
          Assert.assertTrue( "Cycle clone must keep his element when it is deleted from original",
                  c2.getUsers().contains(u1) && c2.getUsers().contains(u2));
@@ -60,16 +63,16 @@ public class TestCycle {
     }
 
     @Test
-    public void cycleAreNotEqualsAfterOneIsModified() throws CloneNotSupportedException {
+    public void cycleAreNotEqualsAfterOneUserLeft() throws CloneNotSupportedException {
         Cycle c1 = new Cycle("1","chargé");
         User u1 = new User("1", 2.0, "chargé");
         User u2 = new User("2", 3.0, "chargé");
         c1.addUser(u1);
         c1.addUser(u2);
-        Cycle c2 = c1.clone();
+        Cycle c2 = c1.cloneMe();
         c1.deleteUser("1");
 
-        Assert.assertTrue("Two cycle must not be equals if one is modified",
+        Assert.assertTrue("Two cycle must not be equals if one user left",
                 !c1.equals(c2));
     }
 
@@ -80,9 +83,37 @@ public class TestCycle {
         User u2 = new User("2", 3.0, "chargé");
         c1.addUser(u1);
         c1.addUser(u2);
-        Cycle c2 = c1.clone();
+        Cycle c2 = c1.cloneMe();
 
         Assert.assertTrue("Two cycle must be equals after clone",
+                c1.equals(c2));
+    }
+
+    @Test
+    public void cycleListAreEqualsAfterClone() throws CloneNotSupportedException {
+        Cycle c1 = new Cycle("1","chargé");
+        User u1 = new User("1", 2.0, "chargé");
+        User u2 = new User("2", 3.0, "chargé");
+        c1.addUser(u1);
+        c1.addUser(u2);
+        Cycle c2 = c1.cloneMe();
+
+        Assert.assertTrue("Two cycle list must be equals after clone",
+                c1.getUsers().equals(c2.getUsers()));
+    }
+
+    @Test
+    public void cycleAreEqualsEvenIfUserOrderIsDifferent() throws CloneNotSupportedException {
+        Cycle c1 = new Cycle("1","chargé");
+        User u1 = new User("1", 2.0, "chargé");
+        User u2 = new User("2", 3.0, "chargé");
+        c1.addUser(u1);
+        c1.addUser(u2);
+        Cycle c2 = c1.cloneMe();
+        u2.setETA(1.0);
+        c1.updateCycle(u2);
+
+        Assert.assertTrue("Two cycle must be equals even if order is different",
                 c1.equals(c2));
     }
 }

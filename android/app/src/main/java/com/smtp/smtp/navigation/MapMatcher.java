@@ -33,10 +33,12 @@ public class MapMatcher {
         List<Point> pts = PolylineUtils.decode(route.geometry(), 6);
         List<Point> lessThan100_Points = new ArrayList<>();
         int indice = 0;
-        for (int i=0; i<100; i++){
+        lessThan100_Points.add(pts.get(indice));
+        for (int i=1; i<99; i++){
             indice = Math.round(i*pts.size()/100);
             lessThan100_Points.add(pts.get(indice));
         }
+        lessThan100_Points.add(pts.get(pts.size()-1));
         Log.d(TAG, "Geometry points number: " + lessThan100_Points.size());
 
         MapboxMapMatching.Builder mapMatchingBuilder = MapboxMapMatching.builder()

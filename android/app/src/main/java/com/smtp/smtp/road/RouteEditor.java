@@ -60,9 +60,11 @@ import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.smtp.smtp.BuildConfig;
 import com.smtp.smtp.R;
 import com.smtp.smtp.http.RequestManager;
+import com.smtp.smtp.navigation.MapMatcher;
 import com.smtp.smtp.navigation.RouteGetter;
 import com.smtp.smtp.navigation.Waypoint;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,8 +101,6 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
 
     private NavigationMapRoute mapRoute;
     private MapboxMap mapboxMap;
-
-    private final int[] padding = new int[]{50, 50, 50, 50};
 
     MapView mapView;
     ProgressBar loading;
@@ -429,17 +429,35 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void fetchRoute() {
-        NavigationRoute.Builder builder = NavigationRoute.builder(this)
-                .accessToken("pk." + getString(R.string.gh_key))
-                .baseUrl(getString(R.string.base_url))
-                .user("gh")
-                .profile("car");
-
         if (mapboxMap.getMarkers().size() < 4) {
             showMessage(mapView, "Il faut au moins deux points pour faire une route");
             return;
         }
 
+        List<Point> waypointsWithoutOriginAndDestination = getWaypointsWithoutOriginAndDestination();
+
+        showLoading();
+
+        RouteGetter routeGetter = new RouteGetter(getApplicationContext(), waypointsWithoutOriginAndDestination);
+        routeGetter.getRoute((route) -> {
+            MapMatcher mapMatcher = new MapMatcher(getApplicationContext(), route);
+            mapMatcher.getMatch((trafficRoute) -> {
+                this.route = trafficRoute;
+                this.mapRoute.addRoute(this.route);
+                hideLoading();
+                boundCameraToRoute();
+            }, (t) -> {
+                Log.e(TAG, t.getLocalizedMessage());
+                showMessage(mapView, "Erreur au calcul de la route, veuillez contacter un administrateur");
+            });
+        }, (t) -> {
+            Log.e(TAG, t.getLocalizedMessage());
+            showMessage(mapView, "Erreur au calcul de la route, veuillez contacter un administrateur");
+        });
+    }
+
+    @NotNull
+    private List<Point> getWaypointsWithoutOriginAndDestination() {
         List<Point> wp = new ArrayList<>();
         for (Marker m : mapboxMap.getMarkers()) {
             if (!isOriginOrDestination(m)) {
@@ -447,30 +465,7 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
                 wp.add(p);
             }
         }
-
-        for (int i = 0; i < wp.size(); i++) {
-            Point p = wp.get(i);
-            if (i == 0) {
-                builder.origin(p);
-            } else if (i < wp.size() - 1) {
-                builder.addWaypoint(p);
-            } else {
-                builder.destination(p);
-            }
-        }
-
-        showLoading();
-
-        RouteGetter routeGetter = new RouteGetter(getApplicationContext(), wp);
-        routeGetter.getRoute((route) -> {
-            this.route = route;
-            this.mapRoute.addRoute(this.route);
-            hideLoading();
-            boundCameraToRoute();
-        }, (t) -> {
-            Log.e(TAG, t.getLocalizedMessage());
-            showMessage(mapView, "Erreur au calcul de la route, veuillez contacter un administrateur");
-        });
+        return wp;
     }
 
     private void hideLoading() {
@@ -498,19 +493,13 @@ public class RouteEditor extends AppCompatActivity implements OnMapReadyCallback
             if (bboxPoints.size() > 1) {
                 try {
                     LatLngBounds bounds = new LatLngBounds.Builder().includes(bboxPoints).build();
-                    // left, top, right, bottom
+                    int[] padding = new int[]{75, 75, 75, 75};
                     animateCameraBbox(bounds, CAMERA_ANIMATION_DURATION, padding);
                 } catch (InvalidLatLngBoundsException exception) {
                     Toast.makeText(this, R.string.error_valid_route_not_found, Toast.LENGTH_SHORT).show();
                 }
             }
         }
-        CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng((CHARGEMENT.latitude() + DECHARGEMENT.latitude()) / 2, (CHARGEMENT.longitude() + DECHARGEMENT.longitude()) / 2))
-                .zoom(14)
-                .tilt(20)
-                .build();
-        mapboxMap.setCameraPosition(position);
     }
 
     private void animateCameraBbox(LatLngBounds bounds, int animationTime, int[] padding) {

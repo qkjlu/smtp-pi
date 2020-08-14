@@ -11,6 +11,8 @@ import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.smtp.smtp.BuildConfig;
 import com.smtp.smtp.R;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -29,22 +31,7 @@ public class RouteGetter {
     }
 
     public void getRoute(Consumer<DirectionsRoute> success, Consumer<Throwable> failure) {
-        Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
-        NavigationRoute.Builder builder = NavigationRoute.builder(ctx)
-                .accessToken("pk." + ctx.getString(R.string.gh_key))
-                .baseUrl(BuildConfig.API_URL)
-                .user("gh")
-                .origin(roadPoints.get(0))
-                .destination(roadPoints.get(roadPoints.size() - 1))
-                .continueStraight(false)
-                .profile("car");
-        // add waypoints without first and last point
-        if (roadPoints.size() > 2) {
-            for (int i = 1; i < roadPoints.size() - 1; i++) {
-                builder.addWaypoint(roadPoints.get(i));
-            }
-        }
-        NavigationRoute navRoute = builder.build();
+        NavigationRoute navRoute = getNavigationRoute();
 
         navRoute.getRoute(
                 new Callback<DirectionsResponse>() {
@@ -58,12 +45,39 @@ public class RouteGetter {
                             failure.accept(new Throwable("Route response is invalid!"));
                         }
                     }
-
                     @Override
                     public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
                         failure.accept(throwable);
                     }
                 });
+    }
+
+    @NotNull
+    private NavigationRoute getNavigationRoute() {
+        Log.d(TAG, "API_URL: " + BuildConfig.API_URL);
+        NavigationRoute.Builder builder = getBuilder();
+        addWaypointToRouteBuilder(builder);
+        return builder.build();
+    }
+
+    @NotNull
+    private NavigationRoute.Builder getBuilder() {
+        return NavigationRoute.builder(ctx)
+                    .accessToken("pk." + ctx.getString(R.string.gh_key))
+                    .baseUrl(BuildConfig.API_URL)
+                    .user("gh")
+                    .origin(roadPoints.get(0))
+                    .destination(roadPoints.get(roadPoints.size() - 1))
+                    .continueStraight(false)
+                    .profile("car");
+    }
+
+    private void addWaypointToRouteBuilder(NavigationRoute.Builder builder) {
+        if (roadPoints.size() > 2) {
+            for (int i = 1; i < roadPoints.size() - 1; i++) {
+                builder.addWaypoint(roadPoints.get(i));
+            }
+        }
     }
 
     private boolean validRouteResponse(Response<DirectionsResponse> response) {
