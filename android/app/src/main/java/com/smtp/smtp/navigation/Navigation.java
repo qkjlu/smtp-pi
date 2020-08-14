@@ -41,22 +41,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
-import com.mapbox.api.directions.v5.DirectionsCriteria;
-import com.mapbox.api.directions.v5.WalkingOptions;
-import com.mapbox.api.directions.v5.models.BannerInstructions;
-import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
-import com.mapbox.api.directions.v5.models.LegAnnotation;
-import com.mapbox.api.directions.v5.models.LegStep;
-import com.mapbox.api.directions.v5.models.RouteLeg;
-import com.mapbox.api.directions.v5.models.RouteOptions;
-import com.mapbox.api.directions.v5.models.StepIntersection;
-import com.mapbox.api.directions.v5.models.StepManeuver;
-import com.mapbox.api.directions.v5.models.VoiceInstructions;
-import com.mapbox.api.matching.v5.MapboxMapMatching;
-import com.mapbox.api.matching.v5.models.MapMatchingResponse;
 import com.mapbox.geojson.Point;
-import com.mapbox.geojson.utils.PolylineUtils;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -68,7 +54,6 @@ import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.OnNavigationReadyCallback;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
-import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.mapbox.services.android.navigation.v5.navigation.camera.Camera;
 import com.mapbox.services.android.navigation.v5.navigation.camera.RouteInformation;
 import com.mapbox.services.android.navigation.v5.offroute.OffRoute;
@@ -89,13 +74,9 @@ import org.json.JSONObject;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
@@ -103,9 +84,6 @@ import io.socket.client.IO;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 @SuppressLint("MissingPermission")
 public class Navigation extends AppCompatActivity implements NavigationListener, OnNavigationReadyCallback, ProgressChangeListener{
@@ -118,7 +96,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private final int INITIAL_ZOOM = 18;
     private final double INITIAL_TILT = 30;
     private final int DISTANCE_TOLERANCE = 5000;
-    private static final String TAG = "Navigation";
+    static final String TAG = "Navigation";
     private boolean isOffRoute = false;
     private String preOffRoute = "";
     private Boolean sendingOffRoute = false;
@@ -134,7 +112,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private double remainingTime;
     private Double remainingTimeCoef;
     private double timeDiffTruckAhead = Double.POSITIVE_INFINITY;
-    private String myEtat;
+    String myEtat;
     private Etape etape = null;
     private Sortie sortie = null;
     private Pause pause = null;
@@ -152,6 +130,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     private int timeToSend = 3;
     private int delay = timeToSend;
 
+    //
+    private Cycle cycle;
+
     // for paused button
     private String previousEtat;
     private Button buttonPause;
@@ -164,7 +145,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
     // Connection to the socket server
     {
         try {
-            Log.i(TAG, "Instanciating a new socket");
+            Log.d(TAG, "Instanciating a new socket");
             mSocket = IO.socket(BuildConfig.API_URL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -184,118 +165,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         }
     });
 
-    public boolean isMyUserId(String userId) {
-        return userId.equals(this.userId);
-    }
-
-    class User {
-        public String userId;
-        public Double ETA;
-        public String etat;
-
-        public User(String userId, Double ETA, String etat) {
-            this.userId = userId;
-            this.ETA = ETA;
-            this.etat = etat;
-        }
-
-        public Double getETA() {
-            return ETA;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public String getEtat() {
-            return etat;
-        }
 
 
-        @Override
-        public String toString() {
-            return "User{ moi ?" + isMyUserId(this.userId) + ", ETA=" + ETA + ", etat='" + etat + '}';
-        }
-    }
 
-    class EtaSorter implements Comparator<User> {
-        @Override
-        public int compare(User o1, User o2) {
-            return (int) (o1.getETA() - o2.getETA());
-        }
-    }
-
-    public class ListUser {
-        public ArrayList<User> list;
-
-        public ListUser() {
-            this.list = new ArrayList<>();
-        }
-
-        public boolean isAddable(User user) {
-            return user.getEtat().equals(myEtat);
-        }
-
-        public int addList(User user) {
-            if (isAddable(user) && !isContainedUser(user.getUserId())) {
-                list.add(user);
-                Collections.sort(list, new EtaSorter());
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-
-        public boolean isContainedUser(String userId) {
-            boolean res = false;
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getUserId().equals(userId)) {
-                    res = true;
-                }
-            }
-            return res;
-        }
-
-        public void updateMyIndice(String userId) {
-            for (int i = 0; i < list.size(); i++) {
-                if (isMyUserId(list.get(i).getUserId())) {
-                    myIndice = i;
-                    Log.d(TAG, "changement indice : " + myIndice);
-                }
-            }
-        }
-
-        public boolean sameEtat(User user) {
-            return user.getEtat().equals(myEtat);
-        }
-
-        public void updateList(User user) {
-            if (!sameEtat(user)) {
-                this.deleteUser(user.getUserId());
-            } else {
-                for (int i = 0; i < list.size(); i++) {
-                    if (list.get(i).getUserId().equals(user.getUserId())) {
-                        list.get(i).ETA = user.getETA();
-                    }
-                }
-            }
-            Collections.sort(list, new EtaSorter());
-        }
-
-        public void deleteUser(String userId) {
-            int res = -1;
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getUserId().equals(userId)) {
-                    res = i;
-                }
-            }
-            list.remove(res);
-            Collections.sort(list, new EtaSorter());
-        }
-    }
-
-    private ListUser myList = new ListUser();
-    private int myIndice;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -322,7 +194,6 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         token = i.getStringExtra("token");
         myEtat = i.getStringExtra("myEtat");
         previousEtat = myEtat;
-        myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
@@ -339,7 +210,9 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
 
         retrieveLocation();
 
-        cycleManager = new CycleManager(()-> print());
+        cycle = new Cycle(userId, myEtat);
+        cycle.addUser(new User(userId, Double.POSITIVE_INFINITY, myEtat));
+        cycleManager = new CycleManager(this::fetchRoute, cycle);
     }
 
     private void retrieveLocation() {
@@ -724,7 +597,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             if(timeToSend()){
                 sendCoordinates();
             }
-            myList.updateList(new User(userId, remainingTime, myEtat));
+            cycle.updateCycle(new User(userId, remainingTime, myEtat));
         }
     }
 
@@ -879,6 +752,7 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             }
         };
 
+
         navigationView.startNavigation(navViewBuilderOptions.build());
         navigationView.retrieveMapboxNavigation().setCameraEngine(camera);
         setOffRouteEngine();
@@ -998,8 +872,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             timeDiffTextView.setText("Vous êtes en cours de chargement \nQuittez la zone une fois chargé");
         } else if (myEtat.equals("enDéchargement")) {
             timeDiffTextView.setText("Vous êtes en cours de déchargement \nQuittez la zone une fois déchargé");
-        } else if (myIndice > 0 && myList.list.size() > 1) {
-            User userAhead = myList.list.get(myIndice - 1);
+        } else if (cycle.someOneIsAheadMe()) {
+            User userAhead = cycle.getUserAhead();
             timeDiffTruckAhead = Math.abs(remainingTime - userAhead.getETA());
             int minutes = (int) Math.floor(timeDiffTruckAhead / 60);
             int secondes = (int) Math.floor(timeDiffTruckAhead % 60);
@@ -1057,12 +931,12 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
             senderEtat = data.getString("etat");
             senderId = data.getString("userId");
             User sender = new User(senderId, senderETA, senderEtat);
-            if (myList.isContainedUser(senderId)) {
-                myList.updateList(sender);
+            if (cycle.isContainedUser(senderId)) {
+                cycle.updateCycle(sender);
             } else {
-                myList.addList(sender);
+                cycle.addUser(sender);
             }
-            myList.updateMyIndice(Navigation.this.userId);
+            cycle.updateMyIndice(Navigation.this.userId);
             modifyTimeDiffTruckAheadIfNecessary();
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -1081,8 +955,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         String senderId;
         try {
             senderId = data.getString("userId");
-            if (myList.isContainedUser(senderId)) {
-                myList.deleteUser(senderId);
+            if (cycle.isContainedUser(senderId)) {
+                cycle.deleteUser(senderId);
             } else {
                 Log.d(TAG, " impossible to delete : user not in the list ");
             }
@@ -1104,8 +978,8 @@ public class Navigation extends AppCompatActivity implements NavigationListener,
         Double destinationLat = data.getDouble("destinationLat");
         CHARGEMENT = Point.fromLngLat(originLong,originLat);
         DECHARGEMENT = Point.fromLngLat(destinationLong,destinationLat);
-        myList = new ListUser();
-        myList.addList(new User(userId, Double.POSITIVE_INFINITY, myEtat));
+        cycle.clear();
+        cycle.addUser(new User(userId, Double.POSITIVE_INFINITY, myEtat));
         connectToChantier();
         navigationView.retrieveNavigationMapboxMap().clearMarkers();
         navigationView.retrieveNavigationMapboxMap().retrieveMap().getMarkers().clear();
