@@ -48,11 +48,11 @@ public class Sortie  extends AppCompatActivity {
 
     public void addWaypoint(Double lon, Double lat){
         Map<String, Object> send = new HashMap<>();
+        send.put("id", UUID.randomUUID().toString());
         send.put("longitude",lon);
         send.put("latitude",lat);
         send.put("SortieId",this.sortieId);
         send.put("ordre",this.ordre);
-        send.put("ouvert",0);
         JSONObject sortie = new JSONObject(send);
         ordre++;
         final String requestBody =  sortie.toString();
@@ -104,7 +104,7 @@ public class Sortie  extends AppCompatActivity {
 
     public void sendDebutSortie(){
         Map<String, Object> send = new HashMap<>();
-
+        send.put("ouvert",0);
         send.put("dateDebut",this.dateDebut);
         send.put("id",this.sortieId);
         send.put("ChantierId",this.chantierId);
