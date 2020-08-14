@@ -139,10 +139,10 @@ export default {
         shadowRadius: 5,
         shadowOpacity: 0.3,
         bottom: 200,
-        left: width*0.07,
+        left: width*0.14,
         right: 0,
         height: CARD_HEIGHT*1.9,
-        width: CARD_WIDTH,
+        width: CARD_WIDTH*0.85,
         overflow: "hidden",
     },
 

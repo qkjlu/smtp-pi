@@ -52,6 +52,7 @@ public class Sortie  extends AppCompatActivity {
         send.put("latitude",lat);
         send.put("SortieId",this.sortieId);
         send.put("ordre",this.ordre);
+        send.put("ouvert",0);
         JSONObject sortie = new JSONObject(send);
         ordre++;
         final String requestBody =  sortie.toString();
