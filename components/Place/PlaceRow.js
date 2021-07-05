@@ -1,12 +1,10 @@
 import React from 'react'
-import {Text, TextInput, View, Alert, AsyncStorage} from 'react-native'
+import {Text, View, AsyncStorage} from 'react-native'
 import {Button} from "react-native-elements";
 import style from "../../Style";
-import axios from 'axios'
 import {Icon} from "react-native-elements";
-import * as RootNavigation from "../../navigation/RootNavigation";
 
-export default class WorkSiteRow extends React.Component {
+export default class PlaceRow extends React.Component {
     constructor(props) {
         super(props);
         this.state = {

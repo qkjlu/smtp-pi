@@ -1,10 +1,12 @@
 import * as React from 'react';
-import {Text, View, ScrollView, Dimensions, StyleSheet  } from 'react-native';
+import {Text, View, ScrollView, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
 import ValidateButton from "../ValidateButton";
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import StopButtons from "../StopButtons";
 import TruckArrivalTime from "./TruckArrivalTime";
+import {heightPercentageToDP as hp, widthPercentageToDP as wp} from "react-native-responsive-screen";
+
 export default class CraneView extends React.Component {
 
     constructor(props) {
@@ -100,9 +102,13 @@ export default class CraneView extends React.Component {
 const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
     progressBar: {
-      flexDirection:'row',
-      justifyContent:'center',
-      alignItems: 'center' ,
-      backgroundColor : '#FFF',
-    },
+        flexDirection : "row",
+        position: "absolute",
+        bottom: 80,
+        alignItems:'center',
+        justifyContent:'center',
+        width: wp('100%'),
+        backgroundColor : '#FFF',
+        height: hp('10%')
+    }
 });

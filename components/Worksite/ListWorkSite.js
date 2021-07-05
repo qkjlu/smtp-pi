@@ -1,10 +1,9 @@
 import React from "react";
 import style from "../../Style";
 import axios from 'axios'
-import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Dimensions, Alert} from "react-native";
+import {Text, ActivityIndicator, View, FlatList, ScrollView, AsyncStorage, Alert} from "react-native";
 import WorkSiteRow from "./WorkSiteRow";
 import ButtonGroupAdmin from "../ButtonGroupAdmin";
-import Search from "../Search";
 import Config from "react-native-config";
 
 
@@ -45,19 +44,19 @@ export default class ListWorkSite extends React.Component {
         console.log(id);
         const token = await AsyncStorage.getItem('token');
         var data = { "id" : id};
-        axios({
+        await axios({
             method : 'delete',
             url : Config.API_URL +'chantiers',
             headers: {'Authorization': 'Bearer ' + token},
             data: data
         })
             .then( response => {
-                if(response.status != 204){
+                if(response.status !== 204){
                     console.log(response.status);
                     console.log(response.data);
                 }
-                var copy = this.state.report.slice();
-                var index = copy.findIndex(worksite => worksite.id === id);
+                let copy = this.state.report.slice();
+                let index = copy.findIndex(worksite => worksite.id === id);
                 if (index > -1) {
                     copy.splice(index, 1);
                     this.setState({
@@ -74,13 +73,13 @@ export default class ListWorkSite extends React.Component {
 
     async reloadData() {
         const token = await AsyncStorage.getItem('token');
-        axios({
+        await axios({
             method : 'get',
             url : Config.API_URL + 'chantiers',
             headers: {'Authorization': 'Bearer ' + token},
         })
             .then( response => {
-                if(response.status != 200){
+                if(response.status !== 200){
                     console.log(response.status);
                     alert(response.status);
                     return response.status;
@@ -106,8 +105,7 @@ export default class ListWorkSite extends React.Component {
                 <View>
                     <ScrollView>
                     <ButtonGroupAdmin onReload={this.reloadData}/>
-                    <Text style={style.getStartedText}>Liste des chantiers:</Text>
-                    <Search/>
+                    <Text style={style.getStartedText}>Liste des chantiers :</Text>
                         <FlatList
                             data={this.state.report}
                             renderItem={({item}) => <WorkSiteRow worksite={item} onDelete={(id) =>this.handleDelete(id)}/>}

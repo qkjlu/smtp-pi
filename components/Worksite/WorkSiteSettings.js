@@ -69,18 +69,24 @@ export default class WorkSiteSettings extends React.Component {
           })
         }
       }else{
-        let copy = Object.assign({}, this.state.dechargement);
-        copy.latitude = this.props.route.params?.marker.coordinate.latitude;
-        copy.longitude = this.props.route.params?.marker.coordinate.longitude;
-        this.setState({
-          dechargement :copy
-        })
+        if(this.state.dechargement.latitude !== this.props.route.params?.marker.coordinate.latitude){
+          let copy = Object.assign({}, this.state.dechargement);
+          copy.latitude = this.props.route.params?.marker.coordinate.latitude;
+          copy.longitude = this.props.route.params?.marker.coordinate.longitude;
+          this.setState({
+            dechargement :copy
+          })
+        }
       }
     }
   }
 
   async updateLieu(lieu){
       let token  = await AsyncStorage.getItem('token');
+      if(lieu.rayon == '' || lieu.adresse == ''){
+        alert("Veuillez renseigner un rayon ou/et une adresse");
+        return;
+      }
       let data = {
           "adresse": lieu.adresse,
           "longitude": parseFloat(lieu.longitude),
@@ -109,9 +115,8 @@ export default class WorkSiteSettings extends React.Component {
   }
 
   setGPSLocationPage(type){
-    let lat = type === "chargement" ? this.state.chargement.latitude : this.state.dechargement.latitude;
-    let lon = type === "chargement" ? this.state.chargement.longitude : this.state.dechargement.longitude;
-    RootNavigation.navigate("setGPSLocation", {longitude:lon, latitude: lat, origin : "Settings", type: type });
+    let lieu = type === "chargement" ? this.state.chargement : this.state.dechargement;
+    RootNavigation.navigate("ModifyGPSLocation", {lieu: lieu, type: type });
   }
 
   render(){
@@ -122,6 +127,7 @@ export default class WorkSiteSettings extends React.Component {
         </View>
       )
     }else{
+      console.log(" render :" + JSON.stringify(this.state.chargement))
       return(
         <View>
             <ScrollView>
@@ -132,7 +138,7 @@ export default class WorkSiteSettings extends React.Component {
                         adresse: adresse,
                     }})} value={this.state.chargement.adresse.toString()} placeholder={" adresse "}/>
                 <Text> Rayon : </Text>
-                <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ chargement:{
+                <TextInput style={style.textinput} keyboardType="decimal-pad" onChangeText={ (rayon) => this.setState({ chargement:{
                     ...this.state.chargement,
                     rayon: rayon,
                 }})} value={this.state.chargement.rayon.toString()} placeholder={" rayon de chargement"}/>
@@ -152,7 +158,7 @@ export default class WorkSiteSettings extends React.Component {
                     }})} value={this.state.dechargement.adresse.toString()} placeholder={" adresse "}/>
 
                 <Text> Rayon : </Text>
-                <TextInput style={style.textinput} onChangeText={ (rayon) => this.setState({ dechargement:{
+                <TextInput style={style.textinput} keyboardType="decimal-pad" onChangeText={ (rayon) => this.setState({ dechargement:{
                         ...this.state.dechargement,
                         rayon: rayon,
                     }})} value={this.state.dechargement.rayon.toString()} placeholder={" rayon de déchargement"}/>

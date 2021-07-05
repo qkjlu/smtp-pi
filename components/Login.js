@@ -3,19 +3,14 @@ import InputText from './InputText';
 import ValidateButton from './ValidateButton';
 import CustomPicker from './CustomPicker';
 import { ButtonGroup } from 'react-native-elements';
-import * as Permissions from 'expo-permissions';
-import * as Location from 'expo-location';
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import style from "../Style";
-import  {View, ActivityIndicator, AsyncStorage, ScrollView, Text} from 'react-native';
-import AutoCompletePlaces from "./Place/AutoCompletePlaces";
+import  {View, AsyncStorage, ScrollView, Text} from 'react-native';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AutoCompleteUsers from "./AutoCompleteUsers";
 import Style from "../Style";
 var jwtDecode = require('jwt-decode');
 import Config from "react-native-config";
-import VersionCheck from 'react-native-version-check';
 import Setup from './Services/setup'
 import { Image } from 'react-native-elements';
 
@@ -28,9 +23,6 @@ export default class Login extends React.Component{
     this.handlePickerChange = this.handlePickerChange.bind(this);
     this.handleChangeFirstField = this.handleChangeFirstField.bind(this);
     this.handleChangeSecondField = this.handleChangeSecondField.bind(this);
-    this.requestLocationPermission = this.requestLocationPermission.bind(this);
-    this.internetCheck = this.internetCheck.bind(this);
-    this.accesLocation = this.accesLocation.bind(this);
     this.handleValidate = this.handleValidate.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.formSubmit = this.formSubmit.bind(this);
@@ -42,16 +34,16 @@ export default class Login extends React.Component{
       secondField : "",
       selectedIndex: 0,
       user : null,
+      fill :100
     };
   }
 
   async componentDidMount(){
+    console.log("Login | begin componentDidMount");
     await this.setup.initSetup();
-    await this.requestLocationPermission();
-    await this.internetCheck();
     await axios.get(Config.API_URL + 'entreprises')
       .then( response => {
-        if(response.status != 200){
+        if(response.status !== 200){
           console.log(response.status);
           alert(response.status);
           return response.status;
@@ -64,56 +56,6 @@ export default class Login extends React.Component{
         alert(error)
         console.log(error);
       });
-  }
-
-  // handle connection error
-  async internetCheck(){
-    NetInfo.fetch().then(state => {
-      if (state.type === 'cellular' || state.type === 'wifi') {
-        axios.get(Config.API_URL + 'entreprises')
-          .then( response => {
-            console.log("internet check passed !");
-            }
-          ).catch(function (error) {
-            alert("Erreur réseau ! Vérifier que les données mobiles et la localisation sont activées");
-          });
-      }else{
-        alert("Erreur réseau ! Vérifier que les données mobiles et la localisation sont activées");
-      }
-    }).catch(function (error){
-      alert("error")
-    });
-  }
-
-  accesLocation(){
-    return RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastInterval: 5000})
-    .then(data => {
-      console.log("data" + data)
-      return true
-    }).catch(err => {
-      return false
-    });
-  }
-
-  // ask location to GPS and get current position if granted
-  async requestLocationPermission() {
-    let permission = false;
-    let acces = false;
-    while (!permission || !acces){
-      try {
-          let {granted} = await Permissions.askAsync(Permissions.LOCATION);
-          if (granted) {
-              console.log("access to position granted");
-              permission = true;
-              acces = this.accesLocation();
-              console.log(acces);
-          } else {
-              console.log("Location permission denied");
-          }
-      } catch (err) {
-          console.log("error "+err)
-      }
-    }
   }
 
   async storeDataSession(item, selectedValue){
@@ -137,17 +79,17 @@ export default class Login extends React.Component{
 
   // to do : change view in fonction of User type
   async formSubmit(){
-    if(this.state.firstField == "" || this.state.secondField == ""){
+    if(this.state.firstField === "" || this.state.secondField === ""){
       alert('Veuillez saisir tous les champs')
     }else{
-      var data = {
+      let data = {
         "nom": this.state.firstField,
         "prenom": this.state.secondField,
         "entreprise" : this.state.pickerSelected
       };
 
-      var url = Config.API_URL;
-      var typeUser;
+      let url = Config.API_URL;
+      let typeUser;
 
       switch (this.state.selectedIndex) {
         case 0:
@@ -174,7 +116,7 @@ export default class Login extends React.Component{
         data : data
       })
       .then((response) => {
-        if(response.status != 200){
+        if(response.status !== 200){
           console.log(response);
         }else{
           console.log(response.status);
@@ -194,6 +136,7 @@ export default class Login extends React.Component{
 
   updateIndex (selectedIndex) {
     this.setState({selectedIndex})
+    this.setState({firstField : "", secondField : ""})
   }
 
   handleSwitchChange(){
@@ -218,28 +161,40 @@ export default class Login extends React.Component{
 
   render(){
     if (this.state.companies == null){
-      return (<ActivityIndicator color="red" size="large"/>);
+      return (
+        <View style={style.container}>
+          <AnimatedCircularProgress
+            size={150}
+            width={25}
+            fill={100}
+            tintColor="#f69552"
+            duration={120000}
+            backgroundColor="#3d5875">
+            {
+              (fill) => (
+                <Text>
+                  {Math.trunc(fill)} %
+                </Text>
+              )
+            }
+          </AnimatedCircularProgress>
+        </View>
+      );
     }else{
-      let firstPC = this.state.selectedIndex == 2 ?  "Mail" : "Nom";
-      let secondPC = this.state.selectedIndex == 2 ? "Mot de passe" : "Prenom";
+      let firstPC = this.state.selectedIndex === 2 ?  "Mail" : "Nom";
+      let secondPC = this.state.selectedIndex === 2 ? "Mot de passe" : "Prenom";
 
-      const component1 = () => <Image source={require('./../assets/images/truck.png') }
-                                      style={{ width: 68, height: 68 }}
-                                />
-      const component2 = () => <Image source={require('./../assets/images/crane.png')}
-                                      style={{ width: 50, height: 50 }}
-                               />
-      const component3 = () => <Image source={require('./../assets/images/admin.png')}
-                                      style={{ width: 50, height: 44 }}
-                               />
-
-      const buttons = [{ element: component1 }, { element: component2 }, { element: component3 }];
+      const buttons = [
+          <Image source={require('./../assets/images/truck.png') } style={{ width: 68, height: 68 }}/>,
+          <Image source={require('./../assets/images/crane.png')} style={{ width: 50, height: 50 }}/>,
+          <Image source={require('./../assets/images/admin.png')} style={{ width: 50, height: 44 }}/>
+          ];
 
       // set Data for picker
       let pickerData = this.state.companies.map(item => item.nom);
       // set selectedValue for picker
-      let resIndex = this.state.companies.findIndex(s => s.id == this.state.pickerSelected);
-      let selectedIndex = resIndex == -1 ? 0 : resIndex
+      let resIndex = this.state.companies.findIndex(s => s.id === this.state.pickerSelected);
+      let selectedIndex = resIndex === -1 ? 0 : resIndex
       let selected = this.state.companies[selectedIndex].nom;
 
       return (
@@ -254,20 +209,20 @@ export default class Login extends React.Component{
                   buttons={buttons}
                   containerStyle={{height: 50}}
               />
-              {this.state.selectedIndex != 2 &&
+              {this.state.selectedIndex !== 2 &&
               <AutoCompleteUsers style={Style.input} changePlace={(user) => this.setState({user})}
                                  currentIndex={this.state.selectedIndex} user={this.state.user}
                                  changeFirstField={txt => this.handleChangeFirstField(txt)}
                                  changeSecondField={txt => this.handleChangeSecondField(txt)}/>
               }
-              {this.state.selectedIndex == 2 &&
+              {this.state.selectedIndex === 2 &&
                 <InputText style={style.input} placeholder={firstPC} value={this.state.firstField} onChangeText={this.handleChangeFirstField} />
               }
-              {this.state.selectedIndex == 2 &&
-              <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex == 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
+              {this.state.selectedIndex === 2 &&
+              <InputText style = {style.input} placeholder={secondPC} secureTextEntry={this.state.selectedIndex === 2} value={this.state.secondField} onChangeText={this.handleChangeSecondField}/>
               }
 
-              <CustomPicker isVisible={this.state.selectedIndex == 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
+              <CustomPicker isVisible={this.state.selectedIndex === 2} titleContent="Entreprise:" data={pickerData} selectedValue= {selected} onValueChange= {this.handlePickerChange}/>
               <ValidateButton text={"valider"} onPress={this.handleValidate}/>
               <Text>{Config.VERSION} version</Text>
             </View>

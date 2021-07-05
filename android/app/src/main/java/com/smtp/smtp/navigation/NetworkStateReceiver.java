@@ -1,4 +1,4 @@
-package com.smtp.smtp;
+package com.smtp.smtp.navigation;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

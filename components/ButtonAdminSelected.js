@@ -1,6 +1,7 @@
 import React from 'react'
 import AddWorkSiteForm from "./Worksite/AddWorkSiteForm";
 import ListPlace from "./Place/ListPlace";
+import ListMateriaux from "./Materiau/ListMateriaux";
 
 export default class ButtonAdminSelected extends React.Component {
 
@@ -14,7 +15,7 @@ export default class ButtonAdminSelected extends React.Component {
         }else if(this.props.index == 1){
             return <ListPlace/>
         }else if(this.props.index == 2){
-            return null;
+            return <ListMateriaux/>;
         }else
             return null;
     }

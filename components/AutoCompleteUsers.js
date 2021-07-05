@@ -78,7 +78,6 @@ export default class AutoCompleteUsers extends React.Component {
         if(!this.state.showPreview){
             return (
                 <Autocomplete
-
                     autoCapitalize="none"
                     autoCorrect={false}
                     data={users.length === 1 && comp(query, users[0].prenom) ? [] : users}
@@ -96,7 +95,7 @@ export default class AutoCompleteUsers extends React.Component {
                             this.setState({showPreview : true});
                         }
                         }>
-                            <Text style={{ fontSize : 22}}> {item.prenom +" "+ item.nom} </Text>
+                            <Text style={{ fontSize : 20}}> {item.prenom +" "+ item.nom} </Text>
                         </TouchableOpacity>
                     )}
                 />

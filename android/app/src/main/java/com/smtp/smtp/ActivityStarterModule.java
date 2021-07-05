@@ -6,6 +6,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
+import com.smtp.smtp.navigation.Navigation;
+import com.smtp.smtp.road.RouteEditor;
 
 class ActivityStarterModule extends ReactContextBaseJavaModule {
     private static ReactApplicationContext reactContext;
@@ -52,7 +54,7 @@ class ActivityStarterModule extends ReactContextBaseJavaModule {
         destinationLnglat[0] = destination.getDouble(0);
         destinationLnglat[1] = destination.getDouble(1);
 
-        Intent intent = new Intent(reactContext, NavigationLauncherActivity.class);
+        Intent intent = new Intent(reactContext, RouteEditor.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("chantierId", chantierId);
         intent.putExtra("typeRoute", typeRoute);

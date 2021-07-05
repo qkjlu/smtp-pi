@@ -17,7 +17,7 @@ export default function TruckScreen({navigation,route}) {
             <HomeStack.Screen
                 name="TruckView"
                 component={TruckView}
-                options={({ route}
+                options={({route}
                 ) => ({headerTitle: route.params.worksite.nom})}
             />
         </HomeStack.Navigator>

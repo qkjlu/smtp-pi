@@ -8,7 +8,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from './components/Login';
 import Chart from "./components/Chart";
 import MapAdmin from './components/Map/MapAdmin';
-import SetGPSLocation from "./components/Place/SetGPSLocation";
 import MapTruck from './components/Map/MapTruck';
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import useLinking from './navigation/useLinking';
@@ -17,6 +16,7 @@ import TruckScreen from "./screens/Truck/TruckScreen";
 import CraneScreen from "./screens/Crane/CraneScreen";
 import { navigationRef } from './navigation/RootNavigation';
 import LogoutButton from "./components/LogoutButton";
+import BottomTabTruckNavigator from "./navigation/BottomTabTruckNavigator";
 
 const Stack = createStackNavigator();
 
@@ -64,7 +64,7 @@ export default function App(props) {
           <Stack.Navigator>
             <Stack.Screen name="Login" component={Login} options={{headerShown:false}}/>
             <Stack.Screen name="Chart" component={Chart} options={{headerShown:false}}/>
-            <Stack.Screen name="Truck" component={TruckScreen} options={{headerShown:false}}/>
+            <Stack.Screen name="Truck" component={BottomTabTruckNavigator} options={{headerShown:false}}/>
             <Stack.Screen name="Crane" component={CraneScreen} options={{headerShown:false}}/>
             <Stack.Screen name="Admin" component={BottomTabNavigator} options={{headerShown:false}}/>
           </Stack.Navigator>

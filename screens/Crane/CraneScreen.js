@@ -1,9 +1,7 @@
 import * as React from 'react';
 import {createStackNavigator} from "@react-navigation/stack";
 import ListWorkSite from "../../components/Worksite/ListWorkSite";
-import CraneView from "../../components/Crane/CraneView";
 import LogoutButton from "../../components/LogoutButton";
-import WorkSiteView from "../../components/Worksite/WorkSiteView";
 import WorkSiteScreen from "../Admin/WorkSiteScreen";
 const HomeStack = createStackNavigator();
 

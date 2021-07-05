@@ -2,7 +2,8 @@ import * as React from 'react';
 import {StyleSheet} from 'react-native';
 import ListWorkSite from "../../components/Worksite/ListWorkSite";
 import WorkSiteSettings from "../../components/Worksite/WorkSiteSettings";
-import setGPSLocation from "../../components/Place/SetGPSLocation";
+import AddGPSLocation from "../../components/Place/AddGPSLocation";
+import ModifyGPSLocation from "../../components/Place/ModifyGPSLocation";
 import AddPlaceForm from "../../components/Place/AddPlaceForm";
 import WorkSiteScreen from "./WorkSiteScreen";
 import {createStackNavigator} from "@react-navigation/stack";
@@ -30,8 +31,13 @@ export default function HomeScreen({navigation}) {
                 options={({ route }) => ({headerTitle: route.params.worksite.nom})}
             />
             <HomeStack.Screen
-                name="setGPSLocation"
-                component={setGPSLocation}
+                name="AddGPSLocation"
+                component={AddGPSLocation}
+                options={({ route }) => ({headerTitle: "coordonnées GPS d'un lieu"})}
+            />
+            <HomeStack.Screen
+                name="ModifyGPSLocation"
+                component={ModifyGPSLocation}
                 options={({ route }) => ({headerTitle: "coordonnées GPS d'un lieu"})}
             />
             <HomeStack.Screen

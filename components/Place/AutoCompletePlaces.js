@@ -15,7 +15,6 @@ export default class AutoCompletePlaces extends React.Component {
         }
     }
 
-
     findPlace(query) {
         if (query === '') {
             return [];
@@ -49,7 +48,7 @@ export default class AutoCompletePlaces extends React.Component {
                                 this.setState({showPreview : true});
                             }
                             }>
-                                <Text> {item.adresse} </Text>
+                                <Text> {item.adresse +" ("+ (item.type ? item.type :  "chantier") +")"} </Text>
                             </TouchableOpacity>
                         )}
                     />
@@ -68,8 +67,6 @@ export default class AutoCompletePlaces extends React.Component {
 }
 const styles = StyleSheet.create({
     autocompleteContainer: {
-        backgroundColor: '#ffffff',
         borderWidth: 0,
-        marginTop : 30,
     },
 });

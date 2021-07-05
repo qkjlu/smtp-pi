@@ -1,3 +1,8 @@
+import { Dimensions} from "react-native";
+
+const { width, height } = Dimensions.get("window");
+const CARD_HEIGHT = 220;
+const CARD_WIDTH = width * 0.8;
 
 export default {
     container:{
@@ -8,10 +13,11 @@ export default {
     containerForm:{
         alignItems: 'center',
     },
-
+    progressBar:{
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     input : {
-        height : 40 ,
-        padding : 10,
         borderColor: 'gray',
         borderWidth:1 ,
         marginHorizontal : 5
@@ -48,18 +54,17 @@ export default {
     },
 
     previewPlace : {
+        borderWidth:1,
         backgroundColor : '#FFFFFF',
-        borderBottomColor : '#202340',
-        marginTop : 30,
-        height : 37,
-        flex : 1,
+        borderColor : '#aaa5a5',
+        height : 50,
+        marginHorizontal : 15,
         flexDirection : 'row',
-        justifyContent : 'space-between',
         alignItems: 'center',
     },
     rightWorksite : {
         color : '#FFF',
-        fontweight : 'bold',
+        fontWeight : 'bold',
         fontSize : 22
     },
     button : {
@@ -101,6 +106,17 @@ export default {
         color: 'rgba(96,100,109, 1)',
         lineHeight: 24,
         textAlign: 'center',
+        justifyContent : 'center'
+    },
+
+    previewText: {
+        flex : 2,
+        paddingVertical : 50,
+        fontSize: 17,
+        color: 'rgba(96,100,109, 1)',
+        lineHeight: 24,
+        textAlign: 'center',
+        justifyContent : 'center'
     },
     textinput : {
         alignSelf: 'stretch',
@@ -113,4 +129,87 @@ export default {
         marginBottom: 15,
     },
 
+    cardFuel: {
+        flexDirection : "row",
+        position : "absolute",
+        backgroundColor: "#FFF",
+        borderRadius : 5,
+        marginHorizontal: 10,
+        shadowColor: "#000",
+        shadowRadius: 5,
+        shadowOpacity: 0.3,
+        bottom: 200,
+        left: width*0.14,
+        right: 0,
+        height: CARD_HEIGHT*1.9,
+        width: CARD_WIDTH*0.85,
+        overflow: "hidden",
+    },
+
+    // Marker Custom
+    bubble : {
+        flexDirection : 'column',
+        alignSelf: "flex-start",
+        backgroundColor : '#fff',
+        borderColor: "#cccccc",
+        width: 150,
+    },
+
+    arrow: {
+        backgroundColor: "transparent",
+        borderColor : "transparent",
+        borderTopColor : "#fff",
+        borderWidth: 16,
+        alignSelf: 'center',
+        marginTop : -32,
+    },
+
+    arrowBorder: {
+        backgroundColor: "transparent",
+        borderColor : "transparent",
+        borderTopColor : "#007a87",
+        borderWidth: 16,
+        alignSelf: 'center',
+        marginTop : -0.5,
+    },
+
+    name : {
+        fontSize: 16,
+        marginBottom: 5,
+    },
+
+    card: {
+        flexDirection : "row",
+        position : "absolute",
+        backgroundColor: "#FFF",
+        borderRadius : 5,
+        marginHorizontal: 10,
+        shadowColor: "#000",
+        shadowRadius: 5,
+        shadowOpacity: 0.3,
+        bottom: 5,
+        left: width*0.07,
+        right: 0,
+        height: CARD_HEIGHT,
+        width: CARD_WIDTH,
+        overflow: "hidden",
+    },
+    timePicker : {
+        flexDirection : "column",
+        width: CARD_WIDTH*0.66,
+
+    },
+    textContent: {
+        flex: 2,
+        padding: 10,
+    },
+    cardTitle: {
+        fontSize: 12,
+        fontWeight: "bold",
+    },
+    cardDescription: {
+        fontSize: 12,
+        paddingVertical:5,
+        color: "#444",
+    },
 }
